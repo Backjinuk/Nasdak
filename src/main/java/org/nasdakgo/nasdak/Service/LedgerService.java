@@ -1,0 +1,44 @@
+package org.nasdakgo.nasdak.Service;
+
+import org.nasdakgo.nasdak.Entity.Ledger;
+import org.nasdakgo.nasdak.Repository.LedgerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class LedgerService {
+
+    LedgerRepository ledgerRepository;
+
+    @Autowired
+    public LedgerService(LedgerRepository ledgerRepository){
+        this.ledgerRepository = ledgerRepository;
+    }
+
+    public Ledger save(Ledger ledger) { return ledgerRepository.save(ledger);
+    }
+
+    public int ledgerUpdate(Ledger ledger) { return ledgerRepository.ledgerUpdate(ledger.getFileOwnerNo(), ledger.getLedgerType(), ledger.getPrice(), ledger.getComment(), String.valueOf(ledger.getLocation()), ledger.getCategory().getCategoryNo());
+    }
+
+    public void ledgerDelete(Ledger ledger) { ledgerRepository.deleteById(ledger.getFileOwnerNo());
+    }
+
+    public List<Ledger> findAll() {
+        return ledgerRepository.findAllByOrderByUseDateAsc();
+    }
+
+    public List<?> findAllByUsers(long userNo) {
+        return ledgerRepository.findAllUsers(userNo);
+    }
+
+    public List<Ledger> ledgerItem(String regDate, long userNo) {
+        return ledgerRepository.ledgerItem(regDate, userNo);
+    }
+
+    public Ledger ledgerDetail(Ledger ledger) {
+        return ledgerRepository.getById(ledger.getFileOwnerNo());
+    }
+}

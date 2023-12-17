@@ -4,6 +4,8 @@ import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CategoryService {
 
@@ -14,5 +16,13 @@ public class CategoryService {
 
 
     public void save(Category category) { categoryRepository.save(category);
+    }
+
+
+    public Category findById(long categoryNo) { return categoryRepository.findById(categoryNo).get();
+    }
+
+    public List<Category> categoryUserList(Category category) {
+        return categoryRepository.categoryUserList(category.getUser().getUserNo());
     }
 }

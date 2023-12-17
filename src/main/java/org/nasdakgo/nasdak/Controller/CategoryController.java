@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/category/")
 public class CategoryController {
@@ -45,4 +48,18 @@ public class CategoryController {
             categoryService.save(modelMapper.map(categoryDto, Category.class));
         }
     }
+
+
+    @RequestMapping("categoryList")
+    public List<CategoryDto> categoryList(@RequestBody CategoryDto categoryDto){
+
+        categoryDto.setUser(userService.findById(categoryDto.getUserDto().getUserNo()));
+        List<Category> categoryList = categoryService.categoryUserList(modelMapper.map(categoryDto, Category.class));
+
+        return categoryList.stream()
+                .map(category -> modelMapper.map(category, CategoryDto.class))
+                .collect(Collectors.toList());
+    }
+
+
 }

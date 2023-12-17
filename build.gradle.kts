@@ -35,7 +35,11 @@ dependencies {
     implementation("org.modelmapper:modelmapper:3.1.1")
 
     // https://mvnrepository.com/artifact/p6spy/p6spy
-    implementation("p6spy:p6spy:3.9.1")
+    //implementation("p6spy:p6spy:3.9.1")
+
+    // https://mvnrepository.com/artifact/com.github.gavlyukovskiy/p6spy-spring-boot-starter
+    implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0")
+
 
     //implementation("org.springframework.session:spring-session-jdbc")
     compileOnly("org.projectlombok:lombok")

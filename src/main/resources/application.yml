@@ -28,22 +28,25 @@ spring:
         show_sql: true
 
 
+logging:
+  level:
+    p6spy: info
+    org:
+      hibernate:
+        SQL: debug
+        type:
+          descriptor:
+            sql: trace
+            BasicBinder: trace
 
-#logging:
-#  level:
-#    p6spy: info
-#    org:
-#      hibernate:
-#        SQL: debug
-#        type:
-#          descriptor:
-#            sql: trace
-#            BasicBinder: trace
-#  file: # ??? ??? ??? ?? ??
-#    name: app.log # ?? ???
-#    path: logs # ?? ?? ??
-#    max-history: 7 # ??? ?? ??? ?? ??
-#
+
+
+
+##  file: # ??? ??? ??? ?? ??
+##    name: app.log # ?? ???
+##    path: logs # ?? ?? ??
+##    max-history: 7 # ??? ?? ??? ?? ??
+##
 #upload:
 #  file:
 #    path: D:/Devspace/uploadFile

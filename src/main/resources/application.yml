@@ -2,9 +2,6 @@ server:
   port: 9090
 
 spring:
-  jackson:
-    serialization:
-      fail-on-empty-beans: false
   devtools:
     livereload:
       enabled: true

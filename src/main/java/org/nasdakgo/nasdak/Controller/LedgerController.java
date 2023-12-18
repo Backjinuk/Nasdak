@@ -1,8 +1,5 @@
 package org.nasdakgo.nasdak.Controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
-import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.CategoryDto;
 import org.nasdakgo.nasdak.Dto.LedgerDto;
@@ -56,11 +53,7 @@ public class LedgerController {
     public List<?> LedgerList(@RequestBody UserDto usersDto){
         System.out.println("usersDto = " + usersDto);
 
-        List<?> allByUsers = ledgerService.findAllByUsers(usersDto.getUserNo());
-
-        System.out.println("allByUsers = " + allByUsers);
-
-        return allByUsers;
+        return ledgerService.findAllByUsers(usersDto.getUserNo());
 //                .stream().map(ledger -> {
 //                    LedgerDto ledgerDto = modelMapper.map(ledger, LedgerDto.class);
 //
@@ -78,27 +71,24 @@ public class LedgerController {
 
     @RequestMapping("ledgerItem")
     public List<LedgerDto> ledgerItem(@RequestBody LedgerDto ledgerDto) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new Hibernate5Module().disable(Hibernate5Module.Feature.SERIALIZE_IDENTIFIER_FOR_LAZY_NOT_LOADED_OBJECTS));
 
-        return ledgerService.ledgerItem(String.valueOf(ledgerDto.getRegDate2()), ledgerDto.getUserNo())
+        System.out.println("userNo.get() = " + ledgerDto.getUserNo());
+        System.out.println("reg_date.get() = " + ledgerDto.getUseDate());
+
+        return ledgerService.ledgerItem(String.valueOf(ledgerDto.getUseDate()), ledgerDto.getUserNo())
                 .stream().map(ledger -> {
                     LedgerDto ledgerDto2 = modelMapper.map(ledger, LedgerDto.class);
 
-                    // Entity를 Dto로 변환
+                    //Entity를 Dto로 변환
                     ledgerDto2.setUserDto(modelMapper.map(ledger.getUser(), UserDto.class));
                     ledgerDto2.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
 
-                    // Entity 초기화
-                    ledgerDto2.setUser(null);
-                    ledgerDto2.setCategoryDto(null);
+                    //Entity 초기화
+                    ledgerDto2.setUser(null); ledgerDto2.setCategoryDto(null);
 
                     return ledgerDto2;
                 })
                 .collect(Collectors.toList());
-
-//        return ledgerService.ledgerItem(String.valueOf(ledgerDto.getRegDate2()) , ledgerDto.getUserNo())
-//                .stream().map(ledger ->  modelMapper.map(ledger, LedgerDto.class)).toList();
     }
 
     @RequestMapping("ledgerDetail")

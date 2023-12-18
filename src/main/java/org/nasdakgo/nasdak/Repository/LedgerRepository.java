@@ -27,21 +27,22 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     int ledgerUpdate(long fileManagerNo, LedgerType ledgerType, long price, String comment, String location, long categoryNo);
 
     @Query(value =
-            "SELECT DISTINCT STR_TO_DATE(use_date, '%Y-%m-%d') AS REG_DATE " +
+            "SELECT DISTINCT DATE_FORMAT(use_date, 'yyyy-MM-dd') AS REG_DATE " +
                     "FROM Ledger l " +
             "WHERE l.user_no= :userNo " +
-            "ORDER BY STR_TO_DATE(use_date, '%Y-%m-%d') DESC ",
+            "ORDER BY DATE_FORMAT(use_date, 'yyyy-MM-dd') DESC ",
             nativeQuery = true)
     List<?> findAllUsers(long userNo);
-
-    List<Ledger> findAllByOrderByUseDateAsc();
 
     @Query(value =
             "SELECT * " +
                     "FROM Ledger l " +
                     "WHERE l.user_no = :userNo " +
-                    "AND l.use_date >= CAST(CONCAT(STR_TO_DATE(:regDate, '%Y-%m-%d'), ' 00:00:00') AS DATETIME) " +
-                    "AND l.use_date <= CAST(CONCAT(STR_TO_DATE(:regDate, '%Y-%m-%d'), ' 23:59:59') AS DATETIME)"
+                    "AND l.use_date >= CAST(CONCAT(:regDate, ' 00:00:00') AS DATETIME) " +
+                    "AND l.use_date <= CAST(CONCAT(:regDate, ' 23:59:59') AS DATETIME)"
             , nativeQuery = true)
+
     List<Ledger> ledgerItem(String regDate, long userNo);
+
+    List<Ledger> findAllByOrderByUseDateAsc();
 }

@@ -1,6 +1,5 @@
 package org.nasdakgo.nasdak.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,12 +19,10 @@ public class Ledger extends FileOwner {
 //    @Column(name = "ggb_no")
 //    private long ggbNo;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_no")
     private User user;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_no")
     private Category category;

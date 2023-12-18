@@ -40,6 +40,9 @@ dependencies {
     // https://mvnrepository.com/artifact/com.github.gavlyukovskiy/p6spy-spring-boot-starter
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0")
 
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-hibernate5
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.15.2")
+
 
     //implementation("org.springframework.session:spring-session-jdbc")
     compileOnly("org.projectlombok:lombok")

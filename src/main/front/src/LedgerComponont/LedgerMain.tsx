@@ -27,6 +27,8 @@ export default function LedgerMain(){
     }
 
     useEffect(() => {
+
+
         axios.post("/api/ledger/LedgerList", JSON.stringify({
             userNo: sessionStorage.getItem("userNo")
         }), {
@@ -34,7 +36,6 @@ export default function LedgerMain(){
                 "Content-Type": "application/json"
             }
         }).then(res => {
-            console.log(ledgerList)
             setLedgerList(res.data);
         })
 
@@ -43,7 +44,7 @@ export default function LedgerMain(){
             userNo : sessionStorage.getItem("userNo"),
             userId : sessionStorage.getItem("userId")
         }
-console.log(userDto.userNo)
+
         axios.post("/api/category/categoryList", JSON.stringify({userDto}),
             { headers : {"Content-Type" : "application/json"}
             }).then(res => {

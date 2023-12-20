@@ -8,6 +8,10 @@ spring:
     remote:
       restart:
         enabled: true
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
   datasource:
     #      url: jdbc:p6spy:h2:tcp://localhost/./nasdak
     #      driver-class-name: com.p6spy.engine.spy.P6SpyDriver
@@ -30,6 +34,9 @@ decorator:
   datasource:
     p6spy:
       enable-logging: true
+
+
+
 
 
 #logging:
@@ -56,9 +63,10 @@ decorator:
 ##    path: logs # ?? ?? ??
 ##    max-history: 7 # ??? ?? ??? ?? ??
 ##
-#upload:
-#  file:
-#    path: D:/Devspace/uploadFile
+
+upload:
+  file:
+    path: D:/Devspace/uploadFile
 #
 #jwt:
 #  secret: hellowordaabbccddeeffgghhrrjjkkooppqqrrssttuu

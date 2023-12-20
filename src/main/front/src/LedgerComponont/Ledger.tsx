@@ -8,7 +8,7 @@ export default function Ledger({ ledger, landingEvent, ledgertDetail }:{ ledger:
 
     useEffect(() => {
         axios.post("/api/ledger/ledgerItem", JSON.stringify({
-            "regDate2" : ledger,
+            "regDate2": ledger,
             "userNo" : sessionStorage.getItem("userNo")
         }), {
             headers : {
@@ -16,6 +16,7 @@ export default function Ledger({ ledger, landingEvent, ledgertDetail }:{ ledger:
             }
         }).then(res => {
             setLedgerItem(res.data);
+            console.log(res.data   );
         })
     }, [landingEvent]);
 
@@ -23,9 +24,9 @@ export default function Ledger({ ledger, landingEvent, ledgertDetail }:{ ledger:
         <div className={"itemWarp"}>
             {ledgerItem.map((ledger : LedgerType, index : number) => {
                 return(
-                    <div className={"ledgerItem"} key={index} onClick={() => ledgertDetail(ledger.fileManagerNo)}>
+                    <div className={"ledgerItem"} key={index} onClick={() => ledgertDetail(ledger.fileOwnerNo)}>
                         <div> 가격 : {ledger.price} </div>
-                        <div> 입/출금 : {ledger.dw} </div>
+                        <div> 입/출금 : {ledger.ledgerType == "SAVE" ? "입금" : "출금"} </div>
                         <div className={"position-date"}> {ledger.regDate} </div>
                     </div>
                 )

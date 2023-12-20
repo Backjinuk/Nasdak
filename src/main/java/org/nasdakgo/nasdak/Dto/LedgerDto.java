@@ -30,7 +30,7 @@ public class LedgerDto extends FileOwnerDto {
 
     private LocalDateTime useDate = DataUtils.parseDateTime(DataUtils.getCurrentDateTimeAsString());
 
-    private User user;
+    private  User user;
 
     private Category category;
 

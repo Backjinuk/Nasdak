@@ -34,36 +34,32 @@ export default function LedgerMain(){
                 "Content-Type": "application/json"
             }
         }).then(res => {
-            console.log(ledgerList)
-            setLedgerList(res.data);
+            setLedgerList(res.data );
         })
-
 
         const userDto = {
             userNo : sessionStorage.getItem("userNo"),
             userId : sessionStorage.getItem("userId")
         }
-console.log(userDto.userNo)
+
         axios.post("/api/category/categoryList", JSON.stringify({userDto}),
             { headers : {"Content-Type" : "application/json"}
             }).then(res => {
-
             setCategoryList(res.data);
         })
 
     }, [landingEvent]);
 
 
-    function ledgertDetail(key  : number){
+    function ledgerDetail(key  : number){
         axios.post("/api/ledger/ledgerDetail",JSON.stringify({
-            fileManagerNo : key
+            fileOwnerNo : key
         }), {
             headers : {
                 "Content-Type" : "application/json"
             }
         }).then((res) => {
             setLedger(res.data);
-
             // @ts-ignore
             $("#ledgerDetail").modal("show");
         })
@@ -78,7 +74,7 @@ console.log(userDto.userNo)
            <div className={"warp"}>
                 {ledgerList.map((ledger: LedgerType, index: number) => (
                     <div className="card shadow-lg" key={index}>
-                    <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgertDetail} />
+                    <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />
                     </div>
                 ))}
                 {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent}/>}

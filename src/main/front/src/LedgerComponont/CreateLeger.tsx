@@ -3,7 +3,6 @@ import Swal from "sweetalert2";
 import {useEffect, useState} from "react";
 import {CategoryType} from "../TypeList";
 import "./Ledger.css"
-import $  from "jquery";
 import Ledger from "./Ledger";
 export default function CreateLeger({ChangeEvent, categoryList} : any){
 
@@ -24,11 +23,10 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
             userId: sessionStorage.getItem("userId")
         }
 
-       const location = {
-            x : 0,
-            y : 0
-       }
-
+        const location = {
+            x: 0,
+            y: 0
+        }
 
         for (let field of frm) {
             LedgerDto[field.name] = field.value;
@@ -38,19 +36,10 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                     categoryNo: field.value
                 };
             }
-
         }
 
         LedgerDto["userDto"] = userDto;
         LedgerDto["location"] = location;
-
-        //
-        //
-        // const formData = formDataArray();
-        //
-        // console.log(formData.getAll('file'));
-
-        console.log(LedgerDto)
 
         axios.post("/api/ledger/ledgerSave", JSON.stringify({LedgerDto}), {
             headers: {
@@ -59,47 +48,74 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
             }
         }).then((res) => {
             if (res.data != null) {
-                // axiosFile(formData, res.data.boardNo);
+
+                //파일 업로드
+                const formData = formDataArray();
+                fileUpload(formData, res.data.fileOwnerNo);
+
+
                 Swal.fire({
                     icon: 'success',
                     title: '작성되었습니다.',
                     timer: 400
+                }).then(r => {
+
+                    ChangeEvent();
+                    // @ts-ignore
+                    $("#addLedger").modal("hide");
+
                 });
-                ChangeEvent();
+            }
+
+        }).catch(error => {
+            console.error(error); // 오류 발생 시 콘솔에 표시
+
+            Swal.fire({
+                icon: 'error',
+                title: '에러가 발생하였습니다.',
+                timer: 400
+            }).then(r => {
 
                 // @ts-ignore
-                $("#addLedger").modal('hide');
-            }
+                $("#addLedger").modal("hide");
+            });
         });
-
-        //     function formDataArray(){
-        //         const file = document.getElementById("file");
-        //
-        //         const formData = new FormData();
-        //
-        //         // @ts-ignore
-        //         const fileLength = file.files.length;
-        //
-        //         for (let i = 0; i < fileLength; i++) {
-        //             // @ts-ignore
-        //             formData.append('file', file.files[i]);
-        //         }
-        //
-        //         return formData;
-        //     }
-        //
-        //     function axiosFile(formData: FormData, boardNo : string){
-        //         formData.append('boardNo', boardNo);
-        //
-        //         axios.post("/blog/rest/uploadFile", formData, {
-        //             headers: {
-        //                 'Content-Type': 'multipart/form-data',
-        //                 "Authorization": Cookies.get("jwtCookie")
-        //             }
-        //         })
-        //     }
-        // }
     }
+
+    function fileUpload(formData: FormData, fileOwnerNo : string){
+        formData.append('fileOwnerNo', fileOwnerNo);
+
+        console.log(formData);
+
+        axios.post("/api/ledger/uploadFile", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                // "Authorization": Cookies.get("jwtCookie")
+            }
+        }).then(response => {
+            console.log(response.data); // 서버 응답 확인용 로그
+        }).catch(error => {
+            console.error(error); // 오류 발생 시 콘솔에 표시
+        });
+    }
+
+
+    function formDataArray(){
+        const file = document.getElementById("file");
+
+        const formData = new FormData();
+
+        // @ts-ignore
+        const fileLength = file.files.length;
+
+        for (let i = 0; i < fileLength; i++) {
+            // @ts-ignore
+            formData.append('file', file.files[i]);
+        }
+
+        return formData;
+    }
+
 
     return(
         <>
@@ -139,7 +155,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                 <div className="form-floating mb-3">
                                     <select name={"ledgerType"} className="form-select" id="floatingSelectGrid">
                                         <option value="SAVE">입금</option>
-                                        <option value="DEPOSI">출금</option>
+                                        <option value="DEPOSIT">출금</option>
                                     </select>
                                     <label htmlFor="dw">입/출금</label>
                                 </div>

@@ -13,11 +13,9 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
     const [comment, setComment]         = useState("");
 
     useEffect(() => {
-        setPrice(ledger.price);       setDw(ledger.dw);
+        setPrice(ledger.price);
         setLocation(ledger.location); setComment(ledger.comment);
     }, [ledger]);
-
-
 
     function ledgerUpdate(){
         let frm = $("form[name=updateLedger]").serializeArray();
@@ -26,6 +24,11 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         const usersDto = {
             userNo: sessionStorage.getItem("userNo"),
             userId: sessionStorage.getItem("userId")
+        }
+
+        const location = {
+            x : 0,
+            y : 0
         }
 
         for (let field of frm) {
@@ -39,6 +42,7 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         }
 
         LedgerDto["usersDto"] = usersDto;
+        LedgerDto["location"] = location;
 
         axios.post("api/ledger/ledgerItemUpdate", JSON.stringify(LedgerDto),{
             headers : {
@@ -66,9 +70,9 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         })
     }
 
-    function ledgerDelete(fileManagerNo : number){
-        axios.post("api/ledger/ledgerDelete", JSON.stringify({
-            "fileManagerNo" : fileManagerNo
+    function ledgerDelete(fileOwnerNo : number){
+        axios.post("/api/ledger/ledgerDelete", JSON.stringify({
+            "fileOwnerNo" : fileOwnerNo
         }), {
             headers : {
                 "Content-Type" : "application/json"
@@ -105,9 +109,10 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
 
                             <div className="mb-3">
                                 <div className="form-floating">
-                                    <input type="hidden" name={"fileManagerNo"} value={ledger.fileManagerNo}/>
-                                    <input type="hidden" name={"categoryNo"}    value={ledger.categoryDto.categoryNo}/>
-                                    <select name="category_no" className="form-select" id="floatingSelectGrid"  defaultValue={ledger.categoryDto.categoryNo}>
+                                    <input type="hidden" name={"fileOwnerNo"} value={ledger.fileOwnerNo}/>
+                                    <input type="hidden" name={"categoryNo"} value={ledger.categoryDto.categoryNo}/>
+                                    <select name="category_no" className="form-select" id="floatingSelectGrid"
+                                            defaultValue={ledger.categoryDto.categoryNo}>
                                         <option value="">선택</option>
                                         {categoryList.map((category: CategoryType, index: number) => (
                                             <option key={index} value={category.categoryNo}>{category.content}</option>
@@ -119,15 +124,18 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             </div>
 
                             <div className="form-floating mb-3">
-                                <input type="text" name={"dw"} className="form-control" id="dw"
-                                       placeholder="입/출금을 입력해주세요" value={dw} onChange={(e) => {
-                                    setDw(Number(e.target.value))
-                                }}/>
+                                <select name={"ledgerType"} className="form-select" id="floatingSelectGrid" defaultValue={ledger.ledgerType}>
+                                    <option value="SAVE">입금</option>
+                                    <option value="DEPOSIT">출금</option>
+                                </select>
                                 <label htmlFor="dw">입/출금</label>
                             </div>
 
                             <div className="form-floating mb-3">
-                                <input type="text" name={"price"} className="form-control" id="price" value={price} onChange={(e) => {setPrice(Number(e.target.value))}}
+                                <input type="text" name={"price"} className="form-control" id="price" value={price}
+                                       onChange={(e) => {
+                                           setPrice(Number(e.target.value))
+                                       }}
                                        placeholder="가격을 입력해주세요"/>
                                 <label htmlFor="price">가격</label>
                             </div>
@@ -139,7 +147,10 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             </div>
 
                             <div className="form-floating mb-3">
-                                <input type="text" name={"comment"} className="form-control" id="floatingSpassword" value={comment} onChange={e => {setComment(e.target.value)}}
+                                <input type="text" name={"comment"} className="form-control" id="floatingSpassword"
+                                       value={comment} onChange={e => {
+                                    setComment(e.target.value)
+                                }}
                                        placeholder="내용을 입력해주세요"/>
                                 <label htmlFor="floatingSpassword">내용</label>
                             </div>
@@ -154,7 +165,9 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             {/*onClick={() => addLedger()}*/}
 
                             <button type="button" className="btn btn-primary" onClick={() => ledgerUpdate()}>수정</button>
-                            <button type="button" className="btn btn-danger" onClick={() => ledgerDelete(ledger.fileManagerNo)}>삭제</button>
+                            <button type="button" className="btn btn-danger"
+                                    onClick={() => ledgerDelete(ledger.fileOwnerNo)}>삭제
+                            </button>
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소
                             </button>
                         </div>

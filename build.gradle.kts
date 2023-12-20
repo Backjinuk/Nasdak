@@ -30,6 +30,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web-services")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
     implementation("org.modelmapper:modelmapper:3.1.1")
@@ -42,6 +43,10 @@ dependencies {
 
 
     //implementation("org.springframework.session:spring-session-jdbc")
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")

@@ -18,11 +18,11 @@ export interface UsersType{
 }
 
 export interface LedgerType {
-    fileManagerNo: number,
+    fileOwnerNo: number,
     userDto: UsersType,
     categoryDto: CategoryType,
     price: number,
-    dw: number,
+    ledgerType: string,
     location: location,
     comment: string,
     regDate : string

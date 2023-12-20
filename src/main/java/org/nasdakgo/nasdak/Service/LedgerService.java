@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Service;
 
+import org.nasdakgo.nasdak.Entity.FileOwner;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Repository.LedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class LedgerService {
     public Ledger save(Ledger ledger) { return ledgerRepository.save(ledger);
     }
 
-    public int ledgerUpdate(Ledger ledger) { return ledgerRepository.ledgerUpdate(ledger.getFileOwnerNo(), ledger.getLedgerType(), ledger.getPrice(), ledger.getComment(), String.valueOf(ledger.getLocation()), ledger.getCategory().getCategoryNo());
+    public int ledgerUpdate(Ledger ledger) { return ledgerRepository.ledgerUpdate(ledger.getFileOwnerNo(), ledger.getLedgerType(), ledger.getPrice(), ledger.getComment(), ledger.getLocation().getX(), ledger.getLocation().getY(), ledger.getCategory().getCategoryNo());
     }
 
     public void ledgerDelete(Ledger ledger) { ledgerRepository.deleteById(ledger.getFileOwnerNo());
@@ -41,4 +42,6 @@ public class LedgerService {
     public Ledger ledgerDetail(Ledger ledger) {
         return ledgerRepository.getById(ledger.getFileOwnerNo());
     }
+
+    public FileOwner findById(long fileOwnerNo) { return ledgerRepository.findById(fileOwnerNo).get();}
 }

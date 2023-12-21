@@ -22,4 +22,7 @@ public class FileOwner {
     @OneToMany(mappedBy = "fileOwner", cascade = CascadeType.ALL)
     private List<Files> filesList;
 
+    public FileOwner(long fileOwnerNo) {
+        this.fileOwnerNo = fileOwnerNo;
+    }
 }

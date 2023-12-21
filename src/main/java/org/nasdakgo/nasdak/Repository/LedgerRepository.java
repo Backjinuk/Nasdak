@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Repository;
 
+import org.apache.ibatis.annotations.Param;
 import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.LedgerType;
@@ -15,40 +16,48 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
 
     @Transactional
     @Modifying
-    @Query(value =
+    @Query(
             "UPDATE Ledger l " +
-            "SET l.comment= :comment ," +
-                "l.ledger_type= :ledgerType ," +
-                "l.x= :x ," +
-                "l.y= :y ," +
-                "l.price= :price ," +
-                "l.category_no= :categoryNo " +
-            "WHERE l.file_owner_no= :fileOwnerNo"
-            , nativeQuery = true
-           )
-    int ledgerUpdate(long fileOwnerNo, LedgerType ledgerType, long price, String comment, float x, float y, long categoryNo);
+                    "SET l.comment= :comment ," +
+                    "l.ledgerType= :ledgerType ," +
+                    "l.location.x= :x ," +
+                    "l.location.y= :y ," +
+                    "l.price= :price ," +
+                    "l.category.categoryNo= :categoryNo " +
+                    "WHERE l.fileOwnerNo= :fileOwnerNo"
+    )
+    int ledgerUpdate(
+            @Param("fileOwnerNo") long fileOwnerNo,
+            @Param("ledgerType") LedgerType ledgerType,
+            @Param("price") long price,
+            @Param("comment") String comment,
+            @Param("x") float x,
+            @Param("y") float y,
+            @Param("categoryNo") long categoryNo
+    );
 
-    @Query(value =
-            "SELECT DISTINCT DATE_FORMAT(use_date, '%Y-%m-%d') AS REG_DATE " +
+    @Query(
+            "SELECT DISTINCT DATE_FORMAT(l.useDate, '%Y-%m-%d') AS REG_DATE " +
                     "FROM Ledger l " +
-            "WHERE l.user_no= :userNo " +
-            "ORDER BY DATE_FORMAT(use_date, '%Y-%m-%d') DESC ",
-            nativeQuery = true)
-    List<?> findAllUsers(long userNo);
+                    "WHERE l.user.userNo= :userNo " +
+                    "ORDER BY DATE_FORMAT(l.useDate, '%Y-%m-%d') DESC "
+    )
+    List<?> findAllUsers(@Param("userNo") long userNo);
+
 
 //    SELECT DISTINCT DATE_FORMAT(use_date, '%Y-%m-%d') AS REG_DATE
 //    FROM Ledger l
 //    WHERE l.user_no = 1
 //    ORDER BY DATE_FORMAT(use_date, '%Y-%m-%d') DESC;
 
-    @Query(value =
-            "SELECT * " +
-                    "FROM Ledger l " +
-                    "WHERE l.user_no = :userNo " +
-                    "AND l.use_date >= CAST(CONCAT(:regDate, ' 00:00:00') AS DATETIME) " +
-                    "AND l.use_date <= CAST(CONCAT(:regDate, ' 23:59:59') AS DATETIME)"
-            , nativeQuery = true)
-    List<Ledger> ledgerItem(String regDate, long userNo);
+    @Query(
+            "SELECT l " +
+            "FROM Ledger l " +
+            "WHERE l.user.userNo = :userNo " +
+            "AND l.useDate >= CAST(CONCAT(:regDate, ' 00:00:00') AS TIMESTAMP) " +
+            "AND l.useDate <= CAST(CONCAT(:regDate, ' 23:59:59') AS TIMESTAMP)"
+            )
+    List<Ledger> ledgerItem(@Param("refDate") String regDate, @Param("userNo") long userNo);
 
     List<Ledger> findAllByOrderByUseDateAsc();
 

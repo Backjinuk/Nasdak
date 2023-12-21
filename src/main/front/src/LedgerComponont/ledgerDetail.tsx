@@ -1,4 +1,4 @@
-import {CategoryType, LedgerType, location} from "../TypeList";
+import {CategoryType, FilesType, LedgerType, location} from "../TypeList";
 import axios from "axios";
 import {useEffect, useState} from "react";
 import e from "express";
@@ -41,8 +41,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
             }
         }
 
+        let fileOwnerNo = LedgerDto['fileOwnerNo']
+
         LedgerDto["usersDto"] = usersDto;
         LedgerDto["location"] = location;
+
+
+        console.log(LedgerDto)
 
         axios.post("api/ledger/ledgerItemUpdate", JSON.stringify(LedgerDto),{
             headers : {
@@ -59,6 +64,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                 })
                 return false;
             }else{
+
+                fileDelete(fileOwnerNo);
+
+                let formData = formDataArray();
+
+                fileUpload(formData, String(fileOwnerNo) );
+
                 Swal.fire({
                     icon: 'success',
                     title: '수정되었습니다.',
@@ -78,6 +90,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                 "Content-Type" : "application/json"
             }
         }).then(res => {
+
+            fileDelete(fileOwnerNo);
+
+            let formData = formDataArray();
+
+            fileUpload(formData, String(fileOwnerNo) );
+
             Swal.fire({
                 icon : "success",
                 title : "삭제되었습니다.",
@@ -88,10 +107,56 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         })
     }
 
+    function fileDelete( fileOwnerNo : number){
+        axios.post("/api/ledger/deleteFile", JSON.stringify({
+            "fileOwnerNo" : fileOwnerNo
+        }), {
+            headers : {
+                "Content-Type" : "application/json"
+            }
+        }).then(res => {
+
+        }).catch( error => {
+            console.log(error);
+        })
+    }
+
     function UtilsEvent(){
         // @ts-ignore
         $("#ledgerDetail").modal('hide');
         ChangeEvent();
+    }
+
+    function formDataArray(){
+        const file = document.getElementById("file");
+
+        const formData = new FormData();
+
+        // @ts-ignore
+        const fileLength = file.files.length;
+
+        for (let i = 0; i < fileLength; i++) {
+            // @ts-ignore
+            formData.append('file', file.files[i]);
+        }
+
+        return formData;
+    }
+
+
+    function fileUpload(formData: FormData, fileOwnerNo : string){
+        formData.append('fileOwnerNo', fileOwnerNo);
+
+        axios.post("/api/ledger/uploadFile", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                // "Authorization": Cookies.get("jwtCookie")
+            }
+        }).then(response => {
+            console.log(response.data); // 서버 응답 확인용 로그
+        }).catch(error => {
+            console.error(error); // 오류 발생 시 콘솔에 표시
+        });
     }
 
     return (
@@ -160,16 +225,22 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                                 <label className="input-group-text" htmlFor="file">Upload</label>
                             </div>
 
+                            {ledger.filesDtoList.map((file: FilesType) => (
+                                <div key={file.fileNo}>
+                                    <img src={file.filePath} alt={`File ${file.fileNo}`} />
+                                </div>
+                            ))}
+
+
+
+
                         </div>
                         <div className="modal-footer">
-                            {/*onClick={() => addLedger()}*/}
 
                             <button type="button" className="btn btn-primary" onClick={() => ledgerUpdate()}>수정</button>
-                            <button type="button" className="btn btn-danger"
-                                    onClick={() => ledgerDelete(ledger.fileOwnerNo)}>삭제
-                            </button>
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소
-                            </button>
+                            <button type="button" className="btn btn-danger" onClick={() => ledgerDelete(ledger.fileOwnerNo)}>삭제</button>
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소</button>
+
                         </div>
 
                     </form>

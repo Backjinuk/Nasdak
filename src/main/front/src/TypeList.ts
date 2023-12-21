@@ -26,6 +26,12 @@ export interface LedgerType {
     location: location,
     comment: string,
     regDate : string
+    filesDtoList : FilesType[]
+}
+
+export interface FilesType {
+    fileNo : number,
+    filePath : string
 }
 
 export interface RequestBoard{

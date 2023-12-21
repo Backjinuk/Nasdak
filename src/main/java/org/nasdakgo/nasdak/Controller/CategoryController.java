@@ -7,8 +7,6 @@ import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
-import org.nasdakgo.nasdak.Service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,16 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/category/")
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final UserService userService;
     private final ModelMapper modelMapper;
 
     @RequestMapping("addCategory")
@@ -85,19 +79,5 @@ public class CategoryController {
     private UserDto toUserDto(User user){
         return modelMapper.map(user, UserDto.class);
     }
-
-
-
-    @RequestMapping("categoryList")
-    public List<CategoryDto> categoryList(@RequestBody CategoryDto categoryDto){
-
-        categoryDto.setUser(userService.findById(categoryDto.getUserDto().getUserNo()));
-        List<Category> categoryList = categoryService.categoryUserList(modelMapper.map(categoryDto, Category.class));
-
-        return categoryList.stream()
-                .map(category -> modelMapper.map(category, CategoryDto.class))
-                .collect(Collectors.toList());
-    }
-
 
 }

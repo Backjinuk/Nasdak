@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @PropertySource("classpath:category.yml")
@@ -69,6 +67,10 @@ public class CategoryService {
 
     public List<Category> getCategoryList(User user){
         return categoryRepository.findAllByUser_UserNo(user.getUserNo());
+    }
+
+    public Category findById(long categoryNo){
+        return categoryRepository.findById(categoryNo).orElse(null);
     }
 
     private boolean isChangeable(Category category){

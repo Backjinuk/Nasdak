@@ -58,6 +58,10 @@ public class UserService {
         userRepository.updateAuth(user.getUserNo(), user.getEmail(), user.getPhone());
     }
 
+    public User findById(long userNo){
+        return userRepository.findById(userNo).orElse(null);
+    }
+
     public void deleteUser(){
 
     }

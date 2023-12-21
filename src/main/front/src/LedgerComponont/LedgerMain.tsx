@@ -42,7 +42,7 @@ export default function LedgerMain(){
             userId : sessionStorage.getItem("userId")
         }
 
-        axios.post("/api/category/categoryList", JSON.stringify({userDto}),
+        axios.post("/api/category/getCategoryList", JSON.stringify(userDto),
             { headers : {"Content-Type" : "application/json"}
             }).then(res => {
             setCategoryList(res.data);

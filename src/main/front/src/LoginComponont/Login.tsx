@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Cookies from "js-cookie";
 import Join from "./Join";
+import Button from '@mui/material/Button';
 
 
 
@@ -11,6 +12,9 @@ export default function Login() {
 
     const [id, setId] = useState('');
     const [pwd, setPwd] = useState('');
+    const [open, setOpen] = useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
 
     const navigate = useNavigate();
 
@@ -27,7 +31,7 @@ export default function Login() {
     };
 
     const LoginMember = () => {
-        axios.post("/api/user/userLogin", JSON.stringify({
+        axios.post("/api/user/login", JSON.stringify({
             userId: id,
             password: pwd
         }), {
@@ -87,17 +91,16 @@ export default function Login() {
                             <input type="checkbox" value="remember-me"/> Remember me
                         </label>
                     </div>
-                    <button className="w-100 btn btn-lg btn-primary mb-2" type="submit" onClick={LoginMember}>로그인
-                    </button>
-                    <button className="w-100 btn btn-lg btn-info" data-bs-toggle="modal"
-                            data-bs-target="#addMemeber">회원 가입
-                    </button>
+                    <Button className="w-100 btn btn-lg btn-primary mb-2" type="submit" onClick={LoginMember}>로그인
+                    </Button>
+                    <Button className="w-100 btn btn-lg btn-info" onClick={handleOpen}>회원 가입
+                    </Button>
 
                 </div>
 
             </div>
 
-            < Join/>
+            < Join open={open} handleClose={handleClose} />
         </>
 
 

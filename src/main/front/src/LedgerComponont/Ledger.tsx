@@ -15,8 +15,8 @@ export default function Ledger({ ledger, landingEvent, ledgertDetail }:{ ledger:
                 "Content-Type" : "application/json"
             }
         }).then(res => {
+            console.log(res.data)
             setLedgerItem(res.data);
-            console.log(res.data   );
         })
     }, [landingEvent]);
 

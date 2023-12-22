@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -39,6 +41,9 @@ public class Ledger extends FileOwner {
 
     @Embedded
     private Location location = new Location(0,0);
+
+    @OneToMany(mappedBy = "fileOwner", cascade = CascadeType.ALL)
+    private List<Files> filesList = new ArrayList<>();
 
     private String comment;
 

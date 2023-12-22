@@ -1,10 +1,10 @@
 package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
-import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.*;
 import org.nasdakgo.nasdak.Entity.Category;
+import org.nasdakgo.nasdak.Entity.FileOwner;
 import org.nasdakgo.nasdak.Entity.Files;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Service.CategoryService;
@@ -19,10 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -86,27 +85,26 @@ public class LedgerController {
     }
     @RequestMapping("ledgerItem")
     public List<LedgerDto> ledgerItem(@RequestBody LedgerDto ledgerDto) {
-
-
         return ledgerService.ledgerItem(String.valueOf(ledgerDto.getRegDate2()), ledgerDto.getUserNo())
-                .stream().map(ledger -> {
-
-                    Hibernate.initialize(ledger.getUser());
-                    Hibernate.initialize(ledger.getCategory());
-
+                .stream()
+                .map(ledger -> {
                     LedgerDto ledgerDto2 = modelMapper.map(ledger, LedgerDto.class);
 
-                    // Entity를 Dto로 변환
-                    ledgerDto2.setUserDto(modelMapper.map(ledger.getUser(), UserDto.class));
-                    ledgerDto2.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
+                    // 파일찾기 List => DtoList
+                    ledgerDto2.setFilesDtoList(
+                            filesService.findByFileOwner(ledger.getFileOwnerNo())
+                                    .stream()
+                                    .map(files -> modelMapper.map(files, FilesDto.class))
+                                    .toList()
+                    );
 
-                    // Entity 초기화
-                    ledgerDto2.setUser(null);
-                    ledgerDto2.setCategoryDto(null);
+                    // Entity를 Dto로 변환
+                    Optional.ofNullable(ledger.getUser()).map(user -> modelMapper.map(user, UserDto.class)).ifPresent(ledgerDto2::setUserDto);
+                    Optional.ofNullable(ledger.getCategory()).map(category -> modelMapper.map(category, CategoryDto.class)).ifPresent(ledgerDto2::setCategoryDto);
 
                     return ledgerDto2;
-
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
     }
 
 
@@ -128,8 +126,13 @@ public class LedgerController {
     @RequestMapping("ledgerItemUpdate")
     public String ledgerItemUpdate(@RequestBody LedgerDto ledgerDto){
         
-        Map<String, Objects> map = new HashMap<>();
         ledgerDto.setCategory(modelMapper.map(ledgerDto.getCategoryDto(), Category.class));
+
+        Ledger ledger = modelMapper.map(ledgerDto, Ledger.class);
+
+        System.out.println("ledger = " + ledger.getLedgerType());
+
+
 
         int i = ledgerService.ledgerUpdate(modelMapper.map(ledgerDto, Ledger.class));
 
@@ -164,5 +167,12 @@ public class LedgerController {
 
             filesService.fileSave(modelMapper.map(filesDto, Files.class));
         }
+    }
+
+    @RequestMapping("deleteFile")
+    public void deleteFile(@RequestBody LedgerDto ledgerDto){
+        FileOwner fileOwner = modelMapper.map(ledgerDto, FileOwner.class);
+
+        filesService.deleteFile(fileOwner);
     }
 }

@@ -10,6 +10,8 @@ import org.nasdakgo.nasdak.Entity.Location;
 import org.nasdakgo.nasdak.Entity.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -30,6 +32,7 @@ public class LedgerDto extends FileOwnerDto {
 
     private LocalDateTime useDate = DataUtils.parseDateTime(DataUtils.getCurrentDateTimeAsString());
 
+    private List<FilesDto> filesDtoList = new ArrayList<>();
     private  User user;
 
     private Category category;

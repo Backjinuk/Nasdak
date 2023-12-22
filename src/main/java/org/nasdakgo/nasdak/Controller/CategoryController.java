@@ -1,5 +1,8 @@
 package org.nasdakgo.nasdak.Controller;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.CategoryDto;
@@ -11,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +29,8 @@ public class CategoryController {
 
     @RequestMapping("addCategory")
     public void addCategory(@RequestBody CategoryDto categoryDto){
-        categoryService.addCategory(toCategory(categoryDto));
+        Category category = toCategory(categoryDto);
+        categoryService.addCategory(category);
     }
 
     @RequestMapping("updateCategory")
@@ -44,12 +50,22 @@ public class CategoryController {
     }
 
     @RequestMapping("integrateCategory")
-    public void integrateCategory(){
-
+    public void integrateCategory(@RequestBody Map<String, Object> map) {
+        List<Object> list = (List<Object>) map.get("before");
+        List<Long> before = new ArrayList<>();
+        for (Object o : list) {
+            before.add(Long.valueOf(o.toString()));
+        }
+        long after = Long.valueOf(map.get("after").toString());
+        categoryService.integrateCategory(before, after);
     }
 
     private Category toCategory(CategoryDto categoryDto){
-        return modelMapper.map(categoryDto, Category.class);
+        Category category = modelMapper.map(categoryDto, Category.class);
+        User user = new User();
+        user.setUserNo(categoryDto.getUserNo());
+        category.setUser(user);
+        return category;
     }
 
     private CategoryDto toCategoryDto(Category category){

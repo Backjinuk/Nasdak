@@ -5,7 +5,7 @@ import {useCallback, useEffect, useState} from "react";
 import {CategoryType, LedgerType} from "../TypeList";
 import "./Ledger.css";
 import LedgerDetail from "./ledgerDetail";
-import CreateCategory from "./CreateCategory";
+import CategoryList from "../categoryComponent/CategortList";
 
 interface JQuery {
     modal(action: 'show' | 'hide'): void;
@@ -69,7 +69,7 @@ export default function LedgerMain(){
         <div>
             <div className={"createBox"}>
                 <CreateLeger ChangeEvent={ChangeEvent} categoryList={categoryList}/>
-                <CreateCategory ChangeEvent={ChangeEvent} categoryList={categoryList}/>
+                <CategoryList changeEvent={ChangeEvent} categoryList={categoryList}/>
             </div>
            <div className={"warp"}>
                 {ledgerList.map((ledger: LedgerType, index: number) => (

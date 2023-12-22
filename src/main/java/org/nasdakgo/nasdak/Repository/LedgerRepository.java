@@ -54,11 +54,11 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
 
     @Modifying
     @Transactional
-    @Query("update Ledger l set l.category = :after where l.category = :before")
-    void moveCategoryToCategory(Category before, Category after);
+    @Query("update Ledger l set l.category.categoryNo = :after where l.category.categoryNo = :before")
+    void moveCategoryToCategory(long before, long after);
 
     @Modifying
     @Transactional
-    @Query("update Ledger l set l.category = :after where l.category in :before")
-    void moveCategoryToCategory(List<Category> before, Category after);
+    @Query("update Ledger l set l.category.categoryNo = :after where l.category.categoryNo in :before")
+    void moveCategoryToCategory(List<Long> before, long after);
 }

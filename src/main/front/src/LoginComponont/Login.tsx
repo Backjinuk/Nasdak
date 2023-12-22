@@ -1,8 +1,7 @@
 import Swal from "sweetalert2";
-import {ChangeEvent, useState, useEffect} from "react"
+import {useState} from "react"
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
-import Cookies from "js-cookie";
 import Join from "./Join";
 import Button from '@mui/material/Button';
 

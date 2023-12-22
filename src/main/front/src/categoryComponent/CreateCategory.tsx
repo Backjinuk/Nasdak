@@ -50,7 +50,6 @@ export default function CreateCategory({categoryList, ChangeEvent}: any) {
                 "Content-type": "application/json"
             }
         }).then(res => {
-            console.log(res.data);
             ChangeEvent();
             // @ts-ignore
             $("#updateCategory").modal("hide");

@@ -21,7 +21,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("select c from Category c where c.user.userNo = :userNo and c.content = '기타'")
     Category findDefaultCategory(@Param("userNo") long userNo);
 
-    @Query("select count(c) from Category c where c in :categoryList and c.delYn = 'N'")
-    int countDelN(@Param("categoryList") List<Category> categoryList);
+    @Query("select count(c) from Category c where c.categoryNo in :categoryNoList and c.delYn = 'N'")
+    int countDelN(@Param("categoryNoList") List<Long> categoryNoList);
 
 }

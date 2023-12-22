@@ -53,16 +53,16 @@ public class CategoryService {
             return;
         }
         Category after = categoryRepository.findDefaultCategory(category.getUser().getUserNo());
-        ledgerRepository.moveCategoryToCategory(category, after);
+        ledgerRepository.moveCategoryToCategory(category.getCategoryNo(), after.getCategoryNo());
         categoryRepository.delete(category);
     }
 
-    public void integrateCategory(List<Category> before, Category after){
+    public void integrateCategory(List<Long> before, long after){
         if(!isChangeable(before)){
             return;
         }
         ledgerRepository.moveCategoryToCategory(before, after);
-        categoryRepository.deleteAll(before);
+        categoryRepository.deleteAllById(before);
     }
 
     public List<Category> getCategoryList(User user){
@@ -74,13 +74,21 @@ public class CategoryService {
     }
 
     private boolean isChangeable(Category category){
-        List<Category> categoryList = new ArrayList<>();
-        categoryList.add(category);
-        return isChangeable(categoryList);
+        List<Long> categoryNoList = new ArrayList<>();
+        categoryNoList.add(category.getCategoryNo());
+        return isChangeable(categoryNoList);
     }
 
-    private boolean isChangeable(List<Category> categoryList){
-        return categoryRepository.countDelN(categoryList)==0;
+    private boolean isChangeable(long categoryNo){
+        List<Long> categoryNoList = new ArrayList<>();
+        categoryNoList.add(categoryNo);
+        return isChangeable(categoryNoList);
     }
+
+    private boolean isChangeable(List<Long> categoryNoList){
+        return categoryRepository.countDelN(categoryNoList)==0;
+    }
+
+
 
 }

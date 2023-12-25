@@ -4,17 +4,17 @@ import {useEffect, useState} from "react";
 import e from "express";
 import Ledger from "./Ledger";
 import Swal from "sweetalert2";
+import KakaoMap from "./KakaoMap";
 
 export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any}){
 
-    const [price, setPrice]             = useState(Number);
-    const [dw, setDw]                   = useState(Number);
-    const [location, setLocation]       = useState<location>();
-    const [comment, setComment]         = useState("");
+    const [price, setPrice]                       = useState(Number);
+    const [location, setLocation]         = useState<location>();
+    const [comment, setComment]                     = useState("");
+    const [address , setAddress]                 = useState()
 
     useEffect(() => {
-        setPrice(ledger.price);
-        setLocation(ledger.location); setComment(ledger.comment);
+        setPrice(ledger.price); setLocation(ledger.location); setComment(ledger.comment);
     }, [ledger]);
 
     function ledgerUpdate(){
@@ -24,11 +24,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         const usersDto = {
             userNo: sessionStorage.getItem("userNo"),
             userId: sessionStorage.getItem("userId")
-        }
-
-        const location = {
-            x : 0,
-            y : 0
         }
 
         for (let field of frm) {
@@ -46,9 +41,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         LedgerDto["usersDto"] = usersDto;
         LedgerDto["location"] = location;
 
-
-        console.log(LedgerDto)
-
         axios.post("api/ledger/ledgerItemUpdate", JSON.stringify(LedgerDto),{
             headers : {
                 "Content-Type" : "application/json"
@@ -64,7 +56,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                 })
                 return false;
             }else{
-
                 fileDelete(fileOwnerNo);
 
                 let formData = formDataArray();
@@ -128,7 +119,9 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
     }
 
     function formDataArray(){
-        const file = document.getElementById("file");
+        const file = document.getElementById("file2");
+
+        console.log("file : " + file);
 
         const formData = new FormData();
 
@@ -159,7 +152,23 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         });
     }
 
+    const LocationAppend = (x : number ,y : number, address : any) => {
+
+        setLocation({
+            x : x,
+            y : y
+        })
+
+        alert(address  );
+
+        setAddress(address);
+
+        // @ts-ignore
+        $("#KakaoMap").modal("hide")
+    }
+
     return (
+        <>
         <div className="modal fade " id="ledgerDetail" data-bs-keyboard="false"
              aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-1}>
             <div className="modal-dialog modal-dialog-centered">
@@ -206,8 +215,10 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             </div>
                             {/*value={location?.x} onChange={(e) => {setLocation(e.target.value?)}}*/}
                             <div className="form-floating mb-3">
-                                <input type="text" name={"location"} className="form-control" id="location"
-                                       placeholder="지역을 입력해주세요"/>
+                                <input type="text" name={"location"} className="form-control" id="location" onClick={() => {
+                                    // @ts-ignore
+                                    $("#KakaoMap").modal("show")}}
+                                       placeholder="지역을 입력해주세요" defaultValue={address}/>
                                 <label htmlFor="location">지역</label>
                             </div>
 
@@ -221,18 +232,14 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             </div>
 
                             <div className="input-group mb-3">
-                                <input type="file" multiple className="form-control uploadFile" id="file"/>
+                                <input type="file" multiple className="form-control uploadFile" id="file2" name={"file"}/>
                                 <label className="input-group-text" htmlFor="file">Upload</label>
                             </div>
-
-                            {ledger.filesDtoList.map((file: FilesType) => (
-                                <div key={file.fileNo}>
-                                    <img src={file.filePath} alt={`File ${file.fileNo}`} />
-                                </div>
-                            ))}
-
-
-
+                            <div className={"ImageBox"}>
+                                {ledger.filesDtoList.map((file: FilesType) => (
+                                        <img src={`/image/${file.filePath}`} alt={`File ${file.fileNo}`} key={file.fileNo}/>
+                                ))}
+                            </div>
 
                         </div>
                         <div className="modal-footer">
@@ -242,10 +249,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소</button>
 
                         </div>
-
                     </form>
                 </div>
             </div>
         </div>
+
+            <KakaoMap LocationAppend={LocationAppend}/>
+        </>
+
     )
 }

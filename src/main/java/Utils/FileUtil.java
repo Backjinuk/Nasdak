@@ -21,7 +21,7 @@ public class FileUtil {
                 log.info("newFile : {}" , newFile.getPath());
                 file.transferTo(newFile);
 
-                return newFile.getPath();
+                return fileName;
 
             }catch (Exception e){
                 log.error("에러 : " + e.getMessage());

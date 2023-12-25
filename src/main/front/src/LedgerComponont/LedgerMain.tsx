@@ -74,7 +74,7 @@ export default function LedgerMain(){
            <div className={"warp"}>
                 {ledgerList.map((ledger: LedgerType, index: number) => (
                     <div className="card shadow-lg" key={index}>
-                    <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />
+                        <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />
                     </div>
                 ))}
                 {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent}/>}

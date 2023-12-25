@@ -4,10 +4,8 @@ import Utils.DataUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.LedgerType;
 import org.nasdakgo.nasdak.Entity.Location;
-import org.nasdakgo.nasdak.Entity.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,9 +31,6 @@ public class LedgerDto extends FileOwnerDto {
     private LocalDateTime useDate = DataUtils.parseDateTime(DataUtils.getCurrentDateTimeAsString());
 
     private List<FilesDto> filesDtoList = new ArrayList<>();
-    private  User user;
-
-    private Category category;
 
     private long userNo;
 

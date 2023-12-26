@@ -42,7 +42,7 @@ export default function Login() {
             if (res.data.userId !== '') {
                 Swal.fire({
                     icon: 'success',
-                    title: '로그인 되었습니다.',
+                    title: '로그인 되었습니다.'+res.data.profile,
                 });
 
                 sessionStorage.setItem("userId", id);

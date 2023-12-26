@@ -1,17 +1,24 @@
 package org.nasdakgo.nasdak.Service;
 
-import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository){
+        this.userRepository = userRepository;
+        userRepository.initializeUserSendKakaoTalk();
+        userRepository.initializeUserSendWebPush();
+    }
 
     public User signUp(User user){
         user.setRegDate(LocalDateTime.now());
@@ -68,6 +75,10 @@ public class UserService {
 
     public void logout(){
 
+    }
+
+    public void uploadProfile(User user){
+        userRepository.updateProfile(user.getUserNo(), user.getProfile());
     }
 
 }

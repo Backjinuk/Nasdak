@@ -27,5 +27,9 @@ public class UserDto {
 
     private String profile;
 
+    private boolean sendKakaoTalk;
+
+    private boolean sendWebPush;
+
     private List<CollectionDto> collectionDtoList = new ArrayList<>();
 }

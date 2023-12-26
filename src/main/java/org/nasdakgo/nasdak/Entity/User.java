@@ -35,6 +35,12 @@ public class User {
 
     private String profile;
 
+    @Column(name = "send_kakao_talk")
+    private boolean sendKakaoTalk;
+
+    @Column(name = "send_web_push")
+    private boolean sendWebPush;
+
     @OneToMany(mappedBy = "user")
     private List<Collection> collectionList = new ArrayList<>();
 }

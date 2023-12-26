@@ -1,14 +1,14 @@
 package org.nasdakgo.nasdak.Controller;
 
+import Utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
 import org.nasdakgo.nasdak.Service.UserService;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class UserController {
     private final ModelMapper modelMapper;
 
     @RequestMapping("signUp")
-    public UserDto signUp(@RequestBody UserDto userDto){
+    public UserDto signUp(@RequestBody UserDto userDto) throws Exception {
         User user = userService.signUp(toUser(userDto));
         categoryService.saveDefaultCategory(user);
         return toUserDto(user);
@@ -80,12 +80,25 @@ public class UserController {
     public void logout(){
 
     }
+    
+    @RequestMapping("uploadProfile")
+    public void uploadProfile(@RequestParam(name = "userNo", required = true) Long userNo,
+                              @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
+        String fileName = FileUtil.saveProfile(mf, FileUtil.USER_PROFILE_PATH);
+        User user = new User();
+        user.setUserNo(userNo);
+        user.setProfile(fileName);
+        userService.uploadProfile(user);
+    }
 
     private User toUser(UserDto userDto){
         return modelMapper.map(userDto, User.class);
     }
 
     private UserDto toUserDto(User user){
+        if(user.getProfile()!=null){
+            user.setProfile(FileUtil.USER_PROFILE_PATH+user.getProfile());
+        }
         return modelMapper.map(user, UserDto.class);
     }
 

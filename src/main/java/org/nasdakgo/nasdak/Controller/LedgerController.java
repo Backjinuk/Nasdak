@@ -3,10 +3,7 @@ package org.nasdakgo.nasdak.Controller;
 import Utils.FileUtil;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.*;
-import org.nasdakgo.nasdak.Entity.Category;
-import org.nasdakgo.nasdak.Entity.FileOwner;
-import org.nasdakgo.nasdak.Entity.Files;
-import org.nasdakgo.nasdak.Entity.Ledger;
+import org.nasdakgo.nasdak.Entity.*;
 import org.nasdakgo.nasdak.Service.CategoryService;
 import org.nasdakgo.nasdak.Service.FilesService;
 import org.nasdakgo.nasdak.Service.LedgerService;
@@ -55,14 +52,17 @@ public class LedgerController {
     @RequestMapping("ledgerSave")
     public LedgerDto ledgerSave(@RequestBody Map<String, LedgerDto> requestData) {
         System.out.println("ledgerDto = " + requestData.get("LedgerDto"));
-        LedgerDto ledgerDto= modelMapper.map(requestData.get("LedgerDto"), LedgerDto.class);
 
-       ledgerDto.setUser(userService.findById(ledgerDto.getUserDto().getUserNo()));
+        Ledger ledger = modelMapper.map(requestData.get("LedgerDto"), Ledger.class);
 
-       ledgerDto.setCategory(categoryService.findById(ledgerDto.getCategoryDto().getCategoryNo()));
+        // 기존의 User와 Category를 참조하여 설정
+        ledger.setUser(userService.findById(requestData.get("LedgerDto").getUserDto().getUserNo()));
+        ledger.setCategory(categoryService.findById(requestData.get("LedgerDto").getCategoryDto().getCategoryNo()));
 
-        Ledger ledger = ledgerService.save(modelMapper.map(requestData.get("LedgerDto"), Ledger.class));
+        ledgerService.save(ledger);
+
         return modelMapper.map(ledger, LedgerDto.class);
+
     }
 
     @RequestMapping("LedgerList")
@@ -112,13 +112,18 @@ public class LedgerController {
     public LedgerDto ledgerDetail(@RequestBody LedgerDto ledgerDto){
         Ledger ledger = ledgerService.ledgerDetail(modelMapper.map(ledgerDto, Ledger.class));
 
+        System.out.println("ledger = " + ledger);
+
         ledgerDto = modelMapper.map(ledger, LedgerDto.class);
+        ledgerDto.setUserDto(modelMapper.map(ledger.getUser(), UserDto.class));
+        ledgerDto.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
 
-        ledgerDto.setCategoryDto(modelMapper.map(ledgerDto.getCategory(), CategoryDto.class));
-        ledgerDto.setUserDto(modelMapper.map(ledgerDto.getUser(), UserDto.class));
-        ledgerDto.setCategory(null); ledgerDto.setUser(null);
-
-
+        ledgerDto.setFilesDtoList(
+                filesService.findByFileOwner(ledgerDto.getFileOwnerNo())
+                        .stream()
+                        .map(files -> modelMapper.map(files, FilesDto.class))
+                        .toList()
+        );
 
         return ledgerDto;
     }
@@ -126,13 +131,12 @@ public class LedgerController {
     @RequestMapping("ledgerItemUpdate")
     public String ledgerItemUpdate(@RequestBody LedgerDto ledgerDto){
         
-        ledgerDto.setCategory(modelMapper.map(ledgerDto.getCategoryDto(), Category.class));
 
         Ledger ledger = modelMapper.map(ledgerDto, Ledger.class);
 
+        ledger.setCategory(modelMapper.map(ledgerDto.getCategoryDto(), Category.class));
+
         System.out.println("ledger = " + ledger.getLedgerType());
-
-
 
         int i = ledgerService.ledgerUpdate(modelMapper.map(ledgerDto, Ledger.class));
 
@@ -141,8 +145,6 @@ public class LedgerController {
 
     @RequestMapping("ledgerDelete")
     public void ledgerDelete(@RequestBody LedgerDto ledgerDto){
-
-        System.out.println("ledgerDto = " + ledgerDto);
         ledgerService.ledgerDelete(modelMapper.map(ledgerDto, Ledger.class));
     }
 
@@ -150,15 +152,12 @@ public class LedgerController {
     @RequestMapping("uploadFile")
         public void fileUpload(@RequestParam("file")List<MultipartFile> fileList, @RequestParam("fileOwnerNo")long fileOwnerNo) throws Exception {
 
-        System.out.println("도착했습니다.");
-
         FileOwnerDto fileOwnerDto = modelMapper.map(ledgerService.findById(fileOwnerNo), FileOwnerDto.class);
-
-        System.out.println("filePath = " +         filePath);
-
 
         for(MultipartFile file : fileList){
             String path = FileUtil.saveFileList(file, filePath);
+
+            System.out.println("path = " + path);
 
             FilesDto filesDto = new FilesDto();
 
@@ -175,4 +174,7 @@ public class LedgerController {
 
         filesService.deleteFile(fileOwner);
     }
+
+
+
 }

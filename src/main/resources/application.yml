@@ -62,7 +62,8 @@ logging:
 
 upload:
   file:
-    path: D:/Devspace/uploadFile
+#    path: D:/Devspace/uploadFile
+    path: D:/Devspace/nasdak/src/main/front/src/image
 #
 #jwt:
 #  secret: hellowordaabbccddeeffgghhrrjjkkooppqqrrssttuu

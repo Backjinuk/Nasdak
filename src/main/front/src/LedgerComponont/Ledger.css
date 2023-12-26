@@ -44,3 +44,32 @@
 .categoryBox{
     height: 50px;
 }
+
+.ImageBox{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5px;
+    overflow-x: scroll;
+}
+
+.ImageBox > img{
+    height: 100px;
+}
+
+.kakaoMap{
+    width: 470px;
+    height: 470px;
+}
+
+.findAddress{
+    margin-top: 20px;
+}
+
+.kakaoMapButtonBox{
+    margin-top: 10px;
+    display: flex;
+    flex-direction: row-reverse;
+    padding: 5px;
+}
+

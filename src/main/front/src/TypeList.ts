@@ -21,6 +21,8 @@ export interface LedgerType {
     fileOwnerNo: number,
     userDto: UsersType,
     categoryDto: CategoryType,
+    x : number,
+    y : number,
     price: number,
     ledgerType: string,
     location: location,

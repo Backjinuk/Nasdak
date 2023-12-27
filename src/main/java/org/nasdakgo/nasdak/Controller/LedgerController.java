@@ -1,6 +1,7 @@
 package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.*;
 import org.nasdakgo.nasdak.Entity.*;
@@ -8,7 +9,6 @@ import org.nasdakgo.nasdak.Service.CategoryService;
 import org.nasdakgo.nasdak.Service.FilesService;
 import org.nasdakgo.nasdak.Service.LedgerService;
 import org.nasdakgo.nasdak.Service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,41 +23,34 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ledger/")
+@RequiredArgsConstructor
 public class LedgerController {
 
-    LedgerService ledgerService;
+    private final LedgerService ledgerService;
 
-    UserService userService;
+    private final UserService userService;
 
-    CategoryService categoryService;
+    private final CategoryService categoryService;
 
-    FilesService filesService;
+    private final  FilesService filesService;
 
-    ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     @Value("${upload.file.path}")
     String filePath;
 
-    @Autowired
-    public LedgerController(LedgerService ledgerService, UserService userService,
-                            CategoryService  categoryService, ModelMapper modelMapper
-                            , FilesService filesService){
-        this.ledgerService = ledgerService;
-        this.userService = userService;
-        this.categoryService = categoryService;
-        this.modelMapper = modelMapper;
-        this.filesService = filesService;
-    }
-
     @RequestMapping("ledgerSave")
-    public LedgerDto ledgerSave(@RequestBody Map<String, LedgerDto> requestData) {
+    public LedgerDto ledgerSave2(@RequestBody Map<String, LedgerDto> requestData) {
         System.out.println("ledgerDto = " + requestData.get("LedgerDto"));
 
         Ledger ledger = modelMapper.map(requestData.get("LedgerDto"), Ledger.class);
 
+        ledger.setUser(new User(requestData.get("LedgerDto").getUserDto().getUserNo()));
+        ledger.setCategory(new Category(requestData.get("LedgerDto").getCategoryDto().getCategoryNo()));
+
         // 기존의 User와 Category를 참조하여 설정
-        ledger.setUser(userService.findById(requestData.get("LedgerDto").getUserDto().getUserNo()));
-        ledger.setCategory(categoryService.findById(requestData.get("LedgerDto").getCategoryDto().getCategoryNo()));
+        //ledger.setUser(userService.findById(requestData.get("LedgerDto").getUserDto().getUserNo()));
+        //ledger.setCategory(categoryService.findById(requestData.get("LedgerDto").getCategoryDto().getCategoryNo()));
 
         ledgerService.save(ledger);
 
@@ -88,7 +81,11 @@ public class LedgerController {
         return ledgerService.ledgerItem(String.valueOf(ledgerDto.getRegDate2()), ledgerDto.getUserNo())
                 .stream()
                 .map(ledger -> {
+
                     LedgerDto ledgerDto2 = modelMapper.map(ledger, LedgerDto.class);
+
+//                    if(ledger.getFilesList().size()>0)
+//                    System.out.println("ledger.getFilesList().get(0) = " + ledger.getFilesList().get(0));
 
                     // 파일찾기 List => DtoList
                     ledgerDto2.setFilesDtoList(

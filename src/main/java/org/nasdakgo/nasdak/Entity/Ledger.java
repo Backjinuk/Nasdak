@@ -40,7 +40,7 @@ public class Ledger extends FileOwner {
     private LedgerType ledgerType;
 
     @Embedded
-    private Location location = new Location(0,0);
+    private Location location = new Location(0,0, "`");
 
     @OneToMany(mappedBy = "fileOwner", cascade = CascadeType.ALL)
     private List<Files> filesList = new ArrayList<>();

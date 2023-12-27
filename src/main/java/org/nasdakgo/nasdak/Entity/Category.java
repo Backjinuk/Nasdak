@@ -25,5 +25,7 @@ public class Category {
     private String delYn;
 
 
-
+    public Category(long categoryNo) {
+        this.categoryNo = categoryNo;
+    }
 }

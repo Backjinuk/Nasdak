@@ -1,10 +1,15 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 import {useEffect, useState} from "react";
-import {CategoryType} from "../TypeList";
-import "./Ledger.css"
-import Ledger from "./Ledger";
+import {CategoryType, location} from "../../TypeList";
+import "../Ledger.css"
+import Ledger from "../Ledger";
+import KakaoMap from "./KakaoMap";
+
+
 export default function CreateLeger({ChangeEvent, categoryList} : any){
+
+    const [location, setLocation] = useState<location>();
 
     const css : any ={
         height: "150px",
@@ -23,11 +28,6 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
             userId: sessionStorage.getItem("userId")
         }
 
-        const location = {
-            x: 0,
-            y: 0
-        }
-
         for (let field of frm) {
             LedgerDto[field.name] = field.value;
 
@@ -37,6 +37,8 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                 };
             }
         }
+
+        console.log(location);
 
         LedgerDto["userDto"] = userDto;
         LedgerDto["location"] = location;
@@ -117,6 +119,19 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
     }
 
 
+    const LocationAppend = (x : number ,y : number, address : any) => {
+
+        setLocation({
+            x : x,
+            y : y,
+            address : address
+        })
+
+        // @ts-ignore
+        $("#KakaoMap").modal("hide")
+    }
+
+
     return(
         <>
             <div  style={css} >
@@ -168,7 +183,10 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
 
                                 <div className="form-floating mb-3">
                                     <input type="text" className="form-control" id="location"
-                                           placeholder="지역을 입력해주세요"/>
+                                           placeholder="지역을 입력해주세요"
+                                           value={location?.address}
+                                            onClick={ () => // @ts-ignore
+                                                $("#KakaoMap").modal("show") } />
                                     <label htmlFor="location">지역</label>
                                 </div>
 
@@ -193,6 +211,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                         </form>
                     </div>
                 </div>
+                <KakaoMap LocationAppend={LocationAppend}/>
             </div>
 
         </>

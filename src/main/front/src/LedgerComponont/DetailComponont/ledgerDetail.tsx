@@ -11,6 +11,7 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
     const [price, setPrice]               = useState(ledger.price);
     const [location, setLocation]         = useState<location>(ledger.location);
     const [comment, setComment]             = useState(ledger.comment);
+    const [lodinMap, setLodingMap]       = useState(false);
 
 
 
@@ -157,8 +158,10 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
             address : address
         })
 
+        console.log(location );
+
         // @ts-ignore
-        $("#KakaoMap").modal("hide")
+        $("#KakaoMap2").modal("hide")
     }
 
     return (
@@ -211,10 +214,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             <div className="form-floating mb-3">
                                 <input type="text" name={"location"} className="form-control" id="location"
                                    onClick={() => {
-                                       console.log(location)
+                                       setLodingMap(lodinMap ? false : true);
                                     // @ts-ignore
                                     $("#KakaoMap2").modal("show")}}
-                                       placeholder="지역을 입력해주세요" defaultValue={location?.address}/>
+                                       placeholder="지역을 입력해주세요" value={location.address}
+                                     readOnly={true}
+                                />
                                 <label htmlFor="location">지역</label>
                             </div>
 
@@ -250,7 +255,7 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
             </div>
         </div>
 
-            <KakaoMap2 LocationAppend={LocationAppend} location={location as location} />
+            <KakaoMap2 LocationAppend={LocationAppend} location={location as location} lodinMap={lodinMap}/>
 
         </>
 

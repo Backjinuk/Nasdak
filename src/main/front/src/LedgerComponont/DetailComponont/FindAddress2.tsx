@@ -28,24 +28,24 @@ export default function FindAddress({ChangeAddress, address} : any) {
 
                 // 우편번호와 주소 정보를 해당 필드에 넣는다.
                 // @ts-ignore
-                document.getElementById('sample6_postcode').value = data.zonecode;
+                document.getElementById('sample6_postcode2').value = data.zonecode;
                 // @ts-ignore
-                document.getElementById("sample6_address").value = addr;
+                document.getElementById("sample6_address2").value = addr;
                 // 커서를 상세주소 필드로 이동한다.
                 // @ts-ignore
-                document.getElementById("sample6_detailAddress").focus();
+                document.getElementById("sample6_detailAddress2").focus();
             }
         }).open();
     }
 
     function findAddress() {
 
-        const data = $("#sample6_address")?.val() + " " + $("#sample6_detailAddress")?.val();
+        const data = $("#sample6_address2")?.val() + " " + $("#sample6_detailAddress2")?.val();
 
         ChangeAddress(data);
 
         //상세 주소 초기화
-        $("#sample6_detailAddress")?.val("");
+        $("#sample6_detailAddress2")?.val("");
 
     }
 
@@ -53,7 +53,7 @@ export default function FindAddress({ChangeAddress, address} : any) {
         <div className={"findAddress"}>
 
             <div className="input-group mb-3">
-                <input type="text" id={"sample6_postcode"} className="form-control" placeholder="우편번호"
+                <input type="text" id={"sample6_postcode2"} className="form-control" placeholder="우편번호"
                        aria-label="Recipient's username" aria-describedby="sample6_execDaumPostcode"/>
                 <button className="btn btn-outline-secondary" type="button" id="sample6_execDaumPostcode"
                         onClick={() => sample6_execDaumPostcode()}> 우편번호 찾기
@@ -61,13 +61,13 @@ export default function FindAddress({ChangeAddress, address} : any) {
             </div>
 
             <div className="input-group mb-3">
-                <input type="text" id={"sample6_address"} className="form-control" placeholder="주소" value={address}
+                <input type="text" id={"sample6_address2"} className="form-control" placeholder="주소" value={address}
                 onChange={() =>{ document.getElementById("sample6_detailAddress")?.focus(); } }
                 />
             </div>
 
             <div className="input-group mb-3">
-                <input type="text" id={"sample6_detailAddress"} className="form-control" placeholder="상세주소"
+                <input type="text" id={"sample6_detailAddress2"} className="form-control" placeholder="상세주소"
                        aria-label="Recipient's username" aria-describedby="sample6_detailAddress"/>
                 <button className="btn btn-outline-secondary" type="button" id="sample6_detailAddress"
                         onClick={() => findAddress()}> 확인

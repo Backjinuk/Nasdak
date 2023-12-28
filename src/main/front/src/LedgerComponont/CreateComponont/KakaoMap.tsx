@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
 import FindAddress from "./FindAddress";
-import {location} from "../../TypeList";
 
-export default function KakaoMap({LocationAppend} : any ){
+
+export default function KakaoMap({LocationAppend, lodingEvent} : any ){
 
     // @ts-ignore
     const {kakao} = window;
@@ -12,10 +12,7 @@ export default function KakaoMap({LocationAppend} : any ){
     const [address, setAddress] = useState("");
 
     // 지도를 클릭한 위치에 표출할 마커입니다
-
-
     useEffect(() => {
-
         const container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
         const options = { //지도를 생성할 때 필요한 기본 옵션
             center: new kakao.maps.LatLng(x, y), //지도의 중심좌표.
@@ -23,8 +20,22 @@ export default function KakaoMap({LocationAppend} : any ){
             keyboardShortcuts : true
         };
 
-
         const map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+
+        if(container !== null && container !== undefined){
+            container.style.width = "450px";
+            container.style.height = "500px";
+        }
+
+        setTimeout(() => {
+            map.relayout();
+            map.setLevel(4);
+            var moveLatLon = new kakao.maps.LatLng(y, x);
+
+            console.log(options.center);
+            // 지도 중심다시 설정
+            map.setCenter(moveLatLon);
+        }, 1000)
 
         var marker = new kakao.maps.Marker();
 
@@ -34,14 +45,18 @@ export default function KakaoMap({LocationAppend} : any ){
         var geocoder = new kakao.maps.services.Geocoder();
 
         geocoder.addressSearch(address, function(result: { x: any;  y: any }[], status: any) {
+
+            console.log(address)
             // 정상적으로 검색이 완료됐으면
             if (status === kakao.maps.services.Status.OK) {
 
-                const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                const coords2 = new kakao.maps.LatLng(result[0].y, result[0].x);
 
                 // 결과값으로 받은 위치를 마커로 표시합니다
                 marker.setMap(map );
-                marker.setPosition(coords );
+                marker.setPosition(coords2 );
+
+                setX(result[0].x ); setY(result[0].y );
 
                 const content = '<div style="width:150px;text-align:center;padding:6px 0;">'+address+'</div>';
 
@@ -50,7 +65,7 @@ export default function KakaoMap({LocationAppend} : any ){
                 infowindow.open(map, marker);
 
                 // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
-                map.setCenter(coords);
+                map.setCenter(coords2);
             }
         });
 
@@ -68,6 +83,9 @@ export default function KakaoMap({LocationAppend} : any ){
                     marker.setPosition(mouseEvent.latLng);
                     marker.setMap(map);
 
+                    setX(mouseEvent.latLng.La ); setY(mouseEvent.latLng.Ma );
+
+                    console.log(mouseEvent.latLng );
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
                     //alert(result[0].road_address.address_name);
@@ -77,20 +95,14 @@ export default function KakaoMap({LocationAppend} : any ){
 
         });
 
-        function searchAddrFromCoords(coords: { getLng: () => any; getLat: () => any; }, callback: any) {
-            // 좌표로 행정동 주소 정보를 요청합니다
-            geocoder.coord2RegionCode(coords.getLng(), coords.getLat(), callback);
-        }
-
         function searchDetailAddrFromCoords(coords: { getLng: () => any; getLat: () => any; }, callback: (result: any, status: any) => void) {
             // 좌표로 법정동 상세 주소 정보를 요청합니다
             geocoder.coord2Address(coords.getLng(), coords.getLat(), callback);
         }
 
-    }, [address]);
+    }, [address, lodingEvent]);
 
     const ChangeAddress = (data : string) => {
-
         setAddress(data);
     }
 

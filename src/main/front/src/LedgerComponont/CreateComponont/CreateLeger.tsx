@@ -10,6 +10,7 @@ import KakaoMap from "./KakaoMap";
 export default function CreateLeger({ChangeEvent, categoryList} : any){
 
     const [location, setLocation] = useState<location>();
+    const [lodingEvent, setLodingEvent] = useState(true);
 
     const css : any ={
         height: "150px",
@@ -127,6 +128,8 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
             address : address
         })
 
+        console.log("x : " + x + " Y : " + y + "address : " + address   );
+
         // @ts-ignore
         $("#KakaoMap").modal("hide")
     }
@@ -185,8 +188,14 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                     <input type="text" className="form-control" id="location"
                                            placeholder="지역을 입력해주세요"
                                            value={location?.address}
-                                            onClick={ () => // @ts-ignore
-                                                $("#KakaoMap").modal("show") } />
+                                            onClick={ () =>
+                                            {
+                                                setLodingEvent(lodingEvent ? false : true);
+                                                // @ts-ignore
+                                                $("#KakaoMap").modal("show") }
+                                            }
+                                            readOnly={true}
+                                    />
                                     <label htmlFor="location">지역</label>
                                 </div>
 
@@ -211,7 +220,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                         </form>
                     </div>
                 </div>
-                <KakaoMap LocationAppend={LocationAppend}/>
+                <KakaoMap LocationAppend={LocationAppend} lodingEvent={lodingEvent}/>
             </div>
 
         </>

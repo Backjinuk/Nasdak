@@ -1,21 +1,18 @@
-import {CategoryType, FilesType, LedgerType, location} from "../TypeList";
+import {CategoryType, FilesType, LedgerType, location} from "../../TypeList";
 import axios from "axios";
 import {useEffect, useState} from "react";
 import e from "express";
-import Ledger from "./Ledger";
+import Ledger from "../Ledger";
 import Swal from "sweetalert2";
-import KakaoMap from "./KakaoMap";
+import KakaoMap2 from "./KakaoMap2";
 
 export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any}){
 
-    const [price, setPrice]                       = useState(Number);
-    const [location, setLocation]         = useState<location>();
-    const [comment, setComment]                     = useState("");
-    const [address , setAddress]                 = useState()
+    const [price, setPrice]               = useState(ledger.price);
+    const [location, setLocation]         = useState<location>(ledger.location);
+    const [comment, setComment]             = useState(ledger.comment);
 
-    useEffect(() => {
-        setPrice(ledger.price); setLocation(ledger.location); setComment(ledger.comment);
-    }, [ledger]);
+
 
     function ledgerUpdate(){
         let frm = $("form[name=updateLedger]").serializeArray();
@@ -156,12 +153,9 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
 
         setLocation({
             x : x,
-            y : y
+            y : y,
+            address : address
         })
-
-        alert(address  );
-
-        setAddress(address);
 
         // @ts-ignore
         $("#KakaoMap").modal("hide")
@@ -215,10 +209,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             </div>
                             {/*value={location?.x} onChange={(e) => {setLocation(e.target.value?)}}*/}
                             <div className="form-floating mb-3">
-                                <input type="text" name={"location"} className="form-control" id="location" onClick={() => {
+                                <input type="text" name={"location"} className="form-control" id="location"
+                                   onClick={() => {
+                                       console.log(location)
                                     // @ts-ignore
-                                    $("#KakaoMap").modal("show")}}
-                                       placeholder="지역을 입력해주세요" defaultValue={address}/>
+                                    $("#KakaoMap2").modal("show")}}
+                                       placeholder="지역을 입력해주세요" defaultValue={location?.address}/>
                                 <label htmlFor="location">지역</label>
                             </div>
 
@@ -254,7 +250,8 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
             </div>
         </div>
 
-            <KakaoMap LocationAppend={LocationAppend}/>
+            <KakaoMap2 LocationAppend={LocationAppend} location={location as location} />
+
         </>
 
     )

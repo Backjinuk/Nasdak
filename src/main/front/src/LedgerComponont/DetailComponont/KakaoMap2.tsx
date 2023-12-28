@@ -1,26 +1,29 @@
 import {useEffect, useState} from "react";
-import FindAddress from "./FindAddress";
+import FindAddress2 from "./FindAddress2";
+import {location} from "../../TypeList";
 
+export default function KakaoMap({LocationAppend , location } :{ LocationAppend : any, location : location } ){
 
-export default function KakaoMap({LocationAppend} : any){
     // @ts-ignore
     const {kakao} = window;
 
-    const [x, setX] = useState(33.450701);
-    const [y , setY] = useState(126.570667);
-    const [address, setAddress] = useState("");
+    const [x, setX] = useState(location.x);
+    const [y , setY] = useState(location.y);
+    const [address, setAddress] = useState(location.address);
 
     // 지도를 클릭한 위치에 표출할 마커입니다
 
 
     useEffect(() => {
-        const container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
+
+        console.log("x : " + x + " y : " + y + " address : " + address)
+
+        const container = document.getElementById('map2'); //지도를 담을 영역의 DOM 레퍼런스
         const options = { //지도를 생성할 때 필요한 기본 옵션
             center: new kakao.maps.LatLng(x, y), //지도의 중심좌표.
             level: 4 , //지도의 레벨(확대, 축소 정도)
             keyboardShortcuts : true
         };
-
 
         const map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
 
@@ -68,6 +71,8 @@ export default function KakaoMap({LocationAppend} : any){
 
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
+                    //alert(result[0].road_address.address_name);
+                    setAddress(!!result[0].road_address ? result[0].road_address.address_name  : result[0].address.address_name);
                 }
             });
 
@@ -86,12 +91,13 @@ export default function KakaoMap({LocationAppend} : any){
     }, [address]);
 
     const ChangeAddress = (data : string) => {
+
         setAddress(data);
     }
 
     return(
-        <div className="modal fade " id="KakaoMap" data-bs-keyboard="false"
-             aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-1}>
+        <div className="modal fade " id="KakaoMap2" data-bs-keyboard="false"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-2}>
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content" style={{height : ""}}>
                     <div className="modal-header">
@@ -100,9 +106,9 @@ export default function KakaoMap({LocationAppend} : any){
                                 aria-label="Close"></button>
                     </div>
                     <div className="modal-body">
-                        <div id="map" className={"kakaoMap"} style={{width: "470px", height: "470px"}}></div>
+                        <div id="map2" className={"kakaoMap"} style={{width: "470px", height: "470px"}}></div>
 
-                        <FindAddress ChangeAddress={ChangeAddress}/>
+                        <FindAddress2 ChangeAddress={ChangeAddress} address={address} />
                         <div className={"kakaoMapButtonBox"}>
                             <button type="button" className="btn btn-primary" onClick={() => LocationAppend( x, y, address)}>완료</button>
                         </div>

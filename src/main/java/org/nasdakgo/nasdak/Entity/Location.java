@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class Location {
 
     private float x;
+
     private float y;
 
+    private String address;
 }

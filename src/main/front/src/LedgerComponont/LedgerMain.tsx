@@ -1,13 +1,14 @@
-import CreateLeger from "./CreateLeger"
+import CreateLeger from "./CreateComponont/CreateLeger"
 import Ledger from "./Ledger"
 import axios from "axios";
 import {useCallback, useEffect, useState} from "react";
 import {CategoryType, LedgerType} from "../TypeList";
 import "./Ledger.css";
-import LedgerDetail from "./ledgerDetail";
+import LedgerDetail from "./DetailComponont/ledgerDetail";
 import CategoryList from "../categoryComponent/CategortList";
 import Logout from "UserComponont/Logout";
 import UserInfoButton from "UserComponont/UserInfoButton";
+import KakaoMap from "./CreateComponont/KakaoMap";
 
 interface JQuery {
     modal(action: 'show' | 'hide'): void;

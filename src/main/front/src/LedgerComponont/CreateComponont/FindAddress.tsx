@@ -1,9 +1,9 @@
 import $ from "jquery";
+import {useEffect} from "react";
 
 
 
-export default function FindAddress({ChangeAddress} : any) {
-
+export default function FindAddress({ChangeAddress, address} : any) {
 
     // @ts-ignore
     const {daum} = window;
@@ -39,11 +39,14 @@ export default function FindAddress({ChangeAddress} : any) {
     }
 
     function findAddress() {
-        // @ts-ignore
-        var address = $("#sample6_address").val() + " " + $("#sample6_detailAddress").val();
 
+        const data = $("#sample6_address")?.val() + " " + $("#sample6_detailAddress")?.val();
 
-        ChangeAddress(address);
+        ChangeAddress(data);
+
+        //상세 주소 초기화
+        $("#sample6_detailAddress")?.val("");
+
     }
 
     return (
@@ -58,7 +61,9 @@ export default function FindAddress({ChangeAddress} : any) {
             </div>
 
             <div className="input-group mb-3">
-                <input type="text" id={"sample6_address"} className="form-control" placeholder="주소"/>
+                <input type="text" id={"sample6_address"} className="form-control" placeholder="주소" value={address}
+                onChange={() =>{ document.getElementById("sample6_detailAddress")?.focus(); } }
+                />
             </div>
 
             <div className="input-group mb-3">

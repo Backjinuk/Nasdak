@@ -45,6 +45,7 @@ export interface RequestBoard{
 }
 export interface location{
     x : number,
-    y : number
+    y : number,
+    address : string
 }
 

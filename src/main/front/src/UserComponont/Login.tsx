@@ -4,14 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Join from "./Join";
 import Button from '@mui/material/Button';
+import { Checkbox, FormControlLabel } from "@mui/material";
+import { getCookie, setCookie } from "Cookies";
 
 
 
 export default function Login() {
 
-    const [id, setId] = useState('');
+    const [id, setId] = useState(getCookie('userId'));
     const [pwd, setPwd] = useState('');
     const [open, setOpen] = useState(false);
+    const [remember, setRemember] = useState(Boolean(getCookie('remember')===null?false:getCookie('remember')));
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
@@ -42,9 +45,12 @@ export default function Login() {
             if (res.data.userId !== '') {
                 Swal.fire({
                     icon: 'success',
-                    title: '로그인 되었습니다.'+res.data.profile,
+                    title: '로그인 되었습니다.',
                 });
 
+                if(remember){
+                    setCookie("userId", id, {maxAge:60*60*24*30})
+                }
                 sessionStorage.setItem("userId", id);
                 sessionStorage.setItem("userNo", res.data.userNo);
 
@@ -62,8 +68,13 @@ export default function Login() {
             }
         })
     }
-    return (
 
+    function handleRemember(e:any){
+        setRemember(e.target.checked)
+        setCookie("remember", e.target.checked, {maxAge:60*60*24*30})
+    }
+
+    return (
         <>
             <div className={"text-center shadow-lg"} style={sty}>
                 <div className="form-signin w-100 m-auto">
@@ -80,21 +91,22 @@ export default function Login() {
                         <input type="password" className="form-control pwd" id="floatingPassword" value={pwd}
                                placeholder="Password"
                                onChange={(e) => setPwd(e.target.value)}
-                               onKeyPress={(e) => {if(e.key  === 'Enter') {LoginMember(); }}}
+                               onKeyDown={(e) => {if(e.key  === 'Enter') {LoginMember(); }}}
                         />
                         <label htmlFor="floatingPassword">Password</label>
                     </div>
-
                     <div className="checkbox mb-3">
-                        <label>
-                            <input type="checkbox" value="remember-me"/> Remember me
-                        </label>
+                        <FormControlLabel
+                        control={<Checkbox value="remember" checked={remember} onChange={(e)=>{handleRemember(e)}} color="primary" />}
+                        label="Remember me"
+                        />
                     </div>
                     <Button className="w-100 btn btn-lg btn-primary mb-2" type="submit" onClick={LoginMember}>로그인
                     </Button>
                     <Button className="w-100 btn btn-lg btn-info" onClick={handleOpen}>회원 가입
                     </Button>
-
+                    <Button className="w-100 btn btn-lg btn-primary mb-2" onClick={()=>{navigate('/findId')}}>아이디 찾기
+                    </Button>
                 </div>
 
             </div>

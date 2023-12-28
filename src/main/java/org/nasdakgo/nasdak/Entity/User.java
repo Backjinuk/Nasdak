@@ -41,6 +41,9 @@ public class User {
     @Column(name = "send_web_push")
     private boolean sendWebPush;
 
+    @Column(name = "active_user")
+    private boolean activeUser;
+
     @OneToMany(mappedBy = "user")
     private List<Collection> collectionList = new ArrayList<>();
 }

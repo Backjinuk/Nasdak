@@ -52,7 +52,7 @@ public class CategoryController {
         for (Object o : list) {
             before.add(Long.valueOf(o.toString()));
         }
-        long after = Long.valueOf(map.get("after").toString());
+        long after = Long.parseLong(map.get("after").toString());
         categoryService.integrateCategory(before, after);
     }
 

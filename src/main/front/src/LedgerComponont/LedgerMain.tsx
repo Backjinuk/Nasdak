@@ -6,6 +6,8 @@ import {CategoryType, LedgerType} from "../TypeList";
 import "./Ledger.css";
 import LedgerDetail from "./ledgerDetail";
 import CategoryList from "../categoryComponent/CategortList";
+import Logout from "UserComponont/Logout";
+import UserInfoButton from "UserComponont/UserInfoButton";
 
 interface JQuery {
     modal(action: 'show' | 'hide'): void;
@@ -70,6 +72,8 @@ export default function LedgerMain(){
             <div className={"createBox"}>
                 <CreateLeger ChangeEvent={ChangeEvent} categoryList={categoryList}/>
                 <CategoryList changeEvent={ChangeEvent} categoryList={categoryList}/>
+                <UserInfoButton/>
+                <Logout/>
             </div>
            <div className={"warp"}>
                 {ledgerList.map((ledger: LedgerType, index: number) => (

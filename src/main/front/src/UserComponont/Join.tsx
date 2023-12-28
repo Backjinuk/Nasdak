@@ -13,9 +13,11 @@ export default function Join(props: any) {
     const handleClose = ()=>{
         setSid('')
         setSpwd('')
-        setEmile('')
+        setEmail('')
         setPhone('')
+        setDbEmail(0)
         setIdSearch('')
+        setDbPhone(0)
         setUploadFile(undefined)
         setImgBase64([])
         setAddMemberBtn(false)
@@ -23,8 +25,10 @@ export default function Join(props: any) {
     }
     const [sid, setSid] = useState('');
     const [spwd, setSpwd] = useState('');
-    const [emile, setEmile] = useState('');
+    const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [dbEmail, setDbEmail] = useState(0)
+    const [dbPhone, setDbPhone] = useState(0)
     const [idSearch, setIdSearch] = useState('');
     const [uploadFile, setUploadFile] = useState<any>();
     const [imgBase64, setImgBase64] = useState<string[]>([]);
@@ -42,8 +46,8 @@ export default function Join(props: any) {
         p: 4
       };
 
-    function LoginCheck(e: ChangeEvent<HTMLInputElement>) {
-        axios.post("/api/user/findUserId", JSON.stringify(
+    function idCheck(e: ChangeEvent<HTMLInputElement>) {
+        axios.post("/api/user/existUserId", JSON.stringify(
             {"userId": e.target.value}
         ), {
             headers: {
@@ -60,11 +64,45 @@ export default function Join(props: any) {
         setSid(e.target.value)
     }
 
+    function emailCheck(e: ChangeEvent<HTMLInputElement>) {
+        axios.post("/api/user/existAuth", JSON.stringify(
+            {"email": e.target.value}
+        ), {
+            headers: {
+                "Content-Type": "application/json"            }
+        }).then((res) => {
+            if (res.data > 0) {
+                setAddMemberBtn(true);
+            } else {
+                setAddMemberBtn(false);
+            }
+            setDbEmail(res.data)
+        })
+        setEmail(e.target.value)
+    }
+
+    function phoneCheck(e: ChangeEvent<HTMLInputElement>) {
+        axios.post("/api/user/existAuth", JSON.stringify(
+            {"phone": e.target.value}
+        ), {
+            headers: {
+                "Content-Type": "application/json"            }
+        }).then((res) => {
+            if (res.data > 0) {
+                setAddMemberBtn(true);
+            } else {
+                setAddMemberBtn(false);
+            }
+            setDbPhone(res.data)
+        })
+        setPhone(e.target.value)
+    }
+
     function addMember() {
         const data = {
             userId: sid,
             password: spwd,
-            email: emile,
+            email: email,
             phone: phone,
         } as {[key : string] : string};
 
@@ -132,7 +170,7 @@ export default function Join(props: any) {
                             <div className="modal-body">
                                 <div className="form-floating mb-3">
                                     <input type="text" className="form-control setId" id="floatingId" value={sid}
-                                        onChange={(e) => LoginCheck(e)}
+                                        onChange={(e) => idCheck(e)}
                                         placeholder="name@example.com"/>
                                     {idSearch === '' ?
                                         <label htmlFor="floatingId">아이디</label> :
@@ -142,28 +180,34 @@ export default function Join(props: any) {
                                 </div>
 
                                 <div className="form-floating mb-3">
-                                    <input type="password" className="form-control" id="floatingSpassword" value={spwd}
+                                    <input type="password" className="form-control" id="floatingPassword" value={spwd}
                                         onChange={(e) => {
                                             setSpwd(e.target.value)
                                         }}
                                         placeholder="Password"/>
-                                    <label htmlFor="floatingSpassword">비밀번호</label>
+                                    <label htmlFor="floatingPassword">비밀번호</label>
                                 </div>
                                 <div className="form-floating mb-3">
-                                    <input type="email" className="form-control" id="floatingEmile" value={emile}
+                                    <input type="email" className="form-control" id="floatingEmail" value={email}
                                         onChange={(e) => {
-                                            setEmile(e.target.value)
+                                            emailCheck(e)
                                         }}
-                                        placeholder="Password"/>
-                                    <label htmlFor="floatingEmile">Email</label>
+                                        placeholder="Email"/>
+                                        {dbEmail===0 ?
+                                            <label htmlFor="floatingEmail">Email</label> :
+                                            <label htmlFor="floatingEmail" style={{color: "red"}}>사용중인 이메일입니다.</label>
+                                        }
                                 </div>
                                 <div className="form-floating mb-3">
                                     <input type="number" className="form-control" id="floatingPhone" value={phone}
                                         onChange={(e) => {
-                                            setPhone(e.target.value)
+                                            phoneCheck(e)
                                         }}
-                                        placeholder="Password"/>
-                                    <label htmlFor="floatingPhone">Phone</label>
+                                        placeholder="Phone"/>
+                                        {dbPhone===0 ?
+                                            <label htmlFor="floatingPhone">Phone</label> :
+                                            <label htmlFor="floatingPhone" style={{color: "red"}}>사용중인 휴대폰입니다.</label>
+                                        }
                                 </div>
                                 <Button component="label" sx={{width:'100%'}} variant="contained" startIcon={<CloudUploadIcon />}>
                                     Upload file

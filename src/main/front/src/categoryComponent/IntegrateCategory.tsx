@@ -22,11 +22,9 @@ export default function IntegrateCategory(props : any){
         if(e.target.checked){
             const newBefore = [...before, no];
             setBefore(newBefore);
-            console.log(newBefore)
         }else{
             const newBefore = before.filter(n=>n!==no);
             setBefore(newBefore);
-            console.log(newBefore)
         }
     }
 
@@ -35,10 +33,8 @@ export default function IntegrateCategory(props : any){
         const no = Number(noString);
         if(e.target.checked){
             setAfter(no);
-            console.log(no)
         }else{
             setAfter(0)
-            console.log(0)
         }
     }
 

@@ -1,27 +1,31 @@
 package org.nasdakgo.nasdak.Service;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(UserRepository userRepository){
-        this.userRepository = userRepository;
+    @PostConstruct
+    public void initialize(){
         userRepository.initializeUserSendKakaoTalk();
         userRepository.initializeUserSendWebPush();
+        userRepository.initializeUserActiveUser();
     }
 
     public User signUp(User user){
         user.setRegDate(LocalDateTime.now());
+        user.setActiveUser(true);
         return userRepository.save(user);
     }
 
@@ -57,8 +61,9 @@ public class UserService {
         return userRepository.findById(user.getUserNo()).orElse(null);
     }
 
+    @Transactional
     public void updateUserInfo(User user){
-        userRepository.save(user);
+        userRepository.updateUserInfo(user.getUserNo(), user.getPassword(), user.getEmail(), user.getPhone(), user.isSendKakaoTalk(), user.isSendWebPush());
     }
 
     public void updateAuth(User user){
@@ -69,8 +74,8 @@ public class UserService {
         return userRepository.findById(userNo).orElse(null);
     }
 
-    public void deleteUser(){
-
+    public void deleteUser(User user){
+        userRepository.deleteUser(user.getUserNo());
     }
 
     public void logout(){

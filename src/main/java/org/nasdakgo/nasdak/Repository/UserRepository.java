@@ -11,15 +11,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByUserId(String userId);
 
-    User findByUserIdAndPassword(String userId, String password);
+    @Query("select u from User u where u.userId = :userId and u.password = :password and activeUser = true")
+    User findByUserIdAndPassword(@Param("userId") String userId,@Param("password") String password);
 
-    User findByEmail(String email);
+    @Query("select u from User u where u.email = :email and activeUser = true")
+    User findByEmail(@Param("email") String email);
 
-    User findByPhone(String phone);
+    @Query("select u from User u where u.phone = :phone and activeUser = true")
+    User findByPhone(@Param("phone") String phone);
 
-    User findByUserIdAndEmail(String userId, String email);
+    @Query("select u from User u where u.userId = :userId and u.email = :email and activeUser = true")
+    User findByUserIdAndEmail(@Param("userId") String userId,@Param("email")  String email);
 
-    User findByUserIdAndPhone(String userId, String phone);
+    @Query("select u from User u where u.userId = :userId and u.phone = :phone and activeUser = true")
+    User findByUserIdAndPhone(@Param("userId") String userId,@Param("phone")  String phone);
 
     @Modifying
     @Transactional
@@ -30,6 +35,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query("UPDATE User u SET u.email= :email , u.phone= :phone WHERE u.userNo= :userNo ")
     void updateAuth(@Param("userNo") long userNo, @Param("email") String email, @Param("phone") String phone);
+
+    @Modifying
+    @Transactional
+    @Query("update User u set u.password = :password, u.email = :email," +
+            " u.phone = :phone, u.sendKakaoTalk = :sendKakaoTalk, u.sendWebPush = :sendWebPush" +
+            " where u.userNo = :userNo")
+    void updateUserInfo(@Param("userNo") long userNo, @Param("password") String password,
+                        @Param("email") String email, @Param("phone") String phone, @Param("sendKakaoTalk") boolean sendKakaoTalk,
+                        @Param("sendWebPush") boolean sendWebPush);
+
+    @Modifying
+    @Transactional
+    @Query("update User u set u.activeUser = false where u.userNo = :userNo")
+    void deleteUser(@Param("userNo") long userNo);
 
     @Modifying
     @Transactional
@@ -45,5 +64,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query("update User u set u.sendWebPush = false where u.sendWebPush is null")
     void initializeUserSendWebPush();
+
+    @Modifying
+    @Transactional
+    @Query("update User u set u.activeUser = true where u.activeUser is null")
+    void initializeUserActiveUser();
 
 }

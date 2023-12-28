@@ -12,31 +12,29 @@ import java.util.UUID;
 @Service
 public class FileUtil {
 
-    public static final String USER_PROFILE_PATH = System.getProperty("user.dir")+"/src/main/resources/userProfile/";
-
     public static String saveFileList(MultipartFile file,String filePath)throws Exception{
 
-            try {
-                String fileName = String.valueOf(UUID.randomUUID()) +  file.getOriginalFilename();
-                log.info("fileNmae : {}", fileName);
-                File newFile = new File(filePath + "/" + fileName);
-                log.info("newFile : {}" , newFile.getPath());
-                file.transferTo(newFile);
-
-                return fileName;
-
-            }catch (Exception e){
-                log.error("에러 : " + e.getMessage());
-            }
-
-            return null;
-    }
-
-    public static String saveProfile(MultipartFile file,String filePath)throws Exception{
-
+        //파일 업로드
         try {
             String fileName = String.valueOf(UUID.randomUUID()) +  file.getOriginalFilename();
-            File newFile = new File(filePath + fileName);
+            log.info("fileName : {}", fileName);
+            File newFile = new File(filePath + "/" + fileName);
+            log.info("newFile : {}" , newFile.getPath());
+
+            // 디렉토리가 없을경우 디렉토리를 생성합니다.
+            if (!newFile.getParentFile().exists()) {
+                try{
+                    newFile.getParentFile().mkdirs();
+                    log.info("폴더가 생성되었습니다.");
+                }
+                catch(Exception e){
+                    e.getStackTrace();
+                }
+            }else {
+                log.info("이미 폴더가 생성되어 있습니다.");
+            }
+
+            //파일 전송
             file.transferTo(newFile);
 
             return fileName;
@@ -46,6 +44,11 @@ public class FileUtil {
         }
 
         return null;
+    }
+
+    public static boolean deleteFile(String fileName, String filePath){
+        File file = new File(filePath+"/"+fileName);
+        return file.delete();
     }
 
 }

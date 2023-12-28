@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Config;
 
+import lombok.extern.log4j.Log4j2;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -8,13 +9,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Aspect
+@Log4j2
 public class LoggingAspect {
 
     @Around("controllerMethod() || serviceMethod()")
     public Object doBasicProfiling(ProceedingJoinPoint joinPoint) throws Throwable {
-        System.out.println(joinPoint.getTarget().getClass().getSimpleName()+" start : "+joinPoint.getSignature().getName());
+        log.info(joinPoint.getTarget().getClass().getSimpleName()+" start : "+joinPoint.getSignature().getName());
         Object result = joinPoint.proceed(joinPoint.getArgs());
-        System.out.println(joinPoint.getTarget().getClass().getSimpleName()+" end : "+joinPoint.getSignature().getName());
+        log.info(joinPoint.getTarget().getClass().getSimpleName()+" end : "+joinPoint.getSignature().getName());
         return result;
     }
 

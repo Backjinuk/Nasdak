@@ -18,7 +18,7 @@ export default function CategoryList({categoryList, changeEvent}: any) {
     const handleEditButton = ()=>{setIsEdit(!isEdit)};
 
     const css: any = {
-        height: "150px", display: "flex", alignItems: "center", justifyContent: "right", marginRight: "30%"
+        height: "150px", display: "flex", alignItems: "center", justifyContent: "right", marginRight: "3%"
     }
 
     return (<div style={css}>

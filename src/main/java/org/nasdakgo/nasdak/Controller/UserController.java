@@ -2,22 +2,29 @@ package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
 import org.nasdakgo.nasdak.Service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user/")
+@Log4j2
 public class UserController {
 
     private final UserService userService;
     private final CategoryService categoryService;
     private final ModelMapper modelMapper;
+    @Value("${upload.file.profile}")
+    private String uploadProfilePath;
+    @Value("${download.file.profile}")
+    private String downloadProfilePath;
 
     @RequestMapping("signUp")
     public UserDto signUp(@RequestBody UserDto userDto) throws Exception {
@@ -26,17 +33,21 @@ public class UserController {
         return toUserDto(user);
     }
 
-    @RequestMapping("findUserId")
-    public int findUserId(@RequestBody UserDto userDto){
+    @RequestMapping("existUserId")
+    public int existUserId(@RequestBody UserDto userDto){
         User byId = userService.searchUserId(toUser(userDto));
+        return (byId == null) ? 0 : 1 ;
+    }
+
+    @RequestMapping("existAuth")
+    public int existAuth(@RequestBody UserDto userDto){
+        User byId = userService.findId(toUser(userDto));
         return (byId == null) ? 0 : 1 ;
     }
 
     @RequestMapping("login")
     public UserDto login(@RequestBody UserDto userDto){
-
         User user = userService.login(toUser(userDto));
-
         return toUserDto(user);
     }
 
@@ -72,8 +83,8 @@ public class UserController {
     }
 
     @RequestMapping("deleteUser")
-    public void deleteUser(){
-
+    public void deleteUser(@RequestBody UserDto userDto){
+        userService.deleteUser(toUser(userDto));
     }
 
     @RequestMapping("logout")
@@ -82,13 +93,27 @@ public class UserController {
     }
     
     @RequestMapping("uploadProfile")
-    public void uploadProfile(@RequestParam(name = "userNo", required = true) Long userNo,
+    public String uploadProfile(@RequestParam(name = "userNo") Long userNo,
                               @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
-        String fileName = FileUtil.saveProfile(mf, FileUtil.USER_PROFILE_PATH);
+        String fileName = FileUtil.saveFileList(mf, uploadProfilePath);
         User user = new User();
         user.setUserNo(userNo);
         user.setProfile(fileName);
         userService.uploadProfile(user);
+        return downloadProfilePath+fileName;
+    }
+
+    @RequestMapping("updateProfile")
+    public String updateProfile(@RequestParam(name = "userNo") Long userNo,
+                              @RequestParam(name = "before") String before,
+                              @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
+        int index = before.lastIndexOf('/');
+        if(index!=-1){
+            before = before.substring(index);
+            boolean b = FileUtil.deleteFile(before, uploadProfilePath);
+            log.info(b?"삭제되었습니다.":"실패하였습니다.");
+        }
+        return this.uploadProfile(userNo, mf);
     }
 
     private User toUser(UserDto userDto){
@@ -97,7 +122,7 @@ public class UserController {
 
     private UserDto toUserDto(User user){
         if(user.getProfile()!=null){
-            user.setProfile(FileUtil.USER_PROFILE_PATH+user.getProfile());
+            user.setProfile(downloadProfilePath+user.getProfile());
         }
         return modelMapper.map(user, UserDto.class);
     }

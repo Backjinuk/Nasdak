@@ -82,7 +82,7 @@ export default function LedgerMain(){
                         <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />
                     </div>
                 ))}
-                {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent}/>}
+                {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent} />}
             </div>
         </div>
     )

@@ -39,6 +39,12 @@ public class LedgerController {
     @Value("${upload.file.path}")
     String filePath;
 
+    /**
+     *
+     * @param requestData
+     * @apiNote DB User * @throws Exception
+     * @return
+     */
     @RequestMapping("ledgerSave")
     public LedgerDto ledgerSave2(@RequestBody Map<String, LedgerDto> requestData) {
         System.out.println("ledgerDto = " + requestData.get("LedgerDto"));
@@ -58,24 +64,25 @@ public class LedgerController {
 
     }
 
+    /**
+     * Show page of the user page.
+     * @param usersDto
+     * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
+     * @return List<?>
+     */
     @RequestMapping("LedgerList")
     public List<?> LedgerList(@RequestBody UserDto usersDto){
 
         return ledgerService.findAllByUsers(usersDto.getUserNo());
-//                .stream().map(ledger -> {
-//                    LedgerDto ledgerDto = modelMapper.map(ledger, LedgerDto.class);
-//
-//                    //Entity를 Dto로 변환
-//                    ledgerDto.setUsersDto(modelMapper.map(ledger.getUsers(), UsersDto.class));
-//                    ledgerDto.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
-//
-//                    //Entity 초기화
-//                    ledgerDto.setUsers(null); ledgerDto.setCategoryDto(null);
-//
-//                    return ledgerDto;
-//                })
-//                .collect(Collectors.toList());
+
     }
+
+    /**
+     *
+     * @param ledgerDto
+     * @apiNote LedgerList 에서 가지고오는 날짜로 ledger의 정보를 가지고오는 기능
+     * @return List<LedgerDto>
+     */
     @RequestMapping("ledgerItem")
     public List<LedgerDto> ledgerItem(@RequestBody LedgerDto ledgerDto) {
         return ledgerService.ledgerItem(String.valueOf(ledgerDto.getRegDate2()), ledgerDto.getUserNo())
@@ -104,6 +111,13 @@ public class LedgerController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     *
+     * @param ledgerDto
+     * @apiNote ledger 상세보기
+     * Issue ledger.user , ledger.category, ledger.file 이 modelMapper로 객체 맴핑이 불가
+     * @return ledgerDto
+     */
 
     @RequestMapping("ledgerDetail")
     public LedgerDto ledgerDetail(@RequestBody LedgerDto ledgerDto){
@@ -125,6 +139,12 @@ public class LedgerController {
         return ledgerDto;
     }
 
+    /**
+     *
+     * @param ledgerDto
+     * @apiNote ledger update를 하는 코드
+     * @return "false" , "success";
+     */
     @RequestMapping("ledgerItemUpdate")
     public String ledgerItemUpdate(@RequestBody LedgerDto ledgerDto){
         
@@ -133,19 +153,29 @@ public class LedgerController {
 
         ledger.setCategory(modelMapper.map(ledgerDto.getCategoryDto(), Category.class));
 
-        System.out.println("ledger = " + ledger.getLedgerType());
-
         int i = ledgerService.ledgerUpdate(modelMapper.map(ledgerDto, Ledger.class));
 
         return (i == 0) ? "false" : "success";
     }
+
+    /**
+     *
+     * @param ledgerDto
+     * @apiNote ledgerDelete 하는 코드
+     */
 
     @RequestMapping("ledgerDelete")
     public void ledgerDelete(@RequestBody LedgerDto ledgerDto){
         ledgerService.ledgerDelete(modelMapper.map(ledgerDto, Ledger.class));
     }
 
-
+    /**
+     *
+     * @param fileList
+     * @param fileOwnerNo
+     * @apiNote fileUtil을 사용하여 파일을 업로드하고 파일의 정보를 db에 저장
+     * @throws Exception
+     */
     @RequestMapping("uploadFile")
         public void fileUpload(@RequestParam("file")List<MultipartFile> fileList, @RequestParam("fileOwnerNo")long fileOwnerNo) throws Exception {
 
@@ -165,13 +195,28 @@ public class LedgerController {
         }
     }
 
+    @RequestMapping("deleteFileItem")
+    public String deleteFileItem(@RequestBody List<Long> checkedList) {
+        System.out.println("checkedList = " + checkedList);
+        int value = filesService.deleteFileItem(checkedList);
+
+        String str = value != 0 ? "success": "false";
+
+        System.out.println("str = " + str);
+
+        return str;
+    }
+
+
+    /**
+     *
+     * @param ledgerDto
+     * @apiNote ledger 와  fileOwnerNo가 같은 file 모두 삭제
+     */
     @RequestMapping("deleteFile")
     public void deleteFile(@RequestBody LedgerDto ledgerDto){
         FileOwner fileOwner = modelMapper.map(ledgerDto, FileOwner.class);
 
         filesService.deleteFile(fileOwner);
     }
-
-
-
 }

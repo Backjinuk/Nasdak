@@ -158,7 +158,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                 <div className="mb-3">
                                     <div className="form-floating">
 
-                                        <select name={"category_no"} className="form-select" id="floatingSelectGrid">
+                                        <select name={"category_no"} className="form-select" id="CategorySelectGrid">
                                             <option>선택</option>
                                             {categoryList.map((category : CategoryType , index : number) => {
                                                 return(
@@ -167,7 +167,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                             })}
                                        </select>
 
-                                        <label htmlFor="floatingSelectGrid">카테고리를 선택해 주세요</label>
+                                        <label htmlFor="CategorySelectGrid">카테고리를 선택해 주세요</label>
                                     </div>
                                 </div>
                                 <div className="form-floating mb-3">
@@ -188,13 +188,14 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                     <input type="text" className="form-control" id="location"
                                            placeholder="지역을 입력해주세요"
                                            value={location?.address}
+                                           readOnly={true}
                                             onClick={ () =>
                                             {
                                                 setLodingEvent(lodingEvent ? false : true);
                                                 // @ts-ignore
                                                 $("#KakaoMap").modal("show") }
                                             }
-                                            readOnly={true}
+
                                     />
                                     <label htmlFor="location">지역</label>
                                 </div>

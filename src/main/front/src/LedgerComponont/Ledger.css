@@ -45,18 +45,6 @@
     height: 50px;
 }
 
-.ImageBox{
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 5px;
-    overflow-x: scroll;
-}
-
-.ImageBox > img{
-    height: 100px;
-}
-
 .kakaoMap{
     width: 470px;
     height: 470px;
@@ -72,4 +60,37 @@
     flex-direction: row-reverse;
     padding: 5px;
 }
+.ImageBox{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5px;
+    overflow-x: scroll;
+    position: relative;
+    width: 100%;
+}
 
+.ImageBox > img{
+    height: 100px;
+}
+
+.ImageItem{
+    position: relative;
+    height: 126px;
+    padding: 5px;
+    display: flex;
+    margin-right: 10px;
+}
+.ledgerImg{
+    object-fit: cover;
+}
+.ImageCheckBox{
+    position: absolute;
+    right: -8px;
+    zoom: 1.2;
+    top: -5px;
+}
+.deleteImageFile{
+    display: flex;
+    float: right;
+}

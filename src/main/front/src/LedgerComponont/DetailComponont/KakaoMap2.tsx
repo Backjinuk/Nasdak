@@ -83,6 +83,7 @@ export default function KakaoMap({LocationAppend , location , lodinMap} :{ Locat
                     marker.setPosition(mouseEvent.latLng);
                     marker.setMap(map);
 
+                    setX(mouseEvent.latLng.La  ); setY(mouseEvent.latLng.Ma);
 
                     infowindow.setContent(content);
                     infowindow.open(map, marker);

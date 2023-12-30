@@ -141,6 +141,10 @@ export default function UserInfo() {
                     }
                 })
             }
+            sessionStorage.removeItem('userNo')
+            sessionStorage.removeItem('userId')
+            sessionStorage.removeItem('snsType')
+            sessionStorage.removeItem('accessToken')
             navigate("/")
         })
     }

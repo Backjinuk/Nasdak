@@ -14,7 +14,7 @@ declare global {
 
 export default function Login() {
 
-    const [id, setId] = useState(getCookie('userId'));
+    const [id, setId] = useState(getCookie('userId')===undefined?'':getCookie('userId'));
     const [pwd, setPwd] = useState('');
     const [open, setOpen] = useState(false);
     const [remember, setRemember] = useState(Boolean(getCookie('remember')===null?false:getCookie('remember')));
@@ -53,6 +53,8 @@ export default function Login() {
 
                 if(remember){
                     setCookie("userId", id, {maxAge:60*60*24*30})
+                }else{
+                    setCookie('userId','',{maxAge:0})
                 }
                 sessionStorage.setItem("userId", id);
                 sessionStorage.setItem("userNo", res.data.userNo);

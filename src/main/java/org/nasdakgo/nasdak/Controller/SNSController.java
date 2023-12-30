@@ -80,7 +80,7 @@ public class SNSController {
             String accessToken = map.get("access_token");
             snsDto.setAccessToken(accessToken);
         }
-        snsService.naverDelete(snsDto.getAccessToken());
+        String s = snsService.naverDelete(snsDto.getAccessToken());
     }
 
     @RequestMapping("/naver/refreshCheck")

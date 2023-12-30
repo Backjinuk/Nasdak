@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +65,7 @@ public class SNSService {
 
     // 네이버 정보 조회
     public String getProfile(String accessToken) {
+        accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
         String header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
 
         String apiURL = "https://openapi.naver.com/v1/nid/me";
@@ -74,6 +77,8 @@ public class SNSService {
     }
     // 네이버 연동 계정 탈퇴
     public String naverDelete(String accessToken){
+        accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+
         String header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
 
         String apiURL = "https://nid.naver.com/oauth2.0/token?service_provider=NAVER&grant_type=delete";
@@ -88,6 +93,7 @@ public class SNSService {
     }
     // 네이버 연동 계정 확인
     public String naverRefreshCheck(String accessToken){
+        accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
         String header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
 
         String apiURL = "https://openapi.naver.com/v1/nid/me";
@@ -113,9 +119,9 @@ public class SNSService {
     }
     // 토큰 재발급
     public String naverGetNewToken(String refreshToken){
-
+        refreshToken = URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
         String apiURL = "https://nid.naver.com/oauth2.0/token";
-        apiURL += "?grant_type=refresh_token ";
+        apiURL += "?grant_type=refresh_token";
         apiURL += "&client_id="+client_id;
         apiURL += "&client_secret="+client_secret;
         apiURL += "&refresh_token="+refreshToken;

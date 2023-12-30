@@ -1,20 +1,24 @@
 import {useEffect, useState} from "react";
 import FindAddress from "./FindAddress";
-import {location} from "../../TypeList";
+import axios from "axios";
 
-export default function KakaoMap({LocationAppend} : any ){
+
+export default function KakaoMap({LocationAppend, lodingEvent} : any ){
 
     // @ts-ignore
     const {kakao} = window;
 
-    const [x, setX] = useState(33.450701);
-    const [y , setY] = useState(126.570667);
+    const [x, setX] = useState(Number);
+    const [y , setY] = useState(Number);
     const [address, setAddress] = useState("");
+    const [lendingMap , setLendingMap] = useState(true);
 
     // 지도를 클릭한 위치에 표출할 마커입니다
-
-
     useEffect(() => {
+
+        if( x == 0 && y == 0){
+            FindLocalLocation();
+        }
 
         const container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
         const options = { //지도를 생성할 때 필요한 기본 옵션
@@ -23,8 +27,35 @@ export default function KakaoMap({LocationAppend} : any ){
             keyboardShortcuts : true
         };
 
-
         const map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+
+        if(container !== null && container !== undefined){
+            container.style.width = "450px";
+            container.style.height = "500px";
+        }
+
+        /**
+         * 지도 위치조정 & 초기 ip주소로 위치 조회
+         */
+        setTimeout(() => {
+            map.relayout();
+            map.setLevel(4);
+            if(lendingMap) {
+                var moveLatLon = new kakao.maps.LatLng(y, x);
+
+                marker.setPosition(moveLatLon);
+                marker.setMap(map);
+
+                // 지도 중심다시 설정
+                map.setCenter(moveLatLon);
+
+                if( x != 0 && y != 0){
+                    setLendingMap(false );
+                }
+            }
+        }, 1000)
+
+
 
         var marker = new kakao.maps.Marker();
 
@@ -34,14 +65,19 @@ export default function KakaoMap({LocationAppend} : any ){
         var geocoder = new kakao.maps.services.Geocoder();
 
         geocoder.addressSearch(address, function(result: { x: any;  y: any }[], status: any) {
+
             // 정상적으로 검색이 완료됐으면
             if (status === kakao.maps.services.Status.OK) {
 
-                const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                const coords2 = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                setX(result[0].x );  setY(result[0].y );
+
+                console.log(coords2)
 
                 // 결과값으로 받은 위치를 마커로 표시합니다
                 marker.setMap(map );
-                marker.setPosition(coords );
+                marker.setPosition(coords2 );
 
                 const content = '<div style="width:150px;text-align:center;padding:6px 0;">'+address+'</div>';
 
@@ -50,7 +86,7 @@ export default function KakaoMap({LocationAppend} : any ){
                 infowindow.open(map, marker);
 
                 // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
-                map.setCenter(coords);
+                map.setCenter(coords2);
             }
         });
 
@@ -68,6 +104,9 @@ export default function KakaoMap({LocationAppend} : any ){
                     marker.setPosition(mouseEvent.latLng);
                     marker.setMap(map);
 
+                    setX(mouseEvent.latLng.La ); setY(mouseEvent.latLng.Ma );
+
+                    console.log(mouseEvent.latLng );
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
                     //alert(result[0].road_address.address_name);
@@ -77,21 +116,32 @@ export default function KakaoMap({LocationAppend} : any ){
 
         });
 
-        function searchAddrFromCoords(coords: { getLng: () => any; getLat: () => any; }, callback: any) {
-            // 좌표로 행정동 주소 정보를 요청합니다
-            geocoder.coord2RegionCode(coords.getLng(), coords.getLat(), callback);
-        }
-
         function searchDetailAddrFromCoords(coords: { getLng: () => any; getLat: () => any; }, callback: (result: any, status: any) => void) {
             // 좌표로 법정동 상세 주소 정보를 요청합니다
             geocoder.coord2Address(coords.getLng(), coords.getLat(), callback);
         }
 
-    }, [address]);
+    }, [address, lodingEvent]);
 
     const ChangeAddress = (data : string) => {
-
         setAddress(data);
+    }
+
+    /**
+     * @prarm - uri
+     * @code - ip주소를 이용하여 현재 위치를 알려주는 api
+     */
+    const FindLocalLocation = async () => {
+
+        const location = await axios.get('https://geolocation-db.com/json/')
+
+        axios.post(`http://ip-api.com/json/${location.data.IPv4}`
+        ).then(res => {
+            console.log(res.data)
+            setY(res.data.lat); setX(res.data.lon);
+        }).catch(error => {
+            console.log(error)
+        })
     }
 
     return(

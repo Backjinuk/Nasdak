@@ -1,18 +1,22 @@
 import {CategoryType, FilesType, LedgerType, location} from "../../TypeList";
 import axios from "axios";
 import {useEffect, useState} from "react";
-import e from "express";
 import Ledger from "../Ledger";
 import Swal from "sweetalert2";
 import KakaoMap2 from "./KakaoMap2";
+import DeleteIcon from '@mui/icons-material/Delete';
+import Checkbox from '@mui/material/Checkbox';
+import Tooltip from '@mui/material/Tooltip';
+import {red} from "@mui/material/colors";
+
 
 export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any}){
 
     const [price, setPrice]               = useState(ledger.price);
     const [location, setLocation]         = useState<location>(ledger.location);
     const [comment, setComment]             = useState(ledger.comment);
-
-
+    const [lodinMap, setLodingMap]       = useState(false);
+    const [checkedList, setCheckedList] = useState([]);
 
     function ledgerUpdate(){
         let frm = $("form[name=updateLedger]").serializeArray();
@@ -53,7 +57,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                 })
                 return false;
             }else{
-                fileDelete(fileOwnerNo);
 
                 let formData = formDataArray();
 
@@ -81,10 +84,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
 
             fileDelete(fileOwnerNo);
 
-            let formData = formDataArray();
-
-            fileUpload(formData, String(fileOwnerNo) );
-
             Swal.fire({
                 icon : "success",
                 title : "삭제되었습니다.",
@@ -109,12 +108,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         })
     }
 
-    function UtilsEvent(){
-        // @ts-ignore
-        $("#ledgerDetail").modal('hide');
-        ChangeEvent();
-    }
-
     function formDataArray(){
         const file = document.getElementById("file2");
 
@@ -134,6 +127,11 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
     }
 
 
+    /**
+     *
+     * @param formData - form안에 file의 정보가지고 있는 변수
+     * @param fileOwnerNo - ledgerNo
+     */
     function fileUpload(formData: FormData, fileOwnerNo : string){
         formData.append('fileOwnerNo', fileOwnerNo);
 
@@ -149,6 +147,14 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         });
     }
 
+    /**
+     *
+     * @param x -좌표
+     * @param y -좌표
+     * @param address -상세 주소
+     * @code - KakaoMap에서 받은 값을 setLocation에 넣은후 hide
+     * @constructor
+     */
     const LocationAppend = (x : number ,y : number, address : any) => {
 
         setLocation({
@@ -158,8 +164,106 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         })
 
         // @ts-ignore
-        $("#KakaoMap").modal("hide")
+        $("#KakaoMap2").modal("hide")
     }
+
+
+    /**
+     *
+     * @param value - fileNo의 값
+     * @code - checkbox를 클릭하면 이벤트 발행, 이벤트 발생시 checkedList 안에 있는 값인지
+     *          검사 있으면 넣지 않고 없으면 넣음
+     * @constructor
+     */
+    const CheckBoxEventHandle = (value : number) => {
+        // 현재 선택된 파일 목록에 추가 또는 제거
+        // @ts-ignore
+        if (checkedList.includes(value)) {
+            setCheckedList(checkedList.filter((file) => file !== value));
+        } else {
+            // @ts-ignore
+            setCheckedList([...checkedList, value]);
+        }
+    };
+
+
+    /**
+     *
+     * @param checkdList - CheckBoxEventHandle을 통해 checkedList에 넣은 값
+     * @code - checkedList에 있는 값을 서버로 전송
+     */
+    const deleteImageFile = () => {
+
+        alertCustom.fire({
+            title : "삭제하시겠습니까?",
+            icon : "warning",
+            showCancelButton : true,
+            cancelButtonText : "취소",
+            confirmButtonText : "삭제",
+            reverseButtons : false
+        }).then(res => {
+            if(res.isConfirmed ){
+
+                axios.post("/api/ledger/deleteFileItem", checkedList,{
+                    headers : {
+                        "Content-Type" : "application/json"
+                    }
+                }).then(res => {
+                    alert(res.data );
+                    if (res.data === 'success') {
+                        alertCustom.fire({
+                            title: "삭제성공",
+                            icon: "success",
+                            timer: 1000
+                        }).then( () => {
+                            UtilsEvent();
+                        })
+
+
+                    }else{
+                        alertCustom.fire({
+                            title: "삭제 실패",
+                            text : "관리자에게 문의 하십시요",
+                            icon: "error",
+                            timer: 1000
+                        })
+                    }
+                }).catch( error => {
+                    console.log(error);
+
+                    alertCustom.fire({
+                        title: "삭제 실패",
+                        text : "관리자에게 문의 하십시요",
+                        icon: "error",
+                        timer: 1000
+                    })
+                })
+            }
+        })
+    }
+
+
+    /**
+     * sweetAlert를 커스텀 한 코드
+     */
+    const alertCustom =  Swal.mixin({
+        customClass: {
+            cancelButton: "btn btn-success",
+            confirmButton: "btn btn-danger"
+        },
+        buttonsStyling : false
+    })
+
+    /**
+     * @code - 모달창을 감추고 리렌더링 하는 Util 코드
+     * @constructor
+     */
+    function UtilsEvent(){
+        // @ts-ignore
+        $("#ledgerDetail").modal('hide');
+        ChangeEvent();
+    }
+
 
     return (
         <>
@@ -211,10 +315,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             <div className="form-floating mb-3">
                                 <input type="text" name={"location"} className="form-control" id="location"
                                    onClick={() => {
-                                       console.log(location)
+                                       setLodingMap(lodinMap ? false : true);
                                     // @ts-ignore
                                     $("#KakaoMap2").modal("show")}}
-                                       placeholder="지역을 입력해주세요" defaultValue={location?.address}/>
+                                       placeholder="지역을 입력해주세요" value={location.address}
+                                     readOnly={true}
+                                />
                                 <label htmlFor="location">지역</label>
                             </div>
 
@@ -231,11 +337,31 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                                 <input type="file" multiple className="form-control uploadFile" id="file2" name={"file"}/>
                                 <label className="input-group-text" htmlFor="file">Upload</label>
                             </div>
-                            <div className={"ImageBox"}>
-                                {ledger.filesDtoList.map((file: FilesType) => (
-                                        <img src={`/image/${file.filePath}`} alt={`File ${file.fileNo}`} key={file.fileNo}/>
-                                ))}
-                            </div>
+                            {/*fileDtoList 여부에 따라 ImageBox 출력 하기*/}
+                            {ledger.filesDtoList.length > 0 && (
+                                <>
+                                    <div className={"deleteImageFile"}>
+                                        <Tooltip title={"삭제하기"}>
+                                            <DeleteIcon onClick={() => deleteImageFile()}/>
+                                        </Tooltip>
+                                    </div>
+                                    <div className={"ImageBox"}>
+                                        {ledger.filesDtoList.map((file: FilesType) => {
+                                                return (
+                                                    <div className={"ImageItem"} key={file.fileNo}>
+                                                        <div className={"ImageCheckBox"}>
+                                                            <Checkbox value={file.fileNo}
+                                                                      onClick={() => CheckBoxEventHandle(file.fileNo)}/>
+                                                        </div>
+                                                        <img className={"ledgerImg"} src={`/image/${file.filePath}`}
+                                                             alt={`File ${file.fileNo}`}/>
+                                                    </div>
+                                                );
+                                            }
+                                        )}
+                                    </div>
+                                </>
+                            )}
 
                         </div>
                         <div className="modal-footer">
@@ -250,7 +376,7 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
             </div>
         </div>
 
-            <KakaoMap2 LocationAppend={LocationAppend} location={location as location} />
+        <KakaoMap2 LocationAppend={LocationAppend} location={location as location} lodinMap={lodinMap}/>
 
         </>
 

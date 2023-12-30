@@ -28,4 +28,7 @@ public class FilesService {
 
     public List<Files> findByFileOwner(long fileOwner) { return filesRepository.findByFileOwner(fileOwner);
     }
+
+    public int deleteFileItem(List<Long> checkedList) { return filesRepository.deleteByFileNoIn(checkedList);
+    }
 }

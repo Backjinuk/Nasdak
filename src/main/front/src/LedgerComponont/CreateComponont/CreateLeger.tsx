@@ -10,6 +10,7 @@ import KakaoMap from "./KakaoMap";
 export default function CreateLeger({ChangeEvent, categoryList} : any){
 
     const [location, setLocation] = useState<location>();
+    const [lodingEvent, setLodingEvent] = useState(true);
 
     const css : any ={
         height: "150px",
@@ -127,6 +128,8 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
             address : address
         })
 
+        console.log("x : " + x + " Y : " + y + "address : " + address   );
+
         // @ts-ignore
         $("#KakaoMap").modal("hide")
     }
@@ -155,7 +158,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                 <div className="mb-3">
                                     <div className="form-floating">
 
-                                        <select name={"category_no"} className="form-select" id="floatingSelectGrid">
+                                        <select name={"category_no"} className="form-select" id="CategorySelectGrid">
                                             <option>선택</option>
                                             {categoryList.map((category : CategoryType , index : number) => {
                                                 return(
@@ -164,7 +167,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                             })}
                                        </select>
 
-                                        <label htmlFor="floatingSelectGrid">카테고리를 선택해 주세요</label>
+                                        <label htmlFor="CategorySelectGrid">카테고리를 선택해 주세요</label>
                                     </div>
                                 </div>
                                 <div className="form-floating mb-3">
@@ -185,8 +188,15 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                                     <input type="text" className="form-control" id="location"
                                            placeholder="지역을 입력해주세요"
                                            value={location?.address}
-                                            onClick={ () => // @ts-ignore
-                                                $("#KakaoMap").modal("show") } />
+                                           readOnly={true}
+                                            onClick={ () =>
+                                            {
+                                                setLodingEvent(lodingEvent ? false : true);
+                                                // @ts-ignore
+                                                $("#KakaoMap").modal("show") }
+                                            }
+
+                                    />
                                     <label htmlFor="location">지역</label>
                                 </div>
 
@@ -211,7 +221,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                         </form>
                     </div>
                 </div>
-                <KakaoMap LocationAppend={LocationAppend}/>
+                <KakaoMap LocationAppend={LocationAppend} lodingEvent={lodingEvent}/>
             </div>
 
         </>

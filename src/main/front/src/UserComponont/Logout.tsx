@@ -5,7 +5,10 @@ export default function Logout(){
     const navigate = useNavigate()
 
     function handleClick(){
-        sessionStorage.clear()
+        sessionStorage.removeItem('userNo')
+        sessionStorage.removeItem('userId')
+        sessionStorage.removeItem('snsType')
+        sessionStorage.removeItem('accessToken')
         navigate("/")
     }
 

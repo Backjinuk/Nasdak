@@ -1,13 +1,16 @@
 import Swal from "sweetalert2";
-import {useState} from "react"
+import { useState } from "react"
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Join from "./Join";
 import Button from '@mui/material/Button';
-import { Checkbox, FormControlLabel } from "@mui/material";
+import { Checkbox, FormControlLabel, IconButton } from "@mui/material";
 import { getCookie, setCookie } from "Cookies";
-
-
+declare global {
+    interface Window {
+        snsLoginNavigate?: any;
+    }
+  }
 
 export default function Login() {
 
@@ -74,6 +77,27 @@ export default function Login() {
         setCookie("remember", e.target.checked, {maxAge:60*60*24*30})
     }
 
+    const clientId = process.env.REACT_APP_NAVER_CLIENT_ID//애플리케이션 클라이언트 아이디값";
+    const redirectURI = encodeURI('http://localhost:3000/naver')
+    window.snsLoginNavigate = (userNo : any, snsType : any, token : any) => {
+        sessionStorage.setItem('accessToken',token)
+        sessionStorage.setItem('userNo', userNo)
+        sessionStorage.setItem('snsType', snsType)
+        sessionStorage.removeItem('userId')
+        navigate("/ledger")
+    }
+    var array = new Uint32Array(1)
+    window.crypto.getRandomValues(array)
+    const state = encodeURI(array[0].toString())
+    let url = 'https://nid.naver.com/oauth2.0/authorize'
+    url += '?response_type=code'
+    url += '&client_id='+clientId
+    url += '&redirect_uri='+redirectURI
+    url += '&state='+state
+    function handleNaverLogin(){
+        window.open(url, '네이버로그인', 'width=700px,height=800px,scrollbars=yes')
+    }
+
     return (
         <>
             <div className={"text-center shadow-lg"} style={sty}>
@@ -107,6 +131,9 @@ export default function Login() {
                     </Button>
                     <Button className="w-100 btn btn-lg btn-primary mb-2" onClick={()=>{navigate('/findId')}}>아이디 찾기
                     </Button>
+                    <IconButton className="w-50" onClick={handleNaverLogin}>
+                        <img style={{width:'100%'}} src="/image/loginImage/btnG_완성형.png" alt="네이버로그인"/>
+                    </IconButton>
                 </div>
 
             </div>

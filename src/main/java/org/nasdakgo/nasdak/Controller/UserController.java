@@ -107,13 +107,27 @@ public class UserController {
     public String updateProfile(@RequestParam(name = "userNo") Long userNo,
                               @RequestParam(name = "before") String before,
                               @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
-        int index = before.lastIndexOf('/');
-        if(index!=-1){
-            before = before.substring(index);
-            boolean b = FileUtil.deleteFile(before, uploadProfilePath);
-            log.info(b?"삭제되었습니다.":"실패하였습니다.");
-        }
+        boolean b = this.removeProfile(before);
+        log.info("파일삭제 : "+b);
         return this.uploadProfile(userNo, mf);
+    }
+
+    @RequestMapping("deleteProfile")
+    public void deleteProfile(@RequestBody UserDto userDto) {
+        User user = toUser(userDto);
+        boolean b = this.removeProfile(user.getProfile());
+        log.info("파일삭제 : "+b);
+        user.setProfile(null);
+        userService.uploadProfile(user);
+    }
+
+    public boolean removeProfile(String profile) {
+        int index = profile.lastIndexOf('/');
+        if(index!=-1){
+            profile = profile.substring(index);
+            return FileUtil.deleteFile(profile, uploadProfilePath);
+        }
+        return false;
     }
 
     private User toUser(UserDto userDto){

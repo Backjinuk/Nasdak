@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import { Avatar, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Switch } from '@mui/material';
+import { Avatar, Badge, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Switch } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import { styled } from "@mui/material";
@@ -87,11 +87,12 @@ export default function UserInfo() {
                     'Content-Type' : 'application/json'
                 }
             }).then(res=>{
+                //새로 등록시 업로드
                 if(uploadFile!==undefined){
                     const fd = new FormData()
                     fd.append("mf", uploadFile)
                     fd.append("userNo", String(user.userNo))
-                    fd.append("before", user.profile)
+                    fd.append("before", backup.profile)
                     axios.post("/api/user/updateProfile", fd, {
                         headers:{
                             'Content-Type' : 'multipart/form-data'
@@ -99,6 +100,17 @@ export default function UserInfo() {
                     }).then(res=>{
                         nextUser.profile = res.data
                         setUser(nextUser)
+                    })
+                //프로필 삭제 시
+                }else if(user.profile===''){
+                    const data = {
+                        userNo : sessionStorage.getItem('userNo'),
+                        profile : backup.profile
+                    }
+                    axios.post("/api/user/deleteProfile", JSON.stringify(data),{
+                        headers:{
+                            'Content-Type' : 'application/json'
+                        }
                     })
                 }
             })
@@ -119,8 +131,26 @@ export default function UserInfo() {
                 'Content-Type' : 'application/json'
             }
         }).then(res=>{
+            if(sessionStorage.getItem('snsType')!==null){
+                axios.post("/api/sns/"+String(sessionStorage.getItem('snsType')).toLowerCase()+"/delete",JSON.stringify({
+                    userNo : sessionStorage.getItem('userNo'),
+                    accessToken : sessionStorage.getItem('accessToken')
+                }),{
+                    headers:{
+                        'Content-Type' : 'application/json'
+                    }
+                })
+            }
             navigate("/")
         })
+    }
+
+    function deleteProfile(){
+        const nextUser = {
+            ...user,
+            profile : ''
+        }
+        setUser(nextUser)
     }
 
   return (
@@ -150,13 +180,25 @@ export default function UserInfo() {
                     alignItems: 'center',
                 }}
                 >
-                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        {user.profile===null?(
-                            <SentimentSatisfiedAltIcon/>
-                        ):(
-                            <img src={user.profile} alt={user.profile} width={'100%'}/>
-                        )}
-                    </Avatar>
+                    <Box>
+                        <Badge
+                        badgeContent={'X'}
+                        color="error"
+                        sx={{cursor:'pointer'}}
+                        onClick={()=>{deleteProfile()}}
+                        invisible={!isEdit||user.profile===null||user.profile===''}
+                        >
+                            <div style={{cursor:'default'}} onClick={e=>{e.stopPropagation()}}>
+                                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                                    {user.profile===null||user.profile===''?(
+                                        <SentimentSatisfiedAltIcon/>
+                                    ):(
+                                        <img src={user.profile} alt={user.profile} width={'100%'}/>
+                                    )}
+                                </Avatar>
+                            </div>
+                        </Badge>
+                    </Box>
                     <Typography component="h1" variant="h5">
                         내 정보 조회
                     </Typography>
@@ -258,13 +300,17 @@ export default function UserInfo() {
                             >
                                 완료
                             </Button>
-                        </>):(<Button
+                        </>):sessionStorage.getItem('snsType')===null?(
+                            <Button
                             variant="contained"
                             onClick={()=>{setIsEdit(true)}}
                             sx={{ mt: 3, ml: 1 }}
                         >
                             수정
-                        </Button>)}
+                        </Button>
+                        ):(
+                        <Button disabled sx={{ mt: 3, ml: 1 }}>sns는 변경안됨</Button>
+                        )}
                         <Button
                             variant="contained"
                             onClick={()=>{handleClickOpen()}}
@@ -293,7 +339,7 @@ export default function UserInfo() {
             </DialogContent>
             <DialogActions>
             <Button onClick={handleClose}>취소</Button>
-            <Button onClick={deleteUser} autoFocus>
+            <Button id='delete' onClick={deleteUser} autoFocus>
                 확인
             </Button>
             </DialogActions>

@@ -1,12 +1,12 @@
 package org.nasdakgo.nasdak.Service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.CategoryRepository;
 import org.nasdakgo.nasdak.Repository.LedgerRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@PropertySource("classpath:category.yml")
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -23,6 +22,13 @@ public class CategoryService {
 
     @Value("${defaultCategories}")
     private String[] defaultCategories;
+
+    @PostConstruct
+    public void asdf(){
+        for (String defaultCategory : defaultCategories) {
+            System.out.println("defaultCategory = " + defaultCategory);
+        }
+    }
 
     public void saveDefaultCategory(User user) {
         List<Category> categoryList = new ArrayList<>();

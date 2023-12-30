@@ -4,6 +4,12 @@ import LedgerMain from "./LedgerComponont/LedgerMain";
 import UserInfo from "UserComponont/UserInfo";
 import { CookiesProvider } from "react-cookie";
 import FindUser from "UserComponont/FindUser";
+import NaverLogin from "UserComponont/NaverLogin";
+declare global {
+  interface Window {
+    naver?: any;
+  }
+}
 
 function App() {
 
@@ -17,6 +23,7 @@ function App() {
                   <Route path={"/Ledger"} element={<LedgerMain/>}/>
                   <Route path={"/UserInfo"} element={<UserInfo/>}/>
                   <Route path={"/findId"} element={<FindUser/>}/>
+                  <Route path={"/naver"} element={<NaverLogin/>}/>
               </Routes>
           </Router>
         </CookiesProvider>

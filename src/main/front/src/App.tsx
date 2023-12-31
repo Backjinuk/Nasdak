@@ -22,7 +22,7 @@ function App() {
               <Routes>
                   <Route path={"/*"} element={<Login/>}/>
                   <Route path={"/Ledger"} element={<LedgerMain/>}/>
-                  <Route path={"/UserInfo"} element={<UserInfo/>}/>
+                  <Route path={"/userInfo"} element={<UserInfo/>}/>
                   <Route path={"/findId"} element={<FindUser/>}/>
                   <Route path={"/naver"} element={<NaverLogin/>}/>
                   <Route path={"/MapLocation"} element={<MapLocation/>} />

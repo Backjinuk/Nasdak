@@ -75,6 +75,7 @@ public class SNSService {
 
         return get(apiURL,requestHeaders);
     }
+
     // 네이버 연동 계정 탈퇴
     public String naverDelete(String accessToken){
         accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
@@ -91,6 +92,7 @@ public class SNSService {
 
         return get(apiURL,requestHeaders);
     }
+
     // 네이버 연동 계정 확인
     public String naverRefreshCheck(String accessToken){
         accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
@@ -103,6 +105,7 @@ public class SNSService {
 
         return get(apiURL,requestHeaders);
     }
+
     // 토큰 발급
     public String naverGetToken(String code, String state){
 
@@ -117,6 +120,7 @@ public class SNSService {
 
         return get(apiURL,requestHeaders);
     }
+
     // 토큰 재발급
     public String naverGetNewToken(String refreshToken){
         refreshToken = URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);

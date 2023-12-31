@@ -80,7 +80,9 @@ export default function Login() {
     }
 
     const clientId = process.env.REACT_APP_NAVER_CLIENT_ID//애플리케이션 클라이언트 아이디값";
-    const redirectURI = encodeURI('http://localhost:3000/naver')
+    const link = window.location.href.split('?')[0]
+    const uri = link.substring(0,link.lastIndexOf('/'))
+    const redirectURI = encodeURI(uri+'/naver')
     window.snsLoginNavigate = (userNo : any, snsType : any, token : any) => {
         sessionStorage.setItem('accessToken',token)
         sessionStorage.setItem('userNo', userNo)

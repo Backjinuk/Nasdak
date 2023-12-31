@@ -5,7 +5,7 @@ export default function UserInfoButton(){
     const navigate = useNavigate()
 
     function handleClick(){
-        navigate("/UserInfo")
+        navigate("/userInfo")
     }
     
     return (

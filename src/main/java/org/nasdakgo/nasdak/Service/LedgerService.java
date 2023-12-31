@@ -2,6 +2,7 @@ package org.nasdakgo.nasdak.Service;
 
 import org.nasdakgo.nasdak.Entity.FileOwner;
 import org.nasdakgo.nasdak.Entity.Ledger;
+import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.LedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,4 +45,7 @@ public class LedgerService {
     }
 
     public FileOwner findById(long fileOwnerNo) { return ledgerRepository.findById(fileOwnerNo).get();}
+
+    public List<Ledger> findAllBylocation(User user) { return ledgerRepository.findAllByLocation(user.getUserNo());
+    }
 }

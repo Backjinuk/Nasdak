@@ -1,14 +1,18 @@
-import CreateLeger from "./CreateComponont/CreateLeger"
 import Ledger from "./Ledger"
 import axios from "axios";
 import {useCallback, useEffect, useState} from "react";
 import {CategoryType, LedgerType} from "../TypeList";
 import "./Ledger.css";
-import LedgerDetail from "./DetailComponont/ledgerDetail";
+import LedgerDetail from "./ledgerDetail";
 import CategoryList from "../categoryComponent/CategortList";
 import Logout from "UserComponont/Logout";
 import UserInfoButton from "UserComponont/UserInfoButton";
-import KakaoMap from "./CreateComponont/KakaoMap";
+import CreateLeger from "./CreateLeger";
+import {BabyChangingStation} from "@mui/icons-material";
+import Button from "@mui/material/Button";
+import MapLocation from "../MapComponont/MapLocation";
+import {useNavigate} from "react-router-dom";
+
 
 interface JQuery {
     modal(action: 'show' | 'hide'): void;
@@ -20,6 +24,7 @@ export default function LedgerMain(){
     const [landingEvent , setLendingEvent] =  useState(false);
     const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
     const [ledger, setLedger] = useState<LedgerType>();
+    const navigate  = useNavigate();
 
     const ChangeEvent = () => {
         if (!landingEvent) {
@@ -68,15 +73,22 @@ export default function LedgerMain(){
         })
     }
 
+    function MapLocation(){
+        navigate("/MapLocation");
+    }
+
     return(
         <div>
             <div className={"createBox"}>
                 <CreateLeger ChangeEvent={ChangeEvent} categoryList={categoryList}/>
                 <CategoryList changeEvent={ChangeEvent} categoryList={categoryList}/>
+                <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%" }}>
+                    <Button variant="outlined" onClick={() => MapLocation()}>지도 모아보기</Button>
+                </div>
                 <UserInfoButton/>
                 <Logout/>
             </div>
-           <div className={"warp"}>
+            <div className={"warp"}>
                 {ledgerList.map((ledger: LedgerType, index: number) => (
                     <div className="card shadow-lg" key={index}>
                         <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />

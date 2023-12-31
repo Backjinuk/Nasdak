@@ -1,22 +1,29 @@
-import {CategoryType, FilesType, LedgerType, location} from "../../TypeList";
+import {CategoryType, FilesType, LedgerType, location} from "../TypeList";
 import axios from "axios";
 import {useEffect, useState} from "react";
-import Ledger from "../Ledger";
+import Ledger from "./Ledger";
 import Swal from "sweetalert2";
-import KakaoMap2 from "./KakaoMap2";
 import DeleteIcon from '@mui/icons-material/Delete';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import {red} from "@mui/material/colors";
+import KakaoMap2 from "MapComponont/LedgerMapComponont/KakaoMap2";
 
 
 export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any}){
 
-    const [price, setPrice]               = useState(ledger.price);
-    const [location, setLocation]         = useState<location>(ledger.location);
-    const [comment, setComment]             = useState(ledger.comment);
-    const [lodinMap, setLodingMap]       = useState(false);
+    const [price, setPrice] = useState(() => ledger.price);
+    const [location, setLocation] = useState(() => ledger.location);
+    const [comment, setComment] = useState(() => ledger.comment);
+    const [lodinMap, setLodingMap] = useState(false);
     const [checkedList, setCheckedList] = useState([]);
+
+    useEffect(() => {
+        setPrice(ledger.price);
+        setLocation(ledger.location);
+        setComment(ledger.comment);
+    }, [ledger]);
+
 
     function ledgerUpdate(){
         let frm = $("form[name=updateLedger]").serializeArray();
@@ -59,8 +66,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
             }else{
 
                 let formData = formDataArray();
+                // formData 배열이 비어있지 않고, 첫 번째 요소의 fileOwnerNo가 null이 아닌 경우에만 실행
+                // @ts-ignore
+                if (formData.length > 0) {
+                    fileUpload(formData, String(fileOwnerNo));
+                }
 
-                fileUpload(formData, String(fileOwnerNo) );
 
                 Swal.fire({
                     icon: 'success',
@@ -110,8 +121,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
 
     function formDataArray(){
         const file = document.getElementById("file2");
-
-        console.log("file : " + file);
 
         const formData = new FormData();
 

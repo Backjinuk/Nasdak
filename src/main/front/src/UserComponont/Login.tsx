@@ -58,7 +58,7 @@ export default function Login() {
                 }
                 sessionStorage.setItem("userId", id);
                 sessionStorage.setItem("userNo", res.data.userNo);
-
+                sessionStorage.setItem("userDto", JSON.stringify({ userId: id, userNo: res.data.userNo }));
                 //const accessToken = res.data;
                 // axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken.jwt}`;
                 // document.cookie = `jwtCookie=Bearer ${accessToken.jwt}`;

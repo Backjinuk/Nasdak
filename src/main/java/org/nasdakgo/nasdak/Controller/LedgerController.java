@@ -77,6 +77,14 @@ public class LedgerController {
 
     }
 
+    @RequestMapping("locationList")
+    public List<LedgerDto> locationList(@RequestBody UserDto usersDto){
+        return ledgerService.findAllBylocation(modelMapper.map(usersDto, User.class))
+                            .stream()
+                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                            .collect(Collectors.toList());
+    }
+
     /**
      *
      * @param ledgerDto

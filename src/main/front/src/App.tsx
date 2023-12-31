@@ -5,6 +5,7 @@ import UserInfo from "UserComponont/UserInfo";
 import { CookiesProvider } from "react-cookie";
 import FindUser from "UserComponont/FindUser";
 import NaverLogin from "UserComponont/NaverLogin";
+import MapLocation from "./MapComponont/MapLocation";
 declare global {
   interface Window {
     naver?: any;
@@ -24,6 +25,7 @@ function App() {
                   <Route path={"/UserInfo"} element={<UserInfo/>}/>
                   <Route path={"/findId"} element={<FindUser/>}/>
                   <Route path={"/naver"} element={<NaverLogin/>}/>
+                  <Route path={"/MapLocation"} element={<MapLocation/>} />
               </Routes>
           </Router>
         </CookiesProvider>

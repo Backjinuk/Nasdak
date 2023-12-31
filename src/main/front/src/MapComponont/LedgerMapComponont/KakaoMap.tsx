@@ -73,8 +73,6 @@ export default function KakaoMap({LocationAppend, lodingEvent} : any ){
 
                 setX(result[0].x );  setY(result[0].y );
 
-                console.log(coords2)
-
                 // 결과값으로 받은 위치를 마커로 표시합니다
                 marker.setMap(map );
                 marker.setPosition(coords2 );
@@ -106,7 +104,6 @@ export default function KakaoMap({LocationAppend, lodingEvent} : any ){
 
                     setX(mouseEvent.latLng.La ); setY(mouseEvent.latLng.Ma );
 
-                    console.log(mouseEvent.latLng );
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
                     //alert(result[0].road_address.address_name);
@@ -137,7 +134,6 @@ export default function KakaoMap({LocationAppend, lodingEvent} : any ){
 
         axios.post(`http://ip-api.com/json/${location.data.IPv4}`
         ).then(res => {
-            console.log(res.data)
             setY(res.data.lat); setX(res.data.lon);
         }).catch(error => {
             console.log(error)

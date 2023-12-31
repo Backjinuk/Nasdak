@@ -1,9 +1,7 @@
 package org.nasdakgo.nasdak.Repository;
 
 import org.apache.ibatis.annotations.Param;
-import org.nasdakgo.nasdak.Entity.Category;
-import org.nasdakgo.nasdak.Entity.Ledger;
-import org.nasdakgo.nasdak.Entity.LedgerType;
+import org.nasdakgo.nasdak.Entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -70,4 +68,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     @Transactional
     @Query("update Ledger l set l.category.categoryNo = :after where l.category.categoryNo in :before")
     void moveCategoryToCategory(List<Long> before, long after);
+
+    @Query("SELECT l FROM Ledger  l WHERE l.user.userNo = :userNo AND l.location.x != 0 AND l.location.y != 0 AND l.location.address IS NOT NULL")
+    List<Ledger> findAllByLocation(@Param("userNo") long userNo);
 }

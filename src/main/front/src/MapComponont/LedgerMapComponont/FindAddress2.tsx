@@ -3,7 +3,7 @@ import {useEffect} from "react";
 
 
 
-export default function FindAddress({ChangeAddress, address} : any) {
+export default function FindAddress2({ChangeAddress, address} : any) {
 
     // @ts-ignore
     const {daum} = window;

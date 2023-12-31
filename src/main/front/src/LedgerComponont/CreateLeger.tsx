@@ -1,10 +1,10 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 import {useEffect, useState} from "react";
-import {CategoryType, location} from "../../TypeList";
-import "../Ledger.css"
-import Ledger from "../Ledger";
-import KakaoMap from "./KakaoMap";
+import {CategoryType, location} from "../TypeList";
+import "./Ledger.css"
+import Ledger from "./Ledger";
+import KakaoMap from "../MapComponont/LedgerMapComponont/KakaoMap";
 
 
 export default function CreateLeger({ChangeEvent, categoryList} : any){

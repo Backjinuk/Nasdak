@@ -1,10 +1,20 @@
 import {useEffect, useState} from "react";
 import "./Map.css"
 import axios from "axios";
-import {LedgerType, location} from "../TypeList";
+import {CategoryType, LedgerType, location} from "../TypeList";
+import MapLedgerDetail from "./MapLedgerDetail";
+import Button from "@mui/material/Button";
+import {useNavigate} from "react-router-dom";
+import LedgerDetail from "../LedgerComponont/ledgerDetail";
+import Swal from "sweetalert2";
 export default function MapLocation() {
 
     const [locationList , setLocationList] = useState<LedgerType[]>()
+    const [ledger , setLedger] = useState<LedgerType>()
+    const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
+    const [changeEvent, setChangeEvent] = useState(false);
+    const navigate = useNavigate();
+
 
     // @ts-ignore
     const {kakao} = window;
@@ -47,7 +57,7 @@ export default function MapLocation() {
             removeAllChildNods(listEl);
 
             // 지도에 표시되고 있는 마커를 제거합니다
-            //removeMarker();
+            removeMarker();
 
             for ( var i=0; i<places.length; i++ ) {
 
@@ -55,35 +65,46 @@ export default function MapLocation() {
 
                 var placePosition = new kakao.maps.LatLng(places[i].location.y, places[i].location.x),
                     // @ts-ignore
-                    //marker = addMarker(placePosition, places[i].location.y, places[i].location.x, i , places[i].comment),
+                    marker = addMarker(placePosition, i , places[i].comment),
                     itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element를 생성합니다
-
-                console.log("placePostion : " + placePosition );
 
                 // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해z
                 // LatLngBounds 객체에 좌표를 추가합니다
                 bounds.extend(placePosition);
 
+
                 // 마커와 검색결과 항목에 mouseover 했을때
                 // 해당 장소에 인포윈도우에 장소명을 표시합니다
                 // mouseout 했을 때는 인포윈도우를 닫습니다
-               /* (function(marker, title) {
+                // @ts-ignore
+                (function(marker, title,  fileOwnerNo ) {
                     kakao.maps.event.addListener(marker, 'mouseover', function() {
                         displayInfowindow(marker, title);
                     });
+
+                    kakao.maps.event.addListener(marker,  'click', function() {
+                        MapLedgerDetailFn(fileOwnerNo)
+                        //alert(fileOwnerNo);
+                    })
 
                     kakao.maps.event.addListener(marker, 'mouseout', function() {
                         infowindow.close();
                     });
 
-                    itemEl.onmouseover =  function () {
+/*                    itemEl.onmouseover =  function () {
                         displayInfowindow(marker, title);
+                    };
+*/
+
+                    itemEl.onclick  =  function () {
+                        displayInfowindowMoveLocation(marker, title);
+              
                     };
 
                     itemEl.onmouseout =  function () {
                         infowindow.close();
                     };
-                })(marker, places[i].location.address);*/
+                })(marker, places[i].location.address, places[i].fileOwnerNo);
 
                 fragment.appendChild(itemEl);
             }
@@ -100,13 +121,19 @@ export default function MapLocation() {
 
         // 검색결과 항목을 Element로 반환하는 함수입니다
         function getListItem(index: number, places: LedgerType) {
-
             var el = document.createElement('li'),
-                itemStr = '<span class="markerbg marker_' + (index+1) + '"></span>' +
-                    '<div class="info">' +
-                    '   <h5>' + places.comment + '</h5>' +
-                    '    <span>' +  places.location.address  + '</span>' +
-                    '    <span class="tel">' + places.price  + '</span>' +
+                itemStr =
+                    '<span class="markerbg marker_' + (index+1) + '"></span>' +
+                    '<div style="display : flex;" >' +
+                    '   <div class="info">' +
+                    '       <h5>' + places.comment + '</h5>' +
+                    '       <span>' +  places.location.address  + '</span>' +
+                    '       <span class="tel">' + places.price  + '</span>' +
+                    '   </div>' +
+                    '   <div>' +
+                    '      <button class="MapLedgerUpdate" value="'+places.fileOwnerNo+'">수정</button>' +
+                    '      <button class="MapLedgerDelete" value="'+places.fileOwnerNo+'">삭제</button>' +
+                    '   </div>' +
                     '</div>';
 
             el.innerHTML = itemStr;
@@ -116,7 +143,7 @@ export default function MapLocation() {
         }
 
         // 마커를 생성하고 지도 위에 마커를 표시하는 함수입니다
-/*        function addMarker(position: any,x2 : number, y2  : number, idx: number, title: undefined) {
+        function addMarker(position: any, idx: number, title: undefined) {
 
             //let placePosition = new kakao.maps.LatLng(y, x)
 
@@ -127,28 +154,25 @@ export default function MapLocation() {
                     spriteOrigin : new kakao.maps.Point(0, (idx*46)+10), // 스프라이트 이미지 중 사용할 영역의 좌상단 좌표
                     offset: new kakao.maps.Point(13, 37) // 마커 좌표에 일치시킬 이미지 내에서의 좌표
                 },
-                markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imgOptions),
-                var marker = new kakao.maps.Marker();
-
-
-            console.log("x : " + x2);
-            console.log("y : " + y2);
-
-            marker.setPosition( new kakao.maps.LatLng(y2, x2) )
-
-            console.log('Marker Position:', marker.getPosition());
-
-            marker.setMap(map); // 지도 위에 마커를 표출합니다
-            markers.push(marker);  // 배열에 생성된 마커를 추가합니다
-
-
-            console.log('Is Marker on Map?', marker.getMap());
-
-
-            return marker;
-        }*/
+                markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imgOptions)
+                var marker = new kakao.maps.Marker({
+                    position : position,
+                    image : markerImage,
+                    map : map
+                });
 
 /*
+            marker.setImage(markerImage)
+            marker.setPosition( position )
+            marker.setMap(map);
+*/
+            // 지도 위에 마커를 표출합니다
+            markers.push(marker);  // 배열에 생성된 마커를 추가합니다
+
+            return marker;
+        }
+
+
         // 지도 위에 표시되고 있는 마커를 모두 제거합니다
         function removeMarker() {
             for ( var i = 0; i < markers.length; i++ ) {
@@ -156,51 +180,27 @@ export default function MapLocation() {
             }
             markers = [];
         }
-*/
-
-        // 검색결과 목록 하단에 페이지번호를 표시는 함수입니다
-        function displayPagination(pagination: { last: number; current: number; gotoPage: (arg0: number) => void; }) {
-            var paginationEl = document.getElementById('pagination'),
-                fragment = document.createDocumentFragment(),
-                i;
-
-            // 기존에 추가된 페이지번호를 삭제합니다
-            // @ts-ignore
-            while (paginationEl.hasChildNodes()) {
-                // @ts-ignore
-                paginationEl.removeChild (paginationEl.lastChild);
-            }
-
-            for (i=1; i<=pagination.last; i++) {
-                var el = document.createElement('a');
-                el.href = "#";
-                // @ts-ignore
-                el.innerHTML = i;
-
-                if (i===pagination.current) {
-                    el.className = 'on';
-                } else {
-                    el.onclick = (function(i) {
-                        return function() {
-                            pagination.gotoPage(i);
-                        }
-                    })(i);
-                }
-
-                fragment.appendChild(el);
-            }
-            // @ts-ignore
-            paginationEl.appendChild(fragment);
-        }
 
         // 검색결과 목록 또는 마커를 클릭했을 때 호출되는 함수입니다
         // 인포윈도우에 장소명을 표시합니다
         function displayInfowindow(marker: any, title: string) {
-            var content = '<div style="padding:5px;z-index:1;">' + title + '</div>';
+            var content = '<div style="padding:5px;z-index:1;">' + title  + '</div>';
 
             infowindow.setContent(content);
             infowindow.open(map, marker);
+
         }
+
+        function displayInfowindowMoveLocation(marker: any, title: string) {
+            var content = '<div style="padding:5px;z-index:1;">' + title  + '</div>';
+
+            infowindow.setContent(content);
+            infowindow.open(map, marker);
+
+            map.setCenter(marker.getPosition() );
+            map.setLevel(2);
+        }
+
 
         // 검색결과 목록의 자식 Element를 제거하는 함수입니다
         function removeAllChildNods(el: HTMLElement | null) {
@@ -210,16 +210,91 @@ export default function MapLocation() {
                 el.removeChild (el.lastChild);
             }
         }
-    }, []);
 
-    // @ts-ignore
+    }, [changeEvent]);
+
+    const  MapLedgerDetailFn = (fileOwnerNo  : any) => {
+        //alert(key)
+        axios.post("/api/ledger/ledgerDetail",JSON.stringify({
+            "fileOwnerNo" : fileOwnerNo
+        }), {
+            headers : {
+                "Content-Type" : "application/json"
+            }
+        }).then((res) => {
+            setLedger(res.data);
+            // @ts-ignore
+            $("#ledgerDetail").modal("show");
+        })
+
+        axios.post("/api/category/getCategoryList", sessionStorage.getItem("userDto"),
+            { headers : {"Content-Type" : "application/json"}
+            }).then(res => {
+            console.log(res.data );
+            setCategoryList(res.data);
+        })
+    }
+
+    const MapLedgerDeleteFn = (fileOwnerNo : any ) => {
+        axios.post("/api/ledger/ledgerDelete", JSON.stringify({
+            "fileOwnerNo" : fileOwnerNo
+        }), {
+            headers : {
+                "Content-Type" : "application/json"
+            }
+        }).then( res => {
+            axios.post("/api/ledger/deleteFile", JSON.stringify({
+                "fileOwnerNo" : res.data.fileOwnerNo
+            }), {
+                headers : {
+                    "Content-Type" : "application/json"
+                }
+            }).catch (err => {
+                console.error(err)
+            })
+
+            ChangeEvent();
+
+            Swal.fire({
+                icon : "success",
+                title : "삭제 되었습니다." ,
+                timer : 2000
+            })
+        }).catch (err => {
+            Swal.fire({
+                icon : "error",
+                title : "에러가 발생하였습니다." ,
+                timer : 2000
+            })
+
+            console.error( err )
+        })
+    }
+
+    $(".MapLedgerUpdate").off().on("click", function(){
+        //alert($(this).val() );
+        MapLedgerDetailFn($(this).val());
+    })
+
+    $(".MapLedgerDelete").off().on("click", function(){
+        MapLedgerDeleteFn($(this).val());
+    })
+
+    const ChangeEvent = () =>{
+        if(changeEvent){
+            setChangeEvent(false);
+        }else{
+            setChangeEvent(true);
+        }
+    }
+
     return (
         <>
             <div className="map_wrap">
                 <div id="MapLocation" style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}></div>
 
                 <div id="menu_wrap" className="bg_white">
-                    <div className="option">
+{/*                    <div className="option">
                         <div>
                                 키워드 : <input type="text" defaultValue="이태원 맛집" id="keyword"/>
                                 <button type="submit" onClick={() =>
@@ -228,11 +303,17 @@ export default function MapLocation() {
                                 }>검색하기</button>
                         </div>
                     </div>
+*/}
                     <hr />
+                    <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%" }}>
+                        <Button variant="outlined" onClick={() => navigate("/ledger")}>메인페이지</Button>
+                    </div>
                     <ul id="placesList"></ul>
                     <div id="pagination"></div>
                 </div>
             </div>
+
+            {ledger && ( <LedgerDetail categoryList={categoryList} ledger={ledger}  ChangeEvent={ChangeEvent}/> )}
         </>
     )
 }

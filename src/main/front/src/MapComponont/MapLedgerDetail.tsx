@@ -1,16 +1,12 @@
 import {CategoryType, FilesType, LedgerType, location} from "../TypeList";
 import axios from "axios";
 import {useEffect, useState} from "react";
-import Ledger from "./Ledger";
 import Swal from "sweetalert2";
 import DeleteIcon from '@mui/icons-material/Delete';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
-import {red} from "@mui/material/colors";
-import KakaoMap2 from "MapComponont/LedgerMapComponont/KakaoMap2";
 
-
-export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any}){
+export default function  LedgerDetail({categoryList, ledger} : {categoryList : CategoryType[], ledger : LedgerType}){
 
     const [price, setPrice] = useState(() => ledger.price);
     const [location, setLocation] = useState(() => ledger.location);
@@ -23,6 +19,7 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
         setLocation(ledger.location);
         setComment(ledger.comment);
     }, [ledger]);
+
 
 
     function ledgerUpdate(){
@@ -68,10 +65,10 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                 let formData = formDataArray();
                 // formData 배열이 비어있지 않고, 첫 번째 요소의 fileOwnerNo가 null이 아닌 경우에만 실행
                 // @ts-ignore
-                if (formData && formData.getAll('file').length > 0) {
-                    // @ts-ignore
+                if (formData.length > 0) {
                     fileUpload(formData, String(fileOwnerNo));
                 }
+
 
                 Swal.fire({
                     icon: 'success',
@@ -270,13 +267,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
     function UtilsEvent(){
         // @ts-ignore
         $("#ledgerDetail").modal('hide');
-        ChangeEvent();
+        //ChangeEvent();
     }
 
 
     return (
         <>
-        <div className="modal fade " id="ledgerDetail" data-bs-keyboard="false"
+        <div className="modal fade " id="MapLedgerDetail" data-bs-keyboard="false"
              aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-1}>
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
@@ -299,13 +296,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                                             <option key={index} value={category.categoryNo}>{category.content}</option>
                                         ))}
                                     </select>
-
                                     <label htmlFor="floatingSelectGrid">카테고리를 선택해 주세요</label>
                                 </div>
                             </div>
 
                             <div className="form-floating mb-3">
-                                <select name={"ledgerType"} className="form-select" id="floatingSelectGrid" defaultValue={ledger.ledgerType}>
+                                <select name={"ledgerType"} className="form-select" id="floatingSelectGrid"
+                                        defaultValue={ledger.ledgerType}>
                                     <option value="SAVE">입금</option>
                                     <option value="DEPOSIT">출금</option>
                                 </select>
@@ -323,12 +320,13 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             {/*value={location?.x} onChange={(e) => {setLocation(e.target.value?)}}*/}
                             <div className="form-floating mb-3">
                                 <input type="text" name={"location"} className="form-control" id="location"
-                                   onClick={() => {
-                                       setLodingMap(lodinMap ? false : true);
-                                    // @ts-ignore
-                                    $("#KakaoMap2").modal("show")}}
+                                       onClick={() => {
+                                           setLodingMap(lodinMap ? false : true);
+                                           // @ts-ignore
+                                           $("#KakaoMap2").modal("show")
+                                       }}
                                        placeholder="지역을 입력해주세요" value={location.address}
-                                     readOnly={true}
+                                       readOnly={true}
                                 />
                                 <label htmlFor="location">지역</label>
                             </div>
@@ -343,11 +341,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             </div>
 
                             <div className="input-group mb-3">
-                                <input type="file" multiple className="form-control uploadFile" id="file2" name={"file"}/>
+                                <input type="file" multiple className="form-control uploadFile" id="file2"
+                                       name={"file"}/>
                                 <label className="input-group-text" htmlFor="file">Upload</label>
                             </div>
                             {/*fileDtoList 여부에 따라 ImageBox 출력 하기*/}
-                            {ledger.filesDtoList.length > 0 && (
+                            {ledger && ledger.filesDtoList.length > 0 && (
                                 <>
                                     <div className={"deleteImageFile"}>
                                         <Tooltip title={"삭제하기"}>
@@ -376,16 +375,16 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                         <div className="modal-footer">
 
                             <button type="button" className="btn btn-primary" onClick={() => ledgerUpdate()}>수정</button>
-                            <button type="button" className="btn btn-danger" onClick={() => ledgerDelete(ledger.fileOwnerNo)}>삭제</button>
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소</button>
+                            <button type="button" className="btn btn-danger"
+                                    onClick={() => ledgerDelete(ledger.fileOwnerNo)}>삭제
+                            </button>
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 목록</button>
 
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-
-        <KakaoMap2 LocationAppend={LocationAppend} location={location as location} lodinMap={lodinMap}/>
 
         </>
 

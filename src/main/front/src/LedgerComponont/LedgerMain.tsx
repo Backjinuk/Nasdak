@@ -73,9 +73,6 @@ export default function LedgerMain(){
         })
     }
 
-    function MapLocation(){
-        navigate("/MapLocation");
-    }
 
     return(
         <div>
@@ -83,7 +80,10 @@ export default function LedgerMain(){
                 <CreateLeger ChangeEvent={ChangeEvent} categoryList={categoryList}/>
                 <CategoryList changeEvent={ChangeEvent} categoryList={categoryList}/>
                 <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%" }}>
-                    <Button variant="outlined" onClick={() => MapLocation()}>지도 모아보기</Button>
+                    <Button variant="outlined" onClick={() => navigate("/MapLocation") }>지도 모아보기</Button>
+                </div>
+                <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%" }}>
+                    <Button variant="outlined" onClick={() => navigate("/calender")}>달력으로 보기</Button>
                 </div>
                 <UserInfoButton/>
                 <Logout/>

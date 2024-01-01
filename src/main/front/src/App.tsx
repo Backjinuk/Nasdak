@@ -6,6 +6,7 @@ import Login from "UserComponont/Login";
 import UserInfo from "UserComponont/UserInfo";
 import FindUser from "UserComponont/FindUser";
 import NaverLogin from "UserComponont/snsComponent/NaverLogin";
+import CalenderMain from "./CalenderCompoont/CalenderMain";
 import KakaoLogin from "UserComponont/snsComponent/KakaoLogin";
 import KakaoInit from "UserComponont/snsComponent/KakaoInit";
 import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
@@ -35,6 +36,7 @@ function App() {
 
                   <Route path={"/Ledger"} element={<LedgerMain/>}/>
                   <Route path={"/MapLocation"} element={<MapLocation/>} />
+                  <Route path={"/calender"} element={<CalenderMain/>} />
               </Routes>
           </Router>
         </CookiesProvider>

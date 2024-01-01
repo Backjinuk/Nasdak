@@ -11,7 +11,7 @@ export default function UserInfoButton(){
     return (
     <div style={{
 height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%"
-}}>
+        }}>
     <Button variant="outlined" onClick={()=>{handleClick()}}>내 정보 조회</Button>
     </div>)
 }

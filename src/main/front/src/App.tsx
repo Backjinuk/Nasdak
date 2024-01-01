@@ -6,6 +6,7 @@ import { CookiesProvider } from "react-cookie";
 import FindUser from "UserComponont/FindUser";
 import NaverLogin from "UserComponont/snsComponent/NaverLogin";
 import MapLocation from "./MapComponont/MapLocation";
+import CalenderMain from "./CalenderCompoont/CalenderMain";
 import KakaoLogin from "UserComponont/snsComponent/KakaoLogin";
 import KakaoInit from "UserComponont/snsComponent/KakaoInit";
 import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
@@ -17,6 +18,7 @@ declare global {
 }
 
 function App() {
+
   return (
     <div className="App">
       <header className="App-header">
@@ -32,6 +34,7 @@ function App() {
                   <Route path={"/kakaoInit"} element={<KakaoInit/>}/>
                   <Route path={"/kakaoLogout"} element={<KakaoLogout/>}/>
                   <Route path={"/MapLocation"} element={<MapLocation/>} />
+                  <Route path={"/calender"} element={<CalenderMain/>} />
               </Routes>
           </Router>
         </CookiesProvider>

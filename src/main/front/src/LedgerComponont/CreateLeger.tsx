@@ -9,7 +9,7 @@ import KakaoMap from "../MapComponont/LedgerMapComponont/KakaoMap";
 
 export default function CreateLeger({ChangeEvent, categoryList} : any){
 
-    const [location, setLocation] = useState<location>();
+    const [location, setLocation] = useState<location>({x : 0, y : 0, address : ""});
     const [lodingEvent, setLodingEvent] = useState(true);
 
     const css : any ={
@@ -38,11 +38,9 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                 };
             }
         }
-
-        console.log(location);
-
         LedgerDto["userDto"] = userDto;
         LedgerDto["location"] = location;
+
 
         axios.post("/api/ledger/ledgerSave", JSON.stringify({LedgerDto}), {
             headers: {
@@ -88,15 +86,12 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
     function fileUpload(formData: FormData, fileOwnerNo : string){
         formData.append('fileOwnerNo', fileOwnerNo);
 
-        console.log(formData);
-
         axios.post("/api/ledger/uploadFile", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 // "Authorization": Cookies.get("jwtCookie")
             }
         }).then(response => {
-            console.log(response.data); // 서버 응답 확인용 로그
         }).catch(error => {
             console.error(error); // 오류 발생 시 콘솔에 표시
         });
@@ -127,8 +122,6 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
             y : y,
             address : address
         })
-
-        console.log("x : " + x + " Y : " + y + "address : " + address   );
 
         // @ts-ignore
         $("#KakaoMap").modal("hide")

@@ -68,10 +68,10 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                 let formData = formDataArray();
                 // formData 배열이 비어있지 않고, 첫 번째 요소의 fileOwnerNo가 null이 아닌 경우에만 실행
                 // @ts-ignore
-                if (formData.length > 0) {
+                if (formData && formData.getAll('file').length > 0) {
+                    // @ts-ignore
                     fileUpload(formData, String(fileOwnerNo));
                 }
-
 
                 Swal.fire({
                     icon: 'success',

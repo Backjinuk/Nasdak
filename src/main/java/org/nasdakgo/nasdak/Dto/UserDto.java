@@ -3,6 +3,7 @@ package org.nasdakgo.nasdak.Dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nasdakgo.nasdak.Entity.SNSType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public class UserDto {
     private boolean sendKakaoTalk;
 
     private boolean sendWebPush;
+
+    private SNSType snsType;
 
     private List<CollectionDto> collectionDtoList = new ArrayList<>();
 }

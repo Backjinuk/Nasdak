@@ -23,13 +23,6 @@ public class CategoryService {
     @Value("${defaultCategories}")
     private String[] defaultCategories;
 
-    @PostConstruct
-    public void asdf(){
-        for (String defaultCategory : defaultCategories) {
-            System.out.println("defaultCategory = " + defaultCategory);
-        }
-    }
-
     public void saveDefaultCategory(User user) {
         List<Category> categoryList = new ArrayList<>();
         for (String defaultCategory : defaultCategories) {

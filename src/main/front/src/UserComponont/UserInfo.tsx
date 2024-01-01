@@ -16,6 +16,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import logout from 'logout';
 
 function Copyright(props : any) {
     const navigate = props.navigate;
@@ -125,26 +126,36 @@ export default function UserInfo() {
 
     function deleteUser(){
         axios.post("/api/user/deleteUser", JSON.stringify({
-            userNo : sessionStorage.getItem('userNo')
+            userNo : sessionStorage.getItem('userNo'),
+            snsType : sessionStorage.getItem('snsType')
         }), {
             headers : {
                 'Content-Type' : 'application/json'
             }
         }).then(res=>{
-            if(sessionStorage.getItem('snsType')!==null){
-                axios.post("/api/sns/"+String(sessionStorage.getItem('snsType')).toLowerCase()+"/delete",JSON.stringify({
-                    userNo : sessionStorage.getItem('userNo'),
-                    accessToken : sessionStorage.getItem('accessToken')
-                }),{
-                    headers:{
-                        'Content-Type' : 'application/json'
-                    }
-                })
+            const snsType = sessionStorage.getItem('snsType')
+            switch(snsType){
+                case 'NAVER':
+                    axios.post("/api/sns/"+snsType.toLowerCase()+"/delete",JSON.stringify({
+                        userNo : sessionStorage.getItem('userNo'),
+                        accessToken : sessionStorage.getItem('accessToken')
+                    }),{
+                        headers:{
+                            'Content-Type' : 'application/json'
+                        }
+                    })
+                    break;
+                case 'KAKAO':
+                    window.Kakao.API.request({
+                        url: '/v1/user/unlink',
+                      })
+                    break;
+                case 'GOOGLE':
+                    break;
+                default :
+                    break;
             }
-            sessionStorage.removeItem('userNo')
-            sessionStorage.removeItem('userId')
-            sessionStorage.removeItem('snsType')
-            sessionStorage.removeItem('accessToken')
+            logout()
             navigate("/")
         })
     }

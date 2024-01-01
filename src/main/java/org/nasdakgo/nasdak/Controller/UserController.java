@@ -7,6 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
+import org.nasdakgo.nasdak.Service.SNSService;
 import org.nasdakgo.nasdak.Service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ public class UserController {
 
     private final UserService userService;
     private final CategoryService categoryService;
+    private final SNSService snsService;
     private final ModelMapper modelMapper;
     @Value("${upload.file.profile}")
     private String uploadProfilePath;
@@ -84,7 +86,11 @@ public class UserController {
 
     @RequestMapping("deleteUser")
     public void deleteUser(@RequestBody UserDto userDto){
-        userService.deleteUser(toUser(userDto));
+        User user = toUser(userDto);
+        if(userDto.getSnsType()!=null){
+            snsService.deleteUser(user);
+        }
+        userService.deleteUser(user);
     }
 
     @RequestMapping("logout")

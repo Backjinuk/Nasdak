@@ -37,6 +37,26 @@ public class SNSController {
     @Value("${download.file.profile}")
     private String downloadProfilePath;
 
+    ////////////////////////////// 공통 //////////////////////////////
+    private SNSDto snsLogin(SNS sns){
+        // 로그인 수행
+        SNS find = snsService.login(sns);
+
+        // 계정이 없을 경우 신규 가입
+        if(find==null){
+            find = snsService.signUp(sns);
+            categoryService.saveDefaultCategory(find.getUser());
+        }
+
+        if(sns.getSnsType()==SNSType.KAKAO){
+            find.setRefreshToken(sns.getRefreshToken());
+            snsService.updateRefreshToken(find);
+        }
+        return toSNSDto(find);
+    }
+    ////////////////////////////// 공통 //////////////////////////////
+
+    ////////////////////////////// NAVER //////////////////////////////
     // 토큰 발행부터 로그인까지 실행
     @RequestMapping("/naver/getToken")
     public SNSDto naverGetToken(@RequestBody Map<String, String> map) throws JsonProcessingException {
@@ -45,17 +65,17 @@ public class SNSController {
         Map<String, String> tokenData = objectMapper.readValue(json, new TypeReference<Map<String, String>>() {});
 
         // 프로필 정보 받아오기
-        String profileJson = snsService.getProfile(tokenData.get("access_token"));
+        String profileJson = snsService.naverGetProfile(tokenData.get("access_token"));
         Map<String, Object> profileResponse = objectMapper.readValue(profileJson, new TypeReference<Map<String, Object>>() {});
         Map<String, String> profile = (Map<String, String>)profileResponse.get("response");
-        SNSDto snsDto = SNSDto.builder()
+        SNS sns = SNS.builder()
                 .snsId(profile.get("id"))
                 .refreshToken(tokenData.get("refresh_token"))
                 .snsType(SNSType.NAVER)
                 .build();
 
         // 로그인 수행
-        SNSDto loginData = this.naverLogin(snsDto);
+        SNSDto loginData = this.snsLogin(sns);
         loginData.setAccessToken(tokenData.get("access_token"));
         return loginData;
     }
@@ -63,20 +83,7 @@ public class SNSController {
     @RequestMapping("/naver/getProfile")
     public String naverGetProfile(@RequestBody Map<String, String> map){
         String accessToken = map.get("access_token");
-        return snsService.getProfile(accessToken);
-    }
-
-    @RequestMapping("/naver/login")
-    public SNSDto naverLogin(@RequestBody SNSDto snsDto){
-        // 로그인 수행
-        SNS sns = snsService.login(toSNS(snsDto));
-
-        // 계정이 없을 경우 신규 가입
-        if(sns==null){
-            sns = snsService.signUp(toSNS(snsDto));
-            categoryService.saveDefaultCategory(sns.getUser());
-        }
-        return toSNSDto(sns);
+        return snsService.naverGetProfile(accessToken);
     }
 
     @RequestMapping("/naver/delete")
@@ -104,6 +111,30 @@ public class SNSController {
         SNS sns = snsService.findByUser(User.builder().userNo(snsDto.getUserNo()).build());
         snsService.naverRefreshCheck(snsDto.getAccessToken());
     }
+    ////////////////////////////// NAVER //////////////////////////////
+
+    ////////////////////////////// KAKAO //////////////////////////////
+    @RequestMapping("/kakao/getToken")
+    public SNSDto kakaoGetToken(@RequestBody Map<String, String> map) throws JsonProcessingException {
+        // 토큰 데이터 받아오기
+        String jsonToken = snsService.kakaoGetToken(map.get("code"));
+        Map<String, String> tokenData = objectMapper.readValue(jsonToken, new TypeReference<Map<String, String>>() {});
+
+        // 프로필 정보 받아오기
+        String profileJson = snsService.kakaoGetProfile(tokenData.get("access_token"));
+        Map<String, Object> profile = objectMapper.readValue(profileJson, new TypeReference<Map<String, Object>>() {});
+        SNS sns = SNS.builder()
+                .snsId(profile.get("id").toString())
+                .refreshToken(tokenData.get("refresh_token"))
+                .snsType(SNSType.KAKAO)
+                .build();
+
+        // 로그인 수행
+        SNSDto loginData = this.snsLogin(sns);
+        loginData.setAccessToken(tokenData.get("access_token"));
+        return loginData;
+    }
+    ////////////////////////////// KAKAO //////////////////////////////
 
     // Entity <-> Dto 변환
     private SNS toSNS(SNSDto snsDto){

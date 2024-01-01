@@ -23,6 +23,4 @@ public class SNSDto {
     private SNSType snsType;
 
     private String accessToken;
-
-    private String refreshToken;
 }

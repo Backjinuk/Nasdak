@@ -84,6 +84,7 @@ export default function Login() {
         sessionStorage.setItem('accessToken',token)
         sessionStorage.setItem('userNo', userNo)
         sessionStorage.setItem('snsType', snsType)
+        sessionStorage.setItem("userDto", JSON.stringify({ userId: id, userNo: userNo }));
         sessionStorage.removeItem('userId')
         navigate("/ledger")
     }

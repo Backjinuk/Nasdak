@@ -1,7 +1,6 @@
 package org.nasdakgo.nasdak.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.SNS;
 import org.nasdakgo.nasdak.Entity.User;
@@ -28,8 +27,6 @@ public class SNSService {
     private final SNSRepository snsRepository;
 
     private final UserRepository userRepository;
-
-    private final ObjectMapper objectMapper;
 
     @Value("${naver.client.id}")
     private String client_id;

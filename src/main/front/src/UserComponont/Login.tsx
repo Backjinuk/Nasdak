@@ -49,6 +49,7 @@ export default function Login() {
                 Swal.fire({
                     icon: 'success',
                     title: '로그인 되었습니다.',
+                    timer : 1000
                 });
 
                 if(remember){

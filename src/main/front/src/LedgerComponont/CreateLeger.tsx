@@ -1,11 +1,22 @@
 import axios from "axios";
 import Swal from "sweetalert2";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {CategoryType, location} from "../TypeList";
 import "./Ledger.css"
 import Ledger from "./Ledger";
 import KakaoMap from "../MapComponont/LedgerMapComponont/KakaoMap";
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import {Box, Input} from "@mui/material";
+import Button from "@mui/material/Button";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import * as React from "react";
+import Typography from "@mui/material/Typography";
 
+
+function VisuallyHiddenInput(props: { type: string }) {
+    return null;
+}
 
 export default function CreateLeger({ChangeEvent, categoryList} : any){
 
@@ -31,7 +42,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
 
         for (let field of frm) {
             LedgerDto[field.name] = field.value;
-
+            console.log("filedId : " + field.name + " file.value : " + field.value)
             if (field.name === 'category_no') {
                 LedgerDto["categoryDto"] = {
                     categoryNo: field.value
@@ -40,6 +51,8 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
         }
         LedgerDto["userDto"] = userDto;
         LedgerDto["location"] = location;
+
+        console.log("ledgerDto : " + JSON.stringify({LedgerDto}))
 
 
         axios.post("/api/ledger/ledgerSave", JSON.stringify({LedgerDto}), {
@@ -117,11 +130,17 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
 
     const LocationAppend = (x : number ,y : number, address : any) => {
 
-        setLocation({
-            x : x,
-            y : y,
-            address : address
-        })
+        console.log("x :" + x + "y : " + y)
+        console.log("assress : "  + address     )
+
+        setLocation(prevLocation => ({
+            ...prevLocation,
+            x: x,
+            y: y,
+            address: address
+        }));
+
+        console.log(location);
 
         // @ts-ignore
         $("#KakaoMap").modal("hide")
@@ -130,11 +149,16 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
 
     return(
         <>
-            <div  style={css} >
-                <input type={"button"} className={"btn btn-bd-primary"} value={"글쓰기"}
-                       data-bs-toggle="modal"
-                       data-bs-target="#addLedger"/>
-            </div>
+
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+
+                <Button  sx={{ color: '#fff' }}
+                         data-bs-toggle="modal"
+                         data-bs-target="#addLedger">
+                    글쓰기
+                </Button>
+            </Box>
+
             <form></form>
             <div className="modal fade " id="addLedger" data-bs-keyboard="false"
                  aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-1}>
@@ -148,56 +172,62 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                         <form name={"addLedger"}>
                             <div className="modal-body">
 
-                                <div className="mb-3">
-                                    <div className="form-floating">
-
-                                        <select name={"category_no"} className="form-select" id="CategorySelectGrid">
-                                            <option>선택</option>
-                                            {categoryList.map((category : CategoryType , index : number) => {
-                                                return(
-                                                    <option key={index} value={category.categoryNo}>{category.content}</option>
-                                                )
-                                            })}
-                                       </select>
-
-                                        <label htmlFor="CategorySelectGrid">카테고리를 선택해 주세요</label>
-                                    </div>
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <select name={"ledgerType"} className="form-select" id="floatingSelectGrid">
-                                        <option value="SAVE">입금</option>
-                                        <option value="DEPOSIT">출금</option>
-                                    </select>
-                                    <label htmlFor="dw">입/출금</label>
+                                <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                    <TextField
+                                        fullWidth={true}
+                                        id="category_no"
+                                        name={"category_no"}
+                                        select
+                                        label="카테고리"
+                                        defaultValue="1"  // 초기에 선택되어야 하는 값으로 빈 문자열을 할당
+                                    >
+                                        {categoryList.map((category: CategoryType, index: number) => (
+                                            <MenuItem key={index} value={category.categoryNo}>
+                                                {category.content}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
                                 </div>
 
-                                <div className="form-floating mb-3">
-                                    <input type="text" name={"price"} className="form-control" id="price"
-                                           placeholder="가격을 입력해주세요"/>
-                                    <label htmlFor="price">가격</label>
+                                <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                    <TextField fullWidth={true} id="ledgerType" name={"ledgerType"} select label="입/출금"
+                                               defaultValue="DEPOSIT">
+                                        <MenuItem key={"DEPOSIT"} value={"DEPOSIT"}>출금</MenuItem>
+                                        <MenuItem key={"SAVE"} value={"SAVE"}>입금</MenuItem>
+                                    </TextField>
+
+                                </div>
+                                <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                    <TextField className={"md30"} fullWidth={true} id="price" label="가격을 입력해 주세요"
+                                               variant="outlined" name={"price"}/>
                                 </div>
 
-                                <div className="form-floating mb-3">
-                                    <input type="text" className="form-control" id="location"
-                                           placeholder="지역을 입력해주세요"
-                                           value={location?.address}
-                                           readOnly={true}
-                                            onClick={ () =>
-                                            {
-                                                setLodingEvent(lodingEvent ? false : true);
-                                                // @ts-ignore
-                                                $("#KakaoMap").modal("show") }
-                                            }
+                                <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                    <TextField className={"md30"} fullWidth={true} id="location" label="지역을 입력해 주세요"
+                                               variant="outlined" value={location?.address}
+                                               onMouseDown={() => {
+                                                   setLodingEvent(lodingEvent ? false : true);
+                                                   // @ts-ignore
+                                                   $("#KakaoMap").modal("show");
+                                               }}
 
+                                               onFocus={() =>{
+                                                   setLodingEvent(lodingEvent ? false : true);
+                                                   // @ts-ignore
+                                                   $("#KakaoMap").modal("show");
+                                               }}
                                     />
-                                    <label htmlFor="location">지역</label>
+                                </div>
+                                <div className={"mb30"} style={{marginBottom : "30px"}}>
+                                    <TextField className={"md30"} fullWidth={true} name="comment"  id="comment" label="내용을 입력해 주세요" variant="outlined"/>
                                 </div>
 
-                                <div className="form-floating mb-3">
-                                    <input type="text" name={"comment"} className="form-control" id="floatingSpassword"
-                                           placeholder="내용을 입력해주세요"/>
-                                    <label htmlFor="floatingSpassword">내용</label>
-                                </div>
+{/*
+                                <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+                                    Upload file
+                                    <VisuallyHiddenInput type="file" />
+                                </Button>*/}
+
 
                                 <div className="input-group mb-3">
                                     <input type="file" multiple className="form-control uploadFile" id="file"/>

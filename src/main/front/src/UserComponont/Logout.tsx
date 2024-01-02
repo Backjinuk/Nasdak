@@ -24,6 +24,6 @@ export default function Logout(){
         <div style={{
 height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%"
 }}>
-        <Button variant="outlined" onClick={()=>{handleClick()}}>로그아웃</Button>
+        <Button sx={{ color: '#fff' }} variant="outlined" onClick={()=>{handleClick()}}>로그아웃</Button>
         </div>)
 }

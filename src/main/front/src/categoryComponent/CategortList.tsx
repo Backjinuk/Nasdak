@@ -22,7 +22,7 @@ export default function CategoryList({categoryList, changeEvent}: any) {
     }
 
     return (<div style={css}>
-        <Button variant="outlined" onClick={handleOpen}>카테고리
+        <Button sx={{ color: '#fff' }} variant="outlined" onClick={handleOpen}>카테고리
         </Button>
         <Dialog open={open} onClose={handleClose} sx={{zIndex:1000}} >
             <DialogTitle>

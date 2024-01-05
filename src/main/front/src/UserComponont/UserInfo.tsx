@@ -61,8 +61,8 @@ export default function UserInfo() {
                 sendKakaoTalk : data.sendKakaoTalk,
                 sendWebPush : data.sendWebPush
             }
-            setUser(parseUser)
-            setBackup(parseUser)
+            setUser({...parseUser})
+            setBackup({...parseUser})
         })
     },[])
 

@@ -48,6 +48,7 @@ public class SNSController {
             categoryService.saveDefaultCategory(find.getUser());
         }
 
+        // 카카오는 리프레시 토큰 갱신
         if(sns.getSnsType()==SNSType.KAKAO){
             find.setRefreshToken(sns.getRefreshToken());
             snsService.updateRefreshToken(find);

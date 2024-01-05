@@ -1,6 +1,5 @@
 package org.nasdakgo.nasdak.Service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.User;
@@ -26,10 +25,11 @@ public class CategoryService {
     public void saveDefaultCategory(User user) {
         List<Category> categoryList = new ArrayList<>();
         for (String defaultCategory : defaultCategories) {
-            Category category = new Category();
-            category.setContent(defaultCategory);
-            category.setUser(user);
-            category.setDelYn("N");
+            Category category = Category.builder()
+                    .content(defaultCategory)
+                    .user(user)
+                    .delYn("N")
+                    .build();
             categoryList.add(category);
         }
         categoryRepository.saveAll(categoryList);

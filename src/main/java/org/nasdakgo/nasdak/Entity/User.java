@@ -49,6 +49,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Collection> collectionList = new ArrayList<>();
 
+    @Column(name = "push_time")
+    private String pushTime;
+
     public User(long userNo) {
         this.userNo = userNo;
     }

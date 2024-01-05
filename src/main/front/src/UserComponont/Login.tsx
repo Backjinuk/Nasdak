@@ -85,7 +85,7 @@ export default function Login() {
         sessionStorage.setItem('accessToken',token)
         sessionStorage.setItem('userNo', userNo)
         sessionStorage.setItem('snsType', snsType)
-        sessionStorage.setItem("userDto", JSON.stringify({ userId: id, userNo: userNo }));
+        sessionStorage.setItem("userDto", JSON.stringify({ userNo: userNo }));
         sessionStorage.removeItem('userId')
         navigate("/ledger")
     }
@@ -136,12 +136,10 @@ export default function Login() {
                         />
                         <label htmlFor="floatingPassword">Password</label>
                     </div>
-                    <div className="checkbox mb-3">
-                        <FormControlLabel
-                        control={<Checkbox value="remember" checked={remember} onChange={(e)=>{handleRemember(e)}} color="primary" />}
-                        label="Remember me"
-                        />
-                    </div>
+                    <FormControlLabel
+                    control={<Checkbox value="remember" checked={remember} onChange={(e)=>{handleRemember(e)}} color="primary" />}
+                    label="Remember me"
+                    />
                     <Button className="w-100 btn btn-lg btn-primary mb-2" type="submit" onClick={LoginMember}>로그인
                     </Button>
                     <Button className="w-100 btn btn-lg btn-info" onClick={handleOpen}>회원 가입

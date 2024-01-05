@@ -58,8 +58,7 @@ public class CategoryController {
 
     private Category toCategory(CategoryDto categoryDto){
         Category category = modelMapper.map(categoryDto, Category.class);
-        User user = new User();
-        user.setUserNo(categoryDto.getUserNo());
+        User user = User.builder().userNo(categoryDto.getUserNo()).build();
         category.setUser(user);
         return category;
     }

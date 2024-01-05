@@ -20,11 +20,13 @@ public class UserService {
         userRepository.initializeUserSendKakaoTalk();
         userRepository.initializeUserSendWebPush();
         userRepository.initializeUserActiveUser();
+        userRepository.initializeUserPushTime();
     }
 
     public User signUp(User user){
         user.setRegDate(LocalDateTime.now());
         user.setActiveUser(true);
+        user.setPushTime("23:00");
         return userRepository.save(user);
     }
 

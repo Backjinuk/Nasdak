@@ -41,10 +41,10 @@ public class LedgerService {
     }
 
     public Ledger ledgerDetail(Ledger ledger) {
-        return ledgerRepository.getById(ledger.getFileOwnerNo());
+        return ledgerRepository.findById(ledger.getFileOwnerNo()).orElse(null);
     }
 
-    public FileOwner findById(long fileOwnerNo) { return ledgerRepository.findById(fileOwnerNo).get();}
+    public FileOwner findById(long fileOwnerNo) { return ledgerRepository.findById(fileOwnerNo).orElse(null);}
 
     public List<Ledger> findAllBylocation(User user) { return ledgerRepository.findAllByLocation(user.getUserNo());
     }

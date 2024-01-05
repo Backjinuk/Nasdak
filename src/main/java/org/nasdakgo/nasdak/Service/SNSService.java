@@ -1,6 +1,5 @@
 package org.nasdakgo.nasdak.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.SNS;
 import org.nasdakgo.nasdak.Entity.User;
@@ -43,6 +42,7 @@ public class SNSService {
     @Value("${kakao.secret}")
     private String kakaoSecret;
 
+    ////////////////////////////// 공통 //////////////////////////////
     public SNS login(SNS sns){
         return snsRepository.login(sns.getSnsId()).orElse(null);
     }
@@ -58,6 +58,7 @@ public class SNSService {
                 .regDate(LocalDateTime.now())
                 .sendKakaoTalk(false)
                 .sendWebPush(false)
+                .pushTime("23:00")
                 .build();
         userRepository.save(user);
         sns.setUser(user);
@@ -77,6 +78,7 @@ public class SNSService {
         String trash = UUID.randomUUID().toString();
         snsRepository.deleteSNSUser(user.getUserNo(), trash);
     }
+    ////////////////////////////// 공통 //////////////////////////////
 
 
     ////////////////////////////// NAVER //////////////////////////////
@@ -155,7 +157,7 @@ public class SNSService {
 
     ////////////////////////////// KAKAO //////////////////////////////
     // 토큰 발급
-    public String kakaoGetToken(String code) throws JsonProcessingException {
+    public String kakaoGetToken(String code) {
         String apiURL = "https://kauth.kakao.com/oauth/token";
 
         Map<String, String> requestHeaders = new HashMap<>();

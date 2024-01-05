@@ -102,9 +102,10 @@ public class UserController {
     public String uploadProfile(@RequestParam(name = "userNo") Long userNo,
                               @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
         String fileName = FileUtil.saveFileList(mf, uploadProfilePath);
-        User user = new User();
-        user.setUserNo(userNo);
-        user.setProfile(fileName);
+        User user = User.builder()
+                .userNo(userNo)
+                .profile(fileName)
+                .build();
         userService.uploadProfile(user);
         return downloadProfilePath+fileName;
     }
@@ -127,7 +128,7 @@ public class UserController {
         userService.uploadProfile(user);
     }
 
-    public boolean removeProfile(String profile) {
+    private boolean removeProfile(String profile) {
         int index = profile.lastIndexOf('/');
         if(index!=-1){
             profile = profile.substring(index);

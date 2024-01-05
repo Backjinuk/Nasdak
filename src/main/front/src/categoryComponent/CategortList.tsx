@@ -17,11 +17,7 @@ export default function CategoryList({categoryList, changeEvent}: any) {
     };
     const handleEditButton = ()=>{setIsEdit(!isEdit)};
 
-    const css: any = {
-        height: "150px", display: "flex", alignItems: "center", justifyContent: "right", marginRight: "3%"
-    }
-
-    return (<div style={css}>
+    return (<div >
         <Button sx={{ color: '#fff' }} variant="outlined" onClick={handleOpen}>카테고리
         </Button>
         <Dialog open={open} onClose={handleClose} sx={{zIndex:1000}} >

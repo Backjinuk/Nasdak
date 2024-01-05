@@ -70,4 +70,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("update User u set u.activeUser = true where u.activeUser is null")
     void initializeUserActiveUser();
 
+    @Modifying
+    @Transactional
+    @Query("update User u set u.pushTime = '23:00' where u.pushTime is null")
+    void initializeUserPushTime();
+
 }

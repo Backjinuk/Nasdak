@@ -34,5 +34,7 @@ public class UserDto {
 
     private SNSType snsType;
 
+    private String pushTime;
+
     private List<CollectionDto> collectionDtoList = new ArrayList<>();
 }

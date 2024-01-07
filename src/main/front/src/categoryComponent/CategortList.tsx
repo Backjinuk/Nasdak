@@ -4,6 +4,9 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, Stack } from "@mui/m
 import AddCategory from "./AddCategory";
 import Category from "./Category";
 import IntegrateCategory from "./IntegrateCategory";
+import {CategoryType} from "../TypeList";
+import MenuItem from "@mui/material/MenuItem";
+import * as React from "react";
 
 export default function CategoryList({categoryList, changeEvent}: any) {
     const [open, setOpen] = useState(false);
@@ -26,9 +29,13 @@ export default function CategoryList({categoryList, changeEvent}: any) {
             </DialogTitle>
             <DialogContent sx={{width:400}}>
                 <Stack sx={{width:'-webkit-fill-available'}} spacing={1}>
-                    {categoryList.map((item:any)=>(
-                        <Category key={item.categoryNo} item={item} isEdit={isEdit} changeEvent={changeEvent}/>
-                    ))}
+                    {categoryList && categoryList.length > 0 && (
+                        categoryList.map((item:any)=>(
+                                <Category key={item.categoryNo} item={item} isEdit={isEdit} changeEvent={changeEvent}/>
+                            ))
+                    )}
+
+
                 </Stack>
             </DialogContent>
             <DialogActions>

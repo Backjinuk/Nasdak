@@ -1,6 +1,12 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import FindAddress2 from "./FindAddress2";
 import {location} from "../../TypeList";
+import TextField from "@mui/material/TextField";
+import * as React from "react";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import FindAddress from "./FindAddress";
 
 export default function KakaoMap({LocationAppend , location , lodinMap} :{ LocationAppend : any, location : location , lodinMap : any } ){
 
@@ -10,6 +16,10 @@ export default function KakaoMap({LocationAppend , location , lodinMap} :{ Locat
     const [x, setX] = useState(location.x);
     const [y , setY] = useState(location.y);
     const [address, setAddress] = useState(location.address);
+    const mapContainerRef = useRef<HTMLDivElement | null>(null);
+    const [open , setOpen] = useState(false);
+    const [lodingEvent, setLodingEvent] = useState(true);
+
 
 
     useEffect(() => {
@@ -107,25 +117,44 @@ export default function KakaoMap({LocationAppend , location , lodinMap} :{ Locat
     }
 
     return(
-        <div className="modal fade " id="KakaoMap2" data-bs-keyboard="false"
-             aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-2}>
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content" style={{height : ""}}>
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id="staticBackdropLabel">지도</h1>
-                        <button type="button" className="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <div className="modal-body">
-                        <div id="map2" className={"kakaoMap"} style={{width: "470px", height: "470px"}}></div>
+        <>
+            <TextField className={"md30"} fullWidth={true} id="location" label="지역을 입력해 주세요"
+                       variant="outlined" value={location?.address}
+                       onMouseDown={() => {
+                           setLodingEvent(lodingEvent ? false : true);
+                           setOpen(true);
+                       }}
+
+                       onFocus={() =>{
+                           setLodingEvent(lodingEvent ? false : true);
+                           setOpen(true);
+                       }}
+
+            />
+
+            <Modal
+                open={open}
+                onClose={() => setOpen(false)}
+                aria-labelledby="child-modal-title"
+                aria-describedby="child-modal-description"
+            >
+                <Box className={"modalBox"} >
+                    <Typography id="child-modal-title" variant="h6" component="h2" sx={{marginBottom : '20px'}}>
+                        지도
+                    </Typography>
+                    <div className="">
+                        <div ref={mapContainerRef} id="map2" className={"kakaoMap"} ></div>
 
                         <FindAddress2 ChangeAddress={ChangeAddress} address={address} />
                         <div className={"kakaoMapButtonBox"}>
-                            <button type="button" className="btn btn-primary" onClick={() => LocationAppend( x, y, address)}>완료</button>
+                            <button type="button" className="btn btn-primary" onClick={() => {
+                                LocationAppend( x, y, address);
+                                setOpen(false)
+                            }}>완료</button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </Box>
+            </Modal>
+        </>
     )
 }

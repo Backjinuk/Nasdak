@@ -12,16 +12,21 @@ import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import * as React from "react";
 import Typography from "@mui/material/Typography";
-
-
-function VisuallyHiddenInput(props: { type: string }) {
-    return null;
-}
+import Modal from "@mui/material/Modal";
+import SendIcon from '@mui/icons-material/Send';
 
 export default function CreateLeger({ChangeEvent, categoryList} : any){
 
+    const [open, setOpen] = React.useState(false);
     const [location, setLocation] = useState<location>({x : 0, y : 0, address : ""});
-    const [lodingEvent, setLodingEvent] = useState(true);
+
+
+    const handleOpen = (check : any) =>{
+        setOpen(true);
+    }
+    const handleClose = (check : any) =>{
+        setOpen(false);
+    }
 
     const css : any ={
         height: "150px",
@@ -65,8 +70,10 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
 
                 //파일 업로드
                 const formData = formDataArray();
-                fileUpload(formData, res.data.fileOwnerNo);
 
+                if(formData && formData.getAll('file').length > 0){
+                    fileUpload(formData, res.data.fileOwnerNo);
+                }
 
                 Swal.fire({
                     icon: 'success',
@@ -75,8 +82,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                 }).then(r => {
 
                     ChangeEvent();
-                    // @ts-ignore
-                    $("#addLedger").modal("hide");
+                    setOpen(false);
 
                 });
             }
@@ -111,6 +117,18 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
     }
 
 
+    const LocationAppend = (x : number ,y : number, address : any) => {
+        setLocation(prevLocation => ({
+            ...prevLocation,
+            x: x,
+            y: y,
+            address: address
+        }));
+
+        console.log(location)
+    }
+
+
     function formDataArray(){
         const file = document.getElementById("file");
 
@@ -128,125 +146,89 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
     }
 
 
-    const LocationAppend = (x : number ,y : number, address : any) => {
-
-        console.log("x :" + x + "y : " + y)
-        console.log("assress : "  + address     )
-
-        setLocation(prevLocation => ({
-            ...prevLocation,
-            x: x,
-            y: y,
-            address: address
-        }));
-
-        console.log(location);
-
-        // @ts-ignore
-        $("#KakaoMap").modal("hide")
-    }
 
 
     return(
         <>
+            <Button  sx={{ color: '#fff' }} onClick={handleOpen} >
+                글쓰기
+            </Button>
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="parent-modal-title"
+                aria-describedby="parent-modal-description"
+            >
+                <Box className={"modalBox"}>
 
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    <Typography id="parent-modal-title" variant="h6" component="h2" sx={{marginBottom : '20px'}}>
+                        글쓰기
+                    </Typography>
 
-                <Button  sx={{ color: '#fff' }}
-                         data-bs-toggle="modal"
-                         data-bs-target="#addLedger">
-                    글쓰기
-                </Button>
-            </Box>
-
-            <form></form>
-            <div className="modal fade " id="addLedger" data-bs-keyboard="false"
-                 aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-1}>
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="staticBackdropLabel">글쓰기</h1>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                        </div>
-                        <form name={"addLedger"}>
-                            <div className="modal-body">
-
-                                <div className={"mb30"} style={{marginBottom: "30px"}}>
-                                    <TextField
-                                        fullWidth={true}
-                                        id="category_no"
-                                        name={"category_no"}
-                                        select
-                                        label="카테고리"
-                                        defaultValue="1"  // 초기에 선택되어야 하는 값으로 빈 문자열을 할당
-                                    >
-                                        {categoryList.map((category: CategoryType, index: number) => (
+                    <form name={"addLedger"}>
+                        <div id={"parent-modal-description"}>
+                            <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                <TextField
+                                    fullWidth={true}
+                                    id="category_no"
+                                    name={"category_no"}
+                                    select
+                                    label="카테고리"
+                                    defaultValue="0"  // 초기에 선택되어야 하는 값으로 빈 문자열을 할당
+                                >
+                                    <MenuItem value={0}>선택</MenuItem>
+                                    {categoryList && categoryList.length > 0 && (
+                                        categoryList.map((category: CategoryType, index: number) => (
                                             <MenuItem key={index} value={category.categoryNo}>
                                                 {category.content}
                                             </MenuItem>
-                                        ))}
-                                    </TextField>
-                                </div>
+                                        ))
+                                    )}
 
-                                <div className={"mb30"} style={{marginBottom: "30px"}}>
-                                    <TextField fullWidth={true} id="ledgerType" name={"ledgerType"} select label="입/출금"
-                                               defaultValue="DEPOSIT">
-                                        <MenuItem key={"DEPOSIT"} value={"DEPOSIT"}>출금</MenuItem>
-                                        <MenuItem key={"SAVE"} value={"SAVE"}>입금</MenuItem>
-                                    </TextField>
-
-                                </div>
-                                <div className={"mb30"} style={{marginBottom: "30px"}}>
-                                    <TextField className={"md30"} fullWidth={true} id="price" label="가격을 입력해 주세요"
-                                               variant="outlined" name={"price"}/>
-                                </div>
-
-                                <div className={"mb30"} style={{marginBottom: "30px"}}>
-                                    <TextField className={"md30"} fullWidth={true} id="location" label="지역을 입력해 주세요"
-                                               variant="outlined" value={location?.address}
-                                               onMouseDown={() => {
-                                                   setLodingEvent(lodingEvent ? false : true);
-                                                   // @ts-ignore
-                                                   $("#KakaoMap").modal("show");
-                                               }}
-
-                                               onFocus={() =>{
-                                                   setLodingEvent(lodingEvent ? false : true);
-                                                   // @ts-ignore
-                                                   $("#KakaoMap").modal("show");
-                                               }}
-                                    />
-                                </div>
-                                <div className={"mb30"} style={{marginBottom : "30px"}}>
-                                    <TextField className={"md30"} fullWidth={true} name="comment"  id="comment" label="내용을 입력해 주세요" variant="outlined"/>
-                                </div>
-
-{/*
-                                <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-                                    Upload file
-                                    <VisuallyHiddenInput type="file" />
-                                </Button>*/}
-
-
-                                <div className="input-group mb-3">
-                                    <input type="file" multiple className="form-control uploadFile" id="file"/>
-                                    <label className="input-group-text" htmlFor="file">Upload</label>
-                                </div>
-
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-primary" onClick={() => addLedger()}>롹인</button>
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소
-                                </button>
+                                </TextField>
                             </div>
 
-                        </form>
-                    </div>
-                </div>
-                <KakaoMap LocationAppend={LocationAppend} lodingEvent={lodingEvent}/>
-            </div>
+                            <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                <TextField fullWidth={true} id="ledgerType" name={"ledgerType"} select label="입/출금"
+                                           defaultValue="DEPOSIT">
+                                    <MenuItem key={"DEPOSIT"} value={"DEPOSIT"}>출금</MenuItem>
+                                    <MenuItem key={"SAVE"} value={"SAVE"}>입금</MenuItem>
+                                </TextField>
+                            </div>
 
-        </>
+                            <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                <TextField className={"md30"} fullWidth={true} id="price" label="가격을 입력해 주세요"
+                                           variant="outlined" name={"price"}/>
+                            </div>
+                            
+
+                            <div className={"mb30"} style={{marginBottom: "30px"}}>
+                                <KakaoMap  LocationAppend={LocationAppend} location={location}/>
+                            </div>
+
+                            <div className={"mb30"} style={{marginBottom : "30px"}}>
+                                <TextField className={"md30"} fullWidth={true} name="comment"  id="comment" label="내용을 입력해 주세요" variant="outlined"/>
+                            </div>
+
+                            <div className="input-group mb-3">
+                                <input type="file" multiple className="form-control uploadFile" id="file"/>
+                                <label className="input-group-text" htmlFor="file">Upload</label>
+                            </div>
+
+                        </div>
+                        <div className={"modalSendBox"}>
+                            <Button variant="contained" endIcon={<SendIcon />} onClick={() => addLedger()} sx={{marginRight : "10px"}}>
+                                롹인
+                            </Button>
+
+                            <Button variant="outlined" color="error" onClick={handleClose}>
+                                취소
+                            </Button>
+                        </div>
+
+                    </form>
+                </Box>
+            </Modal>
+         </>
     )
 }

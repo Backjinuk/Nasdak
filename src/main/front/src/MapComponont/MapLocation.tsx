@@ -13,6 +13,7 @@ export default function MapLocation() {
     const [ledger , setLedger] = useState<LedgerType>()
     const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
     const [changeEvent, setChangeEvent] = useState(false);
+    const [open , setOpen] = useState<boolean>(false)
     const navigate = useNavigate();
 
 
@@ -194,11 +195,13 @@ export default function MapLocation() {
         function displayInfowindowMoveLocation(marker: any, title: string) {
             var content = '<div style="padding:5px;z-index:1;">' + title  + '</div>';
 
+            console.log(marker.getPosition())
+
             infowindow.setContent(content);
             infowindow.open(map, marker);
 
             map.setCenter(marker.getPosition() );
-            map.setLevel(2);
+            map.setLevel(4);
         }
 
 
@@ -223,14 +226,12 @@ export default function MapLocation() {
             }
         }).then((res) => {
             setLedger(res.data);
-            // @ts-ignore
-            $("#ledgerDetail").modal("show");
+            isOpen(true);
         })
 
         axios.post("/api/category/getCategoryList", sessionStorage.getItem("userDto"),
             { headers : {"Content-Type" : "application/json"}
             }).then(res => {
-            console.log(res.data );
             setCategoryList(res.data);
         })
     }
@@ -288,32 +289,24 @@ export default function MapLocation() {
         }
     }
 
+    const isOpen = (value : any) => {
+        setOpen(value)
+    }
+
     return (
         <>
             <div className="map_wrap">
                 <div id="MapLocation" style={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}></div>
 
                 <div id="menu_wrap" className="bg_white">
-{/*                    <div className="option">
-                        <div>
-                                키워드 : <input type="text" defaultValue="이태원 맛집" id="keyword"/>
-                                <button type="submit" onClick={() =>
-                                    // @ts-ignore
-                                    searchPlaces()
-                                }>검색하기</button>
-                        </div>
-                    </div>
-*/}
                     <hr />
-                    <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "left", marginRight: "3%" }}>
-                        <Button variant="outlined" onClick={() => navigate("/ledger")}>메인페이지</Button>
-                    </div>
                     <ul id="placesList"></ul>
                     <div id="pagination"></div>
                 </div>
+
             </div>
 
-            {ledger && ( <LedgerDetail categoryList={categoryList} ledger={ledger}  ChangeEvent={ChangeEvent}/> )}
+            {ledger && ( <LedgerDetail categoryList={categoryList} ledger={ledger}  ChangeEvent={ChangeEvent} isOpen={isOpen} open={open}/> )}
         </>
     )
 }

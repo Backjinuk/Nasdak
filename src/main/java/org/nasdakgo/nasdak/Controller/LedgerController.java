@@ -72,8 +72,9 @@ public class LedgerController {
      */
     @RequestMapping("LedgerList")
     public List<?> LedgerList(@RequestBody UserDto usersDto){
-
-        return ledgerService.findAllByUsers(usersDto.getUserNo());
+        List<?> allByUsers = ledgerService.findAllByUsers(usersDto.getUserNo());
+        System.out.println("allByUsers = " + allByUsers);
+        return allByUsers;
 
     }
 

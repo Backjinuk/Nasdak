@@ -1,7 +1,9 @@
 package org.nasdakgo.nasdak.Repository;
 
 import org.apache.ibatis.annotations.Param;
-import org.nasdakgo.nasdak.Entity.*;
+import org.nasdakgo.nasdak.Entity.Ledger;
+import org.nasdakgo.nasdak.Entity.LedgerType;
+import org.nasdakgo.nasdak.Entity.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,8 +20,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
             "UPDATE Ledger l " +
                     "SET l.comment= :comment ," +
                     "l.ledgerType= :ledgerType ," +
-                    "l.location.x= :x ," +
-                    "l.location.y= :y ," +
+                    "l.location= :location ," +
                     "l.price= :price ," +
                     "l.category.categoryNo= :categoryNo " +
                     "WHERE l.fileOwnerNo= :fileOwnerNo"
@@ -29,8 +30,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
             @Param("ledgerType") LedgerType ledgerType,
             @Param("price") long price,
             @Param("comment") String comment,
-            @Param("x") float x,
-            @Param("y") float y,
+            @Param("location") Location location,
             @Param("categoryNo") long categoryNo
     );
 
@@ -71,4 +71,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
 
     @Query("SELECT l FROM Ledger  l WHERE l.user.userNo = :userNo AND l.location.x != 0 AND l.location.y != 0 AND l.location.address IS NOT NULL")
     List<Ledger> findAllByLocation(@Param("userNo") long userNo);
+
+    @Query("SELECT l from Ledger l where l.user.userNo = :userNo")
+    List<Ledger> ledgerAllList(long userNo);
 }

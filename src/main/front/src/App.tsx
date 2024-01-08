@@ -67,7 +67,7 @@ function App() {
                   </>} />
                   <Route path={"/calender"} element={<>
                       <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} />
-                      <CalenderMain  ledgerList={ledgerList}/>
+                      <CalenderMain/>
                   </>} />
               </Routes>
           </Router>

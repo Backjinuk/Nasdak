@@ -218,7 +218,7 @@ export default function CreateLeger({ChangeEvent, categoryList} : any){
                         </div>
                         <div className={"modalSendBox"}>
                             <Button variant="contained" endIcon={<SendIcon />} onClick={() => addLedger()} sx={{marginRight : "10px"}}>
-                                롹인
+                                등록
                             </Button>
 
                             <Button variant="outlined" color="error" onClick={handleClose}>

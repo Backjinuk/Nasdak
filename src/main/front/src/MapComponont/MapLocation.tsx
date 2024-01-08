@@ -195,8 +195,6 @@ export default function MapLocation() {
         function displayInfowindowMoveLocation(marker: any, title: string) {
             var content = '<div style="padding:5px;z-index:1;">' + title  + '</div>';
 
-            console.log(marker.getPosition())
-
             infowindow.setContent(content);
             infowindow.open(map, marker);
 

@@ -86,6 +86,7 @@ public class LedgerController {
                             .collect(Collectors.toList());
     }
 
+
     /**
      *
      * @param ledgerDto
@@ -162,7 +163,7 @@ public class LedgerController {
 
         ledger.setCategory(modelMapper.map(ledgerDto.getCategoryDto(), Category.class));
 
-        int i = ledgerService.ledgerUpdate(modelMapper.map(ledgerDto, Ledger.class));
+        int i = ledgerService.ledgerUpdate(ledger);
 
         return (i == 0) ? "false" : "success";
     }
@@ -204,14 +205,17 @@ public class LedgerController {
         }
     }
 
+    /**
+     *
+     * @param checkedList
+     * @code fileOwnerNo의 정보를 받고 파일을 삭제 하는 코드
+     * @return "false" , "success";
+     */
     @RequestMapping("deleteFileItem")
     public String deleteFileItem(@RequestBody List<Long> checkedList) {
-        System.out.println("checkedList = " + checkedList);
         int value = filesService.deleteFileItem(checkedList);
 
         String str = value != 0 ? "success": "false";
-
-        System.out.println("str = " + str);
 
         return str;
     }
@@ -227,5 +231,14 @@ public class LedgerController {
         FileOwner fileOwner = modelMapper.map(ledgerDto, FileOwner.class);
 
         filesService.deleteFile(fileOwner);
+    }
+
+    @RequestMapping("ledgerAllList")
+    public List<LedgerDto> ledgerAllList(@RequestBody UserDto userDto){
+
+        List<Ledger> ledgers = ledgerService.ledgerAllList(modelMapper.map(userDto, User.class));
+
+        return ledgers.stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).collect(Collectors.toList());
+
     }
 }

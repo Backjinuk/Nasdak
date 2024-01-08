@@ -326,24 +326,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
 
                         </div>
 
-                        {/*                        <div className="mb-3">
-                            <div className="form-floating">
-                                <input type="hidden" name={"fileOwnerNo"} value={ledger.fileOwnerNo}/>
-                                <input type="hidden" name={"categoryNo"} value={ledger.categoryDto.categoryNo}/>
-
-                                <select name="category_no" className="form-select" id="floatingSelectGrid"
-                                        defaultValue={ledger.categoryDto.categoryNo}>
-                                    <option value="">선택</option>
-                                    {categoryList.map((category: CategoryType, index: number) => (
-                                        <option key={index} value={category.categoryNo}>{category.content}</option>
-                                    ))}
-                                </select>
-
-
-                                <label htmlFor="floatingSelectGrid">카테고리를 선택해 주세요</label>
-                            </div>
-                        </div>*/}
-
                         <div className={"mb30"} style={{marginBottom: "30px"}}>
                             <TextField fullWidth={true} id="ledgerType" name={"ledgerType"} select label="입/출금"
                                        defaultValue={ledger.ledgerType}
@@ -369,26 +351,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
                             <KakaoMap LocationAppend={LocationAppend} location={location}/>
                         </div>
 
-{/*                        <div className="form-floating mb-3">
-                            <input type="text" name={"location"} className="form-control" id="location"
-                                   onClick={() => {
-                                       setLodingMap(lodinMap ? false : true);
-                                       // @ts-ignore
-                                       $("#KakaoMap2").modal("show")
-                                   }}
-                                   placeholder="지역을 입력해주세요" value={location.address}
-                                   readOnly={true}
+                        <div className={"mb30"} style={{marginBottom: "30px"}}>
+                            <TextField className={"md30"} fullWidth={true} name={"comment"} id="floatingSpassword" variant="outlined"
+                                       value={comment} onChange={e => {
+                                            setComment(e.target.value)
+                                        }}
                             />
-                            <label htmlFor="location">지역</label>
-                        </div>*/}
-
-                        <div className="form-floating mb-3">
-                            <input type="text" name={"comment"} className="form-control" id="floatingSpassword"
-                                   value={comment} onChange={e => {
-                                setComment(e.target.value)
-                            }}
-                                   placeholder="내용을 입력해주세요"/>
-                            <label htmlFor="floatingSpassword">내용</label>
                         </div>
 
                         <div className="input-group mb-3">
@@ -424,11 +392,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
                     </div>
                     <div className="modal-footer">
 
-                        <Button variant="contained" endIcon={<SendIcon />} onClick={() => ledgerUpdate()} sx={{marginRight : "10px"}}>
-                            롹인
+                        <Button variant="contained" endIcon={<SendIcon/>} onClick={() => ledgerUpdate()}
+                                sx={{marginRight: "10px"}}>
+                            수정
                         </Button>
-                        <Button variant="contained" color={"error"} startIcon={<DeleteIcon />} sx={{marginRight: "10px"}}
-                            onClick={() => ledgerDelete(ledger.fileOwnerNo)}
+                        <Button variant="contained" color={"error"} startIcon={<DeleteIcon/>} sx={{marginRight: "10px"}}
+                                onClick={() => ledgerDelete(ledger.fileOwnerNo)}
                         >
                             삭제
                         </Button>

@@ -14,8 +14,9 @@ import Logout from "./UserComponont/Logout";
 import {useEffect, useState} from "react";
 import axios from "axios";
 
-export default function TopBar({isCategoryList, categoryList} : any) {
+export default function TopBar({isCategoryList, categoryList , ChangeEvent} : any) {
     const navigate = useNavigate();  // 변경
+
 
     useEffect(() => {
         const userDto = {
@@ -32,11 +33,7 @@ export default function TopBar({isCategoryList, categoryList} : any) {
 
     }, []);
 
-    const [event, setEvent] = useState(false)
 
-    function ChangeEvent () {
-        event ? setEvent(false) : setEvent(true);
-    }
 
     return (
         <Box sx={{ flexGrow: 1, my: 2 }}>

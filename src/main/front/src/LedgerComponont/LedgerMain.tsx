@@ -3,7 +3,7 @@ import axios from "axios";
 import {useCallback, useEffect, useState} from "react";
 import {CategoryType, LedgerType} from "../TypeList";
 import "./Ledger.css";
-import LedgerDetail from "./ledgerDetail";
+import LedgerDetail from "./LedgerDetail";
 import CategoryList from "../categoryComponent/CategortList";
 import Logout from "UserComponont/Logout";
 import UserInfoButton from "UserComponont/UserInfoButton";

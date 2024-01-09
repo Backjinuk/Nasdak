@@ -28,12 +28,17 @@ declare global {
 function App() {
     const [categoryList, setCategoryList] = useState();
     const [ledgerList, setLedgerList] = useState<LedgerType[]>()
+    const [event, setEvent] = useState(false)
+
     function isCategoryList(value : any){
         setCategoryList(value);
     }
 
     function isLedgerList( value : LedgerType[]) {
         setLedgerList(value);
+    }
+    function ChangeEvent () {
+        event ? setEvent(false) : setEvent(true);
     }
 
   return (
@@ -56,18 +61,18 @@ function App() {
                   <Route path="/Ledger"
                       element={
                           <>
-                              <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} />
+                              <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} ChangeEvent={ChangeEvent}/>
                               <LedgerMain categoryList={categoryList} isLedgerList={(value : LedgerType[]) => isLedgerList(value)} />
                           </>
                       }
                   />
                   <Route path={"/MapLocation"} element={<>
-                      <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} />
+                      <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} ChangeEvent={ChangeEvent}/>
                       <MapLocation />
                   </>} />
                   <Route path={"/calender"} element={<>
-                      <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} />
-                      <CalenderMain/>
+                      <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} ChangeEvent={ChangeEvent}/>
+                      <CalenderMain categoryList={categoryList} ChangeEvent={ChangeEvent}/>
                   </>} />
               </Routes>
           </Router>

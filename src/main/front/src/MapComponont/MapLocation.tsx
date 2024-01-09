@@ -5,7 +5,7 @@ import {CategoryType, LedgerType, location} from "../TypeList";
 import MapLedgerDetail from "./MapLedgerDetail";
 import Button from "@mui/material/Button";
 import {useNavigate} from "react-router-dom";
-import LedgerDetail from "../LedgerComponont/ledgerDetail";
+import LedgerDetail from "../LedgerComponont/LedgerDetail";
 import Swal from "sweetalert2";
 export default function MapLocation() {
 
@@ -14,7 +14,6 @@ export default function MapLocation() {
     const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
     const [changeEvent, setChangeEvent] = useState(false);
     const [open , setOpen] = useState<boolean>(false)
-    const navigate = useNavigate();
 
 
     // @ts-ignore

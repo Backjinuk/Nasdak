@@ -1,0 +1,9 @@
+.fc-agendaWeek-view tr {
+    height: 40px;
+}
+.fc-agendaDay-view tr {
+    height: 40px;
+}
+.fc-theme-standard td {
+    height: 10%;
+}

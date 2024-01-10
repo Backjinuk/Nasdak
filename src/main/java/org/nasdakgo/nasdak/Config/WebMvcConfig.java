@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Config;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -9,6 +10,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @Configuration
+@ComponentScan(basePackages = "Utils")
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override

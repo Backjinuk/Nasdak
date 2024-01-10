@@ -5,7 +5,7 @@ import MapLocation from "./MapComponont/MapLocation";
 import Login from "UserComponont/Login";
 import UserInfo from "UserComponont/UserInfo";
 import FindUser from "UserComponont/FindUser";
-import NaverLogin from "UserComponont/snsComponent/NaverLogin";
+import SNSLogin from "UserComponont/snsComponent/SNSLogin";
 import CalenderMain from "./CalenderCompoont/CalenderMain";
 import KakaoLogin from "UserComponont/snsComponent/KakaoLogin";
 import KakaoInit from "UserComponont/snsComponent/KakaoInit";
@@ -28,8 +28,7 @@ function App() {
                   <Route path={"/*"} element={<Login/>}/>
                   <Route path={"/userInfo"} element={<UserInfo/>}/>
                   <Route path={"/findId"} element={<FindUser/>}/>
-                  <Route path={"/naver"} element={<NaverLogin/>}/>
-                  <Route path={"/kakao"} element={<KakaoLogin/>}/>
+                  <Route path={"/snsLogin"} element={<SNSLogin/>}/>
                   <Route path={"/kakaoInit"} element={<KakaoInit/>}/>
                   <Route path={"/kakaoLogout"} element={<KakaoLogout/>}/>
                   {/* 로그인 관련 */}

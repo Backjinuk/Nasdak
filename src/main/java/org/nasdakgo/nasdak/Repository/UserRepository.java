@@ -57,22 +57,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Transactional
-    @Query("update User u set u.sendKakaoTalk = false where u.sendKakaoTalk is null")
-    void initializeUserSendKakaoTalk();
-
-    @Modifying
-    @Transactional
-    @Query("update User u set u.sendWebPush = false where u.sendWebPush is null")
-    void initializeUserSendWebPush();
-
-    @Modifying
-    @Transactional
-    @Query("update User u set u.activeUser = true where u.activeUser is null")
-    void initializeUserActiveUser();
-
-    @Modifying
-    @Transactional
-    @Query("update User u set u.pushTime = '23:00' where u.pushTime is null")
-    void initializeUserPushTime();
+    @Query("update User u set u.userId = :userId, u.password = :password where u.userNo = :userNo")
+    void updateSNSUser(@Param("userNo") long userNo, @Param("userId") String userId, @Param("password") String password);
 
 }

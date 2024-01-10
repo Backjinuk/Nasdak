@@ -131,7 +131,7 @@ public class LedgerController {
     public LedgerDto ledgerDetail(@RequestBody LedgerDto ledgerDto){
         Ledger ledger = ledgerService.ledgerDetail(modelMapper.map(ledgerDto, Ledger.class));
 
-        System.out.println("ledger = " + ledger);
+//        System.out.println("ledger = " + ledger);
 
         ledgerDto = modelMapper.map(ledger, LedgerDto.class);
         ledgerDto.setUserDto(modelMapper.map(ledger.getUser(), UserDto.class));

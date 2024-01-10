@@ -1,11 +1,12 @@
 import Swal from "sweetalert2";
-import { useState } from "react"
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import Join from "./Join";
 import Button from '@mui/material/Button';
 import { Checkbox, FormControlLabel, IconButton } from "@mui/material";
 import { getCookie, setCookie } from "Cookies";
+import { handleNaverLogin, handleKakaoLogin, setSnsState } from 'UserComponont/js/snsLogin'
+import { useEffect, useState } from "react";
 declare global {
     interface Window {
         snsLoginNavigate?: any;
@@ -22,6 +23,8 @@ export default function Login() {
     const handleClose = () => setOpen(false);
 
     const navigate = useNavigate();
+
+    useEffect(()=>{setSnsState('login')},[])
 
     const sty: any = {
         borderRadius: "5px",
@@ -88,31 +91,6 @@ export default function Login() {
         sessionStorage.setItem("userDto", JSON.stringify({ userNo: userNo }));
         sessionStorage.removeItem('userId')
         navigate("/ledger")
-    }
-
-    // state 저장
-    const array = new Uint32Array(1)
-    window.crypto.getRandomValues(array)
-    const state = encodeURI(array[0].toString())
-    sessionStorage.setItem('state',state)
-
-    // 네이버 로그인
-    function handleNaverLogin(){
-        const clientId = process.env.REACT_APP_NAVER_CLIENT_ID//애플리케이션 클라이언트 아이디값";
-        const link = window.location.href.split('?')[0]
-        const uri = link.substring(0,link.lastIndexOf('/'))
-        const redirectURI = encodeURI(uri+'/naver')
-        let url = 'https://nid.naver.com/oauth2.0/authorize'
-        url += '?response_type=code'
-        url += '&client_id='+clientId
-        url += '&redirect_uri='+redirectURI
-        url += '&state='+sessionStorage.getItem('state')
-        window.open(url, '네이버로그인', 'width=700px,height=800px,scrollbars=yes')
-    }
-
-    // 카카오 로그인
-    function handleKakaoLogin(){
-        window.open('/kakaoInit', '네이버로그인', 'width=700px,height=800px,scrollbars=yes')
     }
 
     return (

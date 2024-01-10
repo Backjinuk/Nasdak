@@ -19,7 +19,7 @@ public class SNS {
 
     private String snsId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userNo")
     private User user;
 
@@ -27,4 +27,7 @@ public class SNS {
     private SNSType snsType;
 
     private String refreshToken;
+
+    @Transient
+    private String accessToken;
 }

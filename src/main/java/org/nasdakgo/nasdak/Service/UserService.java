@@ -1,6 +1,5 @@
 package org.nasdakgo.nasdak.Service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.UserRepository;
@@ -15,19 +14,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @PostConstruct
-    public void initialize(){
-        userRepository.initializeUserSendKakaoTalk();
-        userRepository.initializeUserSendWebPush();
-        userRepository.initializeUserActiveUser();
-        userRepository.initializeUserPushTime();
-    }
-
     public User signUp(User user){
         user.setRegDate(LocalDateTime.now());
         user.setActiveUser(true);
         user.setPushTime("23:00");
         return userRepository.save(user);
+    }
+
+    public void updateSNSUser(User user){
+        userRepository.updateSNSUser(user.getUserNo(), user.getUserId(), user.getPassword());
     }
 
     public User searchUserId(User user){

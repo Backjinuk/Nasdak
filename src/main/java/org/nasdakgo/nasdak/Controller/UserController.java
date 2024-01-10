@@ -4,10 +4,11 @@ import Utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.nasdakgo.nasdak.Dto.SNSDto;
 import org.nasdakgo.nasdak.Dto.UserDto;
+import org.nasdakgo.nasdak.Entity.SNS;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
-import org.nasdakgo.nasdak.Service.SNSService;
 import org.nasdakgo.nasdak.Service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,6 @@ public class UserController {
 
     private final UserService userService;
     private final CategoryService categoryService;
-    private final SNSService snsService;
     private final ModelMapper modelMapper;
     @Value("${upload.file.profile}")
     private String uploadProfilePath;
@@ -33,6 +33,12 @@ public class UserController {
         User user = userService.signUp(toUser(userDto));
         categoryService.saveDefaultCategory(user);
         return toUserDto(user);
+    }
+
+    @RequestMapping("updateSNSUser")
+    public UserDto updateSNSUser(@RequestBody UserDto userDto){
+        userService.updateSNSUser(toUser(userDto));
+        return userDto;
     }
 
     @RequestMapping("existUserId")
@@ -50,7 +56,9 @@ public class UserController {
     @RequestMapping("login")
     public UserDto login(@RequestBody UserDto userDto){
         User user = userService.login(toUser(userDto));
-        return toUserDto(user);
+        UserDto find = toUserDto(user);
+        System.out.println("user = " + find);
+        return find;
     }
 
     @RequestMapping("findId")
@@ -71,7 +79,7 @@ public class UserController {
     @RequestMapping("getUserInfo")
     public UserDto getUserInfo(@RequestBody UserDto userDto){
         User user = userService.getUserInfo(toUser(userDto));
-        return toUserDto(user);
+        return toUserDtoWithSNS(user);
     }
 
     @RequestMapping("updateUserInfo")
@@ -87,9 +95,6 @@ public class UserController {
     @RequestMapping("deleteUser")
     public void deleteUser(@RequestBody UserDto userDto){
         User user = toUser(userDto);
-        if(userDto.getSnsType()!=null){
-            snsService.deleteUser(user);
-        }
         userService.deleteUser(user);
     }
 
@@ -146,6 +151,23 @@ public class UserController {
             user.setProfile(downloadProfilePath+user.getProfile());
         }
         return modelMapper.map(user, UserDto.class);
+    }
+
+    private UserDto toUserDtoWithSNS(User user){
+        if(user.getProfile()!=null){
+            user.setProfile(downloadProfilePath+user.getProfile());
+        }
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        userDto.setSnsDtoList(user.getSnsList().stream().map(this::toSNSDto).toList());
+        return userDto;
+    }
+
+    private SNS toSNS(SNSDto snsDto){
+        return modelMapper.map(snsDto, SNS.class);
+    }
+
+    private SNSDto toSNSDto(SNS sns){
+        return modelMapper.map(sns, SNSDto.class);
     }
 
 }

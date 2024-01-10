@@ -1,4 +1,4 @@
-import logout from "logout"
+import logout from "UserComponont/js/logout"
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 

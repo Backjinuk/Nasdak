@@ -1,10 +1,8 @@
 export default function KakaoInit(){
-    const link = window.location.href.split('?')[0]
-    const uri = link.substring(0,link.lastIndexOf('/'))
-    const redirectUri = encodeURI(uri+'/kakao')
+    const redirectUri = encodeURI(window.location.origin+'/snsLogin')
     const option = {
         redirectUri : redirectUri,
-        state : window.opener.sessionStorage.getItem('state')
+        state : window.opener.sessionStorage.getItem('stateNo')
     }
     window.Kakao.Auth.authorize(option)
     return (<></>)

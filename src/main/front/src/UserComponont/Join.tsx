@@ -10,6 +10,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 export default function Join(props: any) {
     const open = props.open;
+    const userNo = props.userNo;
     const handleClose = ()=>{
         setSid('')
         setSpwd('')
@@ -33,6 +34,7 @@ export default function Join(props: any) {
     const [uploadFile, setUploadFile] = useState<any>();
     const [imgBase64, setImgBase64] = useState<string[]>([]);
     const [addMemberbtn, setAddMemberBtn] = useState(false);
+    const isSNS = userNo!==undefined
     
     const style = {
         position: 'absolute' as 'absolute',
@@ -122,18 +124,7 @@ export default function Join(props: any) {
                 "Content-Type": `application/json`,
             },
         }).then(res => {
-
-            if(uploadFile!==undefined){
-                let fd = new FormData()
-                fd.append("mf",uploadFile)
-                fd.append('userNo', res.data.userNo)
-    
-                axios.post('/api/user/uploadProfile', fd, {
-                    headers : {
-                        'Content-Type' : 'multipart/form-data'
-                    }
-                })
-            }
+            profileUpload(res.data.userNo)
 
             Swal.fire({
                 icon: 'success',
@@ -143,6 +134,53 @@ export default function Join(props: any) {
                 handleClose();
             })
         })
+    }
+
+    function snsSignUp(){
+        const data = {
+            userNo : userNo,
+            userId: sid,
+            password: spwd,
+        } as {[key : string] : string};
+
+        const missingField = Object.keys(data).find(field => !data[field]);
+
+        if (missingField) {
+            swalert(
+                missingField === 'userId' ? '아이디' : '비밀번호'
+            );
+            return false;
+        }
+
+        axios.post(`/api/user/updateSNSUser`, JSON.stringify(data), {
+            headers: {
+                "Content-Type": `application/json`,
+            },
+        }).then(res => {
+            profileUpload(res.data.userNo)
+
+            Swal.fire({
+                icon: 'success',
+                title: '회원가입 되었습니다..',
+                timer : 2000
+            }).then(()=>{
+                handleClose();
+            })
+        })
+    }
+
+    function profileUpload(userNo:any){
+        if(uploadFile!==undefined){
+            let fd = new FormData()
+            fd.append("mf",uploadFile)
+            fd.append('userNo', userNo)
+
+            axios.post('/api/user/uploadProfile', fd, {
+                headers : {
+                    'Content-Type' : 'multipart/form-data'
+                }
+            })
+        }
     }
 
     function swalert(str : string){
@@ -187,28 +225,32 @@ export default function Join(props: any) {
                                         placeholder="Password"/>
                                     <label htmlFor="floatingPassword">비밀번호</label>
                                 </div>
-                                <div className="form-floating mb-3">
-                                    <input type="email" className="form-control" id="floatingEmail" value={email}
-                                        onChange={(e) => {
-                                            emailCheck(e)
-                                        }}
-                                        placeholder="Email"/>
-                                        {dbEmail===0 ?
-                                            <label htmlFor="floatingEmail">Email</label> :
-                                            <label htmlFor="floatingEmail" style={{color: "red"}}>사용중인 이메일입니다.</label>
-                                        }
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <input type="number" className="form-control" id="floatingPhone" value={phone}
-                                        onChange={(e) => {
-                                            phoneCheck(e)
-                                        }}
-                                        placeholder="Phone"/>
-                                        {dbPhone===0 ?
-                                            <label htmlFor="floatingPhone">Phone</label> :
-                                            <label htmlFor="floatingPhone" style={{color: "red"}}>사용중인 휴대폰입니다.</label>
-                                        }
-                                </div>
+                                {isSNS?(<></>):(
+                                <>
+                                    <div className="form-floating mb-3">
+                                        <input type="email" className="form-control" id="floatingEmail" value={email}
+                                            onChange={(e) => {
+                                                emailCheck(e)
+                                            }}
+                                            placeholder="Email"/>
+                                            {dbEmail===0 ?
+                                                <label htmlFor="floatingEmail">Email</label> :
+                                                <label htmlFor="floatingEmail" style={{color: "red"}}>사용중인 이메일입니다.</label>
+                                            }
+                                    </div>
+                                    <div className="form-floating mb-3">
+                                        <input type="number" className="form-control" id="floatingPhone" value={phone}
+                                            onChange={(e) => {
+                                                phoneCheck(e)
+                                            }}
+                                            placeholder="Phone"/>
+                                            {dbPhone===0 ?
+                                                <label htmlFor="floatingPhone">Phone</label> :
+                                                <label htmlFor="floatingPhone" style={{color: "red"}}>사용중인 휴대폰입니다.</label>
+                                            }
+                                    </div>
+                                </>
+                                )}
                                 <Button component="label" sx={{width:'100%'}} variant="contained" startIcon={<CloudUploadIcon />}>
                                     Upload file
                                     <VisuallyHiddenInput onChange={(e)=>{
@@ -240,7 +282,7 @@ export default function Join(props: any) {
                         <Button type="button" className="btn btn-secondary" onClick={handleClose}> 취소
                         </Button>
 
-                        <Button type="button" onClick={() => addMember()}
+                        <Button type="button" onClick={isSNS?() => snsSignUp():() => addMember()}
                                 className={!addMemberbtn ? "btn btn-info" : "btn btn-danger disabled"}>회원가입
                         </Button>
                     </Box>

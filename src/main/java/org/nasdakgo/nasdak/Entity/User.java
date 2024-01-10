@@ -52,6 +52,9 @@ public class User {
     @Column(name = "push_time")
     private String pushTime;
 
+    @OneToMany(mappedBy = "user")
+    private List<SNS> snsList = new ArrayList<>();
+
     public User(long userNo) {
         this.userNo = userNo;
     }

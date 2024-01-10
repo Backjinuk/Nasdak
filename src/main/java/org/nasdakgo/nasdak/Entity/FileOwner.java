@@ -19,7 +19,7 @@ public class FileOwner {
     @Column(name="file_owner_no")
     private long fileOwnerNo;
 
-    @OneToMany(mappedBy = "fileOwner", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "fileOwner")
     private List<Files> filesList;
 
     public FileOwner(long fileOwnerNo) {

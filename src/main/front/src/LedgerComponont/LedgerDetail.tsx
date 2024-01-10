@@ -8,20 +8,33 @@ import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import {red} from "@mui/material/colors";
 import KakaoMap2 from "MapComponont/LedgerMapComponont/KakaoMap2";
+import Typography from "@mui/material/Typography";
+import * as React from "react";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import KakaoMap from "../MapComponont/LedgerMapComponont/KakaoMap";
+import Button from "@mui/material/Button";
+import SendIcon from "@mui/icons-material/Send";
 
 
-export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any}){
+export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen, open} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any, isOpen : (value: boolean) => void, open : boolean }){
 
     const [price, setPrice] = useState(() => ledger.price);
     const [location, setLocation] = useState(() => ledger.location);
     const [comment, setComment] = useState(() => ledger.comment);
     const [lodinMap, setLodingMap] = useState(false);
     const [checkedList, setCheckedList] = useState([]);
+    const [categoryNo, setCategoryNo] = useState(() => ledger.categoryDto.categoryNo);
+    const [ledgerType , setLedgerType] = useState(() => ledger.ledgerType)
 
     useEffect(() => {
         setPrice(ledger.price);
         setLocation(ledger.location);
         setComment(ledger.comment);
+        setCategoryNo(ledger.categoryDto.categoryNo);
+        setLedgerType(ledger.ledgerType );
     }, [ledger]);
 
 
@@ -36,16 +49,11 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
 
         for (let field of frm) {
             LedgerDto[field.name] = field.value;
-
-            if (field.name === 'category_no') {
-                LedgerDto["categoryDto"] = {
-                    categoryNo: field.value
-                };
-            }
         }
 
         let fileOwnerNo = LedgerDto['fileOwnerNo']
 
+        LedgerDto["categoryDto"] = { categoryNo: categoryNo };
         LedgerDto["usersDto"] = usersDto;
         LedgerDto["location"] = location;
 
@@ -225,6 +233,7 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
                             icon: "success",
                             timer: 1000
                         }).then( () => {
+
                             UtilsEvent();
                         })
 
@@ -268,124 +277,139 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent} : {cat
      * @constructor
      */
     function UtilsEvent(){
-        // @ts-ignore
-        $("#ledgerDetail").modal('hide');
+        isOpen(false);
         ChangeEvent();
     }
 
 
     return (
         <>
-        <div className="modal fade " id="ledgerDetail" data-bs-keyboard="false"
-             aria-labelledby="staticBackdropLabel" aria-hidden="true" tabIndex={-1}>
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id="staticBackdropLabel">글쓰기</h1>
-                        <button type="button" className="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <form name={"updateLedger"}>
-                        <div className="modal-body">
+        <Modal
+            open={open}
+            onClose={() => isOpen(false)}
+            aria-labelledby="parent-modal-title"
+            aria-describedby="parent-modal-description"
+        >
+            <Box className={"modalBox"}>
 
-                            <div className="mb-3">
-                                <div className="form-floating">
-                                    <input type="hidden" name={"fileOwnerNo"} value={ledger.fileOwnerNo}/>
-                                    <input type="hidden" name={"categoryNo"} value={ledger.categoryDto.categoryNo}/>
-                                    <select name="category_no" className="form-select" id="floatingSelectGrid"
-                                            defaultValue={ledger.categoryDto.categoryNo}>
-                                        <option value="">선택</option>
-                                        {categoryList.map((category: CategoryType, index: number) => (
-                                            <option key={index} value={category.categoryNo}>{category.content}</option>
-                                        ))}
-                                    </select>
+                <Typography id="parent-modal-title" variant="h6" component="h2" sx={{marginBottom : '20px'}}>
+                    글쓰기
+                </Typography>
 
-                                    <label htmlFor="floatingSelectGrid">카테고리를 선택해 주세요</label>
-                                </div>
-                            </div>
+                <form name={"updateLedger"}>
+                    <div id={"parent-modal-description"}>
 
-                            <div className="form-floating mb-3">
-                                <select name={"ledgerType"} className="form-select" id="floatingSelectGrid" defaultValue={ledger.ledgerType}>
-                                    <option value="SAVE">입금</option>
-                                    <option value="DEPOSIT">출금</option>
-                                </select>
-                                <label htmlFor="dw">입/출금</label>
-                            </div>
+                        <div className={"mb30"} style={{marginBottom: "30px"}}>
 
-                            <div className="form-floating mb-3">
-                                <input type="text" name={"price"} className="form-control" id="price" value={price}
+                            <input type="hidden" name={"fileOwnerNo"} value={ledger.fileOwnerNo}/>
+                            <input type="hidden" name={"categoryNo"} value={categoryNo}/>
+
+                            <TextField
+                                fullWidth={true}
+                                id="category_no"
+                                name={"category_no"}
+                                select
+                                label="카테고리"
+                                defaultValue={"0"}
+                                value={categoryNo} // 초기에 선택되어야 하는 값으로 빈 문자열을 할당
+                                onChange={(e) => {
+                                    setCategoryNo(parseInt(e.target.value));
+                                }}
+                            >
+                                <MenuItem value={0}>선택</MenuItem>
+                                {categoryList.map((category: CategoryType, index: number) => (
+                                    <MenuItem key={index} value={category.categoryNo}>
+                                        {category.content}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+
+                        </div>
+
+                        <div className={"mb30"} style={{marginBottom: "30px"}}>
+                            <TextField fullWidth={true} id="ledgerType" name={"ledgerType"} select label="입/출금"
+                                       defaultValue={ledger.ledgerType}
+                                       value={ledgerType}
+                                       onChange={(e) => setLedgerType(e.target.value)}
+                            >
+                                <MenuItem key={"DEPOSIT"} value={"DEPOSIT"}>출금</MenuItem>
+                                <MenuItem key={"SAVE"} value={"SAVE"}>입금</MenuItem>
+                            </TextField>
+                        </div>
+
+                        <div className={"mb30"} style={{marginBottom: "30px"}}>
+                            <TextField className={"md30"} fullWidth={true} id="price" label="가격을 입력해 주세요"
+                                       value={price}
                                        onChange={(e) => {
                                            setPrice(Number(e.target.value))
                                        }}
-                                       placeholder="가격을 입력해주세요"/>
-                                <label htmlFor="price">가격</label>
-                            </div>
-                            {/*value={location?.x} onChange={(e) => {setLocation(e.target.value?)}}*/}
-                            <div className="form-floating mb-3">
-                                <input type="text" name={"location"} className="form-control" id="location"
-                                   onClick={() => {
-                                       setLodingMap(lodinMap ? false : true);
-                                    // @ts-ignore
-                                    $("#KakaoMap2").modal("show")}}
-                                       placeholder="지역을 입력해주세요" value={location.address}
-                                     readOnly={true}
-                                />
-                                <label htmlFor="location">지역</label>
-                            </div>
+                                       variant="outlined" name={"price"}/>
+                        </div>
 
-                            <div className="form-floating mb-3">
-                                <input type="text" name={"comment"} className="form-control" id="floatingSpassword"
+
+                        <div className={"mb30"} style={{marginBottom: "30px"}}>
+                            <KakaoMap LocationAppend={LocationAppend} location={location}/>
+                        </div>
+
+                        <div className={"mb30"} style={{marginBottom: "30px"}}>
+                            <TextField className={"md30"} fullWidth={true} name={"comment"} id="floatingSpassword" variant="outlined"
                                        value={comment} onChange={e => {
-                                    setComment(e.target.value)
-                                }}
-                                       placeholder="내용을 입력해주세요"/>
-                                <label htmlFor="floatingSpassword">내용</label>
-                            </div>
+                                            setComment(e.target.value)
+                                        }}
+                            />
+                        </div>
 
-                            <div className="input-group mb-3">
-                                <input type="file" multiple className="form-control uploadFile" id="file2" name={"file"}/>
-                                <label className="input-group-text" htmlFor="file">Upload</label>
-                            </div>
-                            {/*fileDtoList 여부에 따라 ImageBox 출력 하기*/}
-                            {ledger.filesDtoList.length > 0 && (
-                                <>
-                                    <div className={"deleteImageFile"}>
-                                        <Tooltip title={"삭제하기"}>
-                                            <DeleteIcon onClick={() => deleteImageFile()}/>
-                                        </Tooltip>
-                                    </div>
-                                    <div className={"ImageBox"}>
-                                        {ledger.filesDtoList.map((file: FilesType) => {
-                                                return (
-                                                    <div className={"ImageItem"} key={file.fileNo}>
-                                                        <div className={"ImageCheckBox"}>
-                                                            <Checkbox value={file.fileNo}
-                                                                      onClick={() => CheckBoxEventHandle(file.fileNo)}/>
-                                                        </div>
-                                                        <img className={"ledgerImg"} src={`/image/${file.filePath}`}
-                                                             alt={`File ${file.fileNo}`}/>
+                        <div className="input-group mb-3">
+                            <input type="file" multiple className="form-control uploadFile" id="file2" name={"file"}/>
+                            <label className="input-group-text" htmlFor="file">Upload</label>
+                        </div>
+                        {/*fileDtoList 여부에 따라 ImageBox 출력 하기*/}
+                        {ledger.filesDtoList.length > 0 && (
+                            <>
+                                <div className={"deleteImageFile"}>
+                                    <Tooltip title={"삭제하기"}>
+                                        <DeleteIcon onClick={() => deleteImageFile()}/>
+                                    </Tooltip>
+                                </div>
+                                <div className={"ImageBox"}>
+                                    {ledger.filesDtoList.map((file: FilesType) => {
+                                            return (
+                                                <div className={"ImageItem"} key={file.fileNo}>
+                                                    <div className={"ImageCheckBox"}>
+                                                        <Checkbox value={file.fileNo}
+                                                                  onClick={() => CheckBoxEventHandle(file.fileNo)}/>
                                                     </div>
-                                                );
-                                            }
-                                        )}
-                                    </div>
-                                </>
-                            )}
+                                                    <img className={"ledgerImg"} src={`/image/${file.filePath}`}
+                                                         alt={`File ${file.fileNo}`}/>
+                                                </div>
+                                            );
+                                        }
+                                    )}
+                                </div>
+                            </>
+                        )}
 
-                        </div>
-                        <div className="modal-footer">
+                    </div>
+                    <div className="modal-footer">
 
-                            <button type="button" className="btn btn-primary" onClick={() => ledgerUpdate()}>수정</button>
-                            <button type="button" className="btn btn-danger" onClick={() => ledgerDelete(ledger.fileOwnerNo)}>삭제</button>
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"> 취소</button>
+                        <Button variant="contained" endIcon={<SendIcon/>} onClick={() => ledgerUpdate()}
+                                sx={{marginRight: "10px"}}>
+                            수정
+                        </Button>
+                        <Button variant="contained" color={"error"} startIcon={<DeleteIcon/>} sx={{marginRight: "10px"}}
+                                onClick={() => ledgerDelete(ledger.fileOwnerNo)}
+                        >
+                            삭제
+                        </Button>
 
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+                        <Button variant="contained"  color="secondary" onClick={() => isOpen(false)}>
+                            취소
+                        </Button>
 
-        <KakaoMap2 LocationAppend={LocationAppend} location={location as location} lodinMap={lodinMap}/>
+                    </div>
+                </form>
+            </Box>
+        </Modal>
 
         </>
 

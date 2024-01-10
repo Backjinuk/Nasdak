@@ -3,7 +3,7 @@ import axios from "axios";
 import {useCallback, useEffect, useState} from "react";
 import {CategoryType, LedgerType} from "../TypeList";
 import "./Ledger.css";
-import LedgerDetail from "./ledgerDetail";
+import LedgerDetail from "./LedgerDetail";
 import CategoryList from "../categoryComponent/CategortList";
 import Logout from "UserComponont/Logout";
 import UserInfoButton from "UserComponont/UserInfoButton";
@@ -20,21 +20,13 @@ interface JQuery {
     modal(action: 'show' | 'hide'): void;
 }
 
-export default function LedgerMain(){
+export default function LedgerMain({categoryList, isLedgerList} : any){
 
     const [ledgerList, setLedgerList] = useState<LedgerType[]>([] );
     const [landingEvent , setLendingEvent] =  useState(false);
-    const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
     const [ledger, setLedger] = useState<LedgerType>();
+    const [open, setOpen] = useState<boolean>(false);
     const navigate  = useNavigate();
-
-    const ChangeEvent = () => {
-        if (!landingEvent) {
-            setLendingEvent(true);
-        } else {
-            setLendingEvent(false);
-        }
-    }
 
     useEffect(() => {
         axios.post("/api/ledger/LedgerList", JSON.stringify({
@@ -45,18 +37,9 @@ export default function LedgerMain(){
             }
         }).then(res => {
             setLedgerList(res.data );
+            isLedgerList(res.data);
         })
 
-        const userDto = {
-            userNo : sessionStorage.getItem("userNo"),
-            userId : sessionStorage.getItem("userId")
-        }
-
-        axios.post("/api/category/getCategoryList", JSON.stringify(userDto),
-            { headers : {"Content-Type" : "application/json"}
-            }).then(res => {
-            setCategoryList(res.data);
-        })
 
     }, [landingEvent]);
 
@@ -70,26 +53,34 @@ export default function LedgerMain(){
             }
         }).then((res) => {
             setLedger(res.data);
-            // @ts-ignore
-            $("#ledgerDetail").modal("show");
         })
     }
 
+    const isOpen = (value : boolean) => {
+        setOpen(value);
 
-    return(
+        return value;
+    }
+
+
+    const ChangeEvent = () => {
+        if (!landingEvent) {
+            setLendingEvent(true);
+        } else {
+            setLendingEvent(false);
+        }
+    }
+
+
+            return(
         <div>
-            <TopBar ChangeEvent={ChangeEvent} categoryList={categoryList}/>
-            <div className={"createBox"}>
-
-
-            </div>
             <div className={"warp"}>
                 {ledgerList.map((ledger: LedgerType, index: number) => (
-                    <div className="card shadow-lg" key={index}>
-                        <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />
+                    <div className="card shadow-lg" key={index} onClick={() => setOpen(true)}>
+                        <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail}/>
                     </div>
                 ))}
-                {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent} />}
+                {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent} isOpen={isOpen} open={open}/> }
             </div>
         </div>
     )

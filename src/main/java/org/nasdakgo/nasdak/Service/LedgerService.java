@@ -22,7 +22,7 @@ public class LedgerService {
     public Ledger save(Ledger ledger) { return ledgerRepository.save(ledger);
     }
 
-    public int ledgerUpdate(Ledger ledger) { return ledgerRepository.ledgerUpdate(ledger.getFileOwnerNo(), ledger.getLedgerType(), ledger.getPrice(), ledger.getComment(), ledger.getLocation().getX(), ledger.getLocation().getY(), ledger.getCategory().getCategoryNo());
+    public int ledgerUpdate(Ledger ledger) { return ledgerRepository.ledgerUpdate(ledger.getFileOwnerNo(), ledger.getLedgerType(), ledger.getPrice(), ledger.getComment(), ledger.getLocation(), ledger.getCategory().getCategoryNo());
     }
 
     public void ledgerDelete(Ledger ledger) { ledgerRepository.deleteById(ledger.getFileOwnerNo());
@@ -47,5 +47,8 @@ public class LedgerService {
     public FileOwner findById(long fileOwnerNo) { return ledgerRepository.findById(fileOwnerNo).orElse(null);}
 
     public List<Ledger> findAllBylocation(User user) { return ledgerRepository.findAllByLocation(user.getUserNo());
+    }
+
+    public List<Ledger> ledgerAllList(User user) { return ledgerRepository.ledgerAllList(user.getUserNo());
     }
 }

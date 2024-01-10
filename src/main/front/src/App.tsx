@@ -7,13 +7,14 @@ import UserInfo from "UserComponont/UserInfo";
 import FindUser from "UserComponont/FindUser";
 import SNSLogin from "UserComponont/snsComponent/SNSLogin";
 import CalenderMain from "./CalenderCompoont/CalenderMain";
-import KakaoLogin from "UserComponont/snsComponent/KakaoLogin";
 import KakaoInit from "UserComponont/snsComponent/KakaoInit";
 import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
 import TopBar from "./TopBar";
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {CategoryType, LedgerType} from "./TypeList";
+import  "./firebase";
+
 import axios from "axios";
 import userEvent from "@testing-library/user-event";
 

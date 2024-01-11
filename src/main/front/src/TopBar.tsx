@@ -1,36 +1,29 @@
-import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import CreateLeger from "./LedgerComponont/CreateLeger";
 import { useNavigate } from "react-router-dom";  // 변경
-import CategoryList from "./categoryComponent/CategortList";
 import UserInfoButton from "./UserComponont/UserInfoButton";
 import Logout from "./UserComponont/Logout";
 import {useEffect, useState} from "react";
-import axios from "axios";
+import { useAppDispatch, useAppSelector } from 'app/hooks';
+import { axiosGetCategoryList, selectAllCategories } from 'app/slices/categoriesSlice';
 
-export default function TopBar({isCategoryList, categoryList , ChangeEvent} : any) {
+export default function TopBar({ ChangeEvent} : any) {
+    const dispatch = useAppDispatch()
     const navigate = useNavigate();  // 변경
+    const categoryList = useAppSelector(selectAllCategories)
 
+    const categoryStatus = useAppSelector(state => state.categories.status)
 
     useEffect(() => {
-        const userDto = {
-            userNo: sessionStorage.getItem("userNo"),
-            userId: sessionStorage.getItem("userId")
+        const userNo = Number(sessionStorage.getItem("userNo"))
+        if(categoryStatus==='idle'){
+            dispatch(axiosGetCategoryList(userNo))
         }
-
-        axios.post("/api/category/getCategoryList", JSON.stringify(userDto),
-            {
-                headers: {"Content-Type": "application/json"}
-            }).then(res => {
-            isCategoryList(res.data);
-        })
-
     }, []);
 
 
@@ -52,7 +45,6 @@ export default function TopBar({isCategoryList, categoryList , ChangeEvent} : an
                     <Button sx={{ color: '#fff' }} variant="outlined" onClick={() => navigate("/MapLocation")}>지도 모아보기</Button>
                     <Button sx={{ color: '#fff' }} variant="outlined" onClick={() => navigate("/Ledger")}>메인페이지</Button>
                     <Button sx={{ color: '#fff' }} variant="outlined" onClick={() => navigate("/calender")}>달력으로 보기</Button>
-                    <CategoryList changeEvent={ChangeEvent} categoryList={categoryList} />
                     <UserInfoButton />
                     <Logout />
                 </Toolbar>

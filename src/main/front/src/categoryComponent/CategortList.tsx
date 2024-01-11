@@ -4,13 +4,16 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, Stack } from "@mui/m
 import AddCategory from "./AddCategory";
 import Category from "./Category";
 import IntegrateCategory from "./IntegrateCategory";
-import {CategoryType} from "../TypeList";
-import MenuItem from "@mui/material/MenuItem";
-import * as React from "react";
+import { useAppSelector } from "app/hooks";
+import { selectAllCategories, selectCategoryIds } from "app/slices/categoriesSlice";
 
-export default function CategoryList({categoryList, changeEvent}: any) {
+export default function CategoryList() {
+    const categoryList = useAppSelector(selectAllCategories)
+    const categoryIds = useAppSelector(selectCategoryIds)
+
     const [open, setOpen] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
+
     const handleOpen = ()=>{setOpen(true)};
     const handleClose = ()=>{
         setOpen(false);
@@ -20,8 +23,12 @@ export default function CategoryList({categoryList, changeEvent}: any) {
     };
     const handleEditButton = ()=>{setIsEdit(!isEdit)};
 
+    const renderedCategory = categoryIds.map(categoryId => (
+        <Category key={categoryId} categoryId={categoryId} isEdit={isEdit} />
+    ))
+
     return (<div >
-        <Button sx={{ color: '#fff' }} variant="outlined" onClick={handleOpen}>카테고리
+        <Button variant="contained" onClick={handleOpen}>카테고리 관리
         </Button>
         <Dialog open={open} onClose={handleClose} sx={{zIndex:1000}} >
             <DialogTitle>
@@ -29,19 +36,13 @@ export default function CategoryList({categoryList, changeEvent}: any) {
             </DialogTitle>
             <DialogContent sx={{width:400}}>
                 <Stack sx={{width:'-webkit-fill-available'}} spacing={1}>
-                    {categoryList && categoryList.length > 0 && (
-                        categoryList.map((item:any)=>(
-                                <Category key={item.categoryNo} item={item} isEdit={isEdit} changeEvent={changeEvent}/>
-                            ))
-                    )}
-
-
+                    {renderedCategory}
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Stack spacing={1} direction="row" justifyContent="right">
-                    {isEdit? '' : <AddCategory changeEvent={changeEvent}/>}
-                    {isEdit? <IntegrateCategory setIsEdit={setIsEdit} changeEvent={changeEvent} categoryList={categoryList}/> : ''}
+                    {isEdit? '' : <AddCategory />}
+                    {isEdit? <IntegrateCategory setIsEdit={setIsEdit} categoryList={categoryList}/> : ''}
                     <Button variant="outlined" onClick={handleEditButton}>{isEdit?'완료':'편집'}</Button>
                     <Button variant="outlined" onClick={handleClose}>닫기</Button>
                 </Stack>

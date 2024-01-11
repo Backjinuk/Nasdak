@@ -1,31 +1,29 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import axios from "axios";
+import { CategoryType } from "TypeList";
+import { useAppDispatch } from "app/hooks";
+import { axiosAddCategory } from "app/slices/categoriesSlice";
 import { useState } from "react";
 
-export default function AddCategory({changeEvent} : any){
+export default function AddCategory(){
+    const dispatch = useAppDispatch()
+
     const [open, setOpen] = useState(false);
     const [content, setContent] = useState('');
     const handleClickOpen = ()=>{setOpen(true)};
     const handleClose = ()=>{setOpen(false)};
 
+    const userNo = Number(sessionStorage.getItem('userNo'))
     const canAddCategory = (content==='');
 
-    function addCategory(){
-        const data = {
-            userNo : sessionStorage.getItem('userNo'),
-            content : content
+    async function addCategory(){
+        const data:CategoryType = {
+            categoryNo : 0,
+            userNo,
+            content,
+            delYn : '',
         };
-        axios.post("/api/category/addCategory", JSON.stringify(data)
-            ,{
-                headers : {
-                    "Content-Type" : "application/json"
-                }
-            }).then(res=>{
-                handleClose();
-                changeEvent();
-            },error=>{
-                alert('failed')
-            })
+        await dispatch(axiosAddCategory(data))
+        handleClose();
     }
 
     return (<>

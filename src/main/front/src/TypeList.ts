@@ -1,20 +1,20 @@
 export interface CategoryType{
-    collectionNo : number ,
     categoryNo : number ,
-    userdDto : UsersType,
     userNo : number
     content : string ,
     delYn : string
-
 }
 
 export interface UsersType{
     userNo : number ,
     userId : string ,
-    passowrd : string ,
-    eamil : string ,
+    password : string ,
+    email : string ,
     phone : string ,
-    regDate :  string
+    profile : string,
+    regDate :  string,
+    sendKakaoTalk : boolean,
+    sendWebPush : boolean
 }
 
 export interface LedgerType {

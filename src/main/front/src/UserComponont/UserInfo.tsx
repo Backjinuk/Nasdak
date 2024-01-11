@@ -17,6 +17,10 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import logout from 'UserComponont/js/logout';
 import Join from './Join';
 import { handleNaverLogin, handleKakaoLogin, setSnsState } from 'UserComponont/js/snsLogin'
+import CategoryList from 'categoryComponent/CategortList';
+import { dropCategories } from 'app/slices/categoriesSlice';
+import { useAppDispatch } from 'app/hooks';
+import { UsersType } from 'TypeList';
 
 declare global {
     interface Window {
@@ -41,6 +45,7 @@ function Copyright(props : any) {
 }
 
 export default function UserInfo() {
+    const dispatch = useAppDispatch()
     const navigate = useNavigate()
     const [user, setUser] = useState({...initialUser})
     const [backup, setBackup] = useState({...initialUser})
@@ -158,6 +163,7 @@ export default function UserInfo() {
             }
         }).then(res=>{
             logout()
+            dispatch(dropCategories())
             navigate("/")
         })
     }
@@ -324,6 +330,7 @@ export default function UserInfo() {
 
     const buttonGroup = (
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            <CategoryList />
             {isEdit?(<>
                 <Button
                     variant="contained"
@@ -579,15 +586,16 @@ const snsImageLink = {
     GOOGLE : ''
 } as {[key : string] : string}
 
-const initialUser = {
-    userNo : sessionStorage.getItem('userNo'),
+const initialUser:UsersType = {
+    userNo : Number(sessionStorage.getItem('userNo')),
     userId : '',
     password : '',
     email : '',
     phone : '',
     profile : '',
     sendKakaoTalk : false,
-    sendWebPush : false
+    sendWebPush : false,
+    regDate : ''
 }
 
 const initialSnsSet = {

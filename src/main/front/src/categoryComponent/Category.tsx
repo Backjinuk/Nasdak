@@ -1,47 +1,38 @@
 import { Button, ButtonGroup, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
-import axios from "axios";
+import { CategoryType } from "TypeList";
+import { useAppDispatch } from "app/hooks";
+import { axiosDeleteCategory, axiosUpdateCategory, selectCategoryById } from "app/slices/categoriesSlice";
+import { RootState } from "app/store";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
-export default function Category(props : any){
-    const item = props.item;
-    const isEdit = props.isEdit && item.delYn==='Y';
-    const changeEvent = ()=>{props.changeEvent()};
+export default function Category({categoryId, isEdit} : {categoryId : number, isEdit : boolean}){
+    const category = useSelector((state:RootState)=>selectCategoryById(state, categoryId));
+    const canEdit = isEdit && category.delYn==='Y';
 
     return (
         <ButtonGroup sx={{width:'-webkit-fill-available'}} variant="outlined" aria-label="outlined button group">
-            <Button sx={{width:(isEdit?'60%':'100%'), textTransform:'none'}} >{item.content}</Button>
-            {isEdit?<UpdateCategory changeEvent={changeEvent} item={item}/>:''}
-            {isEdit?<DeleteCategory changeEvent={changeEvent} item={item}/>:''}
+            <Button sx={{width:(canEdit?'60%':'100%'), textTransform:'none'}} >{category.content}</Button>
+            {canEdit?<UpdateCategory category={category}/>:''}
+            {canEdit?<DeleteCategory category={category}/>:''}
         </ButtonGroup>
     );
 }
 
-function UpdateCategory(props : any){
-    const changeEvent = ()=>{props.changeEvent()};
-    const item = props.item;
+function UpdateCategory({category}:{category:CategoryType}){
+    const dispatch = useAppDispatch()
+
     const [open, setOpen] = useState(false);
-    const handleClickOpen = ()=>{setOpen(true)};
+    const handleClickOpen = ()=>{setContent(category.content);setOpen(true)};
     const handleClose = ()=>{setOpen(false)};
-    const [content, setContent] = useState(item.content);
+    const [content, setContent] = useState(category.content);
 
     const canUpdateCategory = (content==='');
 
-    function updateCategory(){
-        const data = {
-            categoryNo : item.categoryNo,
-            content : content
-        };
-        axios.post("/api/category/updateCategory", JSON.stringify(data)
-            ,{
-                headers : {
-                    "Content-Type" : "application/json"
-                }
-            }).then(res=>{
-                handleClose();
-                changeEvent();
-            },error=>{
-                alert('failed')
-            })
+    async function updateCategory(){
+        const data:CategoryType = {...category, content}
+        await dispatch(axiosUpdateCategory(data))
+        handleClose();
     }
 
     return (<>
@@ -70,37 +61,28 @@ function UpdateCategory(props : any){
     </>)
 }
 
-function DeleteCategory(props : any){
-    const changeEvent = ()=>{props.changeEvent()};
-    const item = props.item;
-    const [open, setOpen] = useState(false);
+function DeleteCategory({category}:{category:CategoryType}){
+    const dispatch = useAppDispatch()
+
     const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
     const handleClickOpen = ()=>{setOpen(true)};
     const handleClose = ()=>{setOpen(false)};
 
     const loadingDialog = (<CircularProgress size={20} />);
 
-    function deleteCategory(){
-        const data = {
-            categoryNo : item.categoryNo,
-            userNo : sessionStorage.getItem('userNo')
-        };
+    async function deleteCategory(){
         setLoading(true)
-        axios.post("/api/category/deleteCategory", JSON.stringify(data),
-        {
-            headers:{"Content-Type":'application/json'}
-        }).then(res=>{
-            setLoading(false);
-            handleClose();
-            changeEvent();
-        });
+        await dispatch(axiosDeleteCategory(category))
+        setLoading(false);
+        handleClose();
     }
 
     return (
         <>
-        <Button sx={{width:'20%'}} onClick={handleClickOpen}>
-          삭제
-        </Button>
+            <Button sx={{width:'20%'}} onClick={handleClickOpen}>
+            삭제
+            </Button>
             <Dialog
                 open={open}
                 onClose={handleClose}

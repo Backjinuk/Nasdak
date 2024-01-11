@@ -7,15 +7,13 @@ import UserInfo from "UserComponont/UserInfo";
 import FindUser from "UserComponont/FindUser";
 import SNSLogin from "UserComponont/snsComponent/SNSLogin";
 import CalenderMain from "./CalenderCompoont/CalenderMain";
-import KakaoLogin from "UserComponont/snsComponent/KakaoLogin";
 import KakaoInit from "UserComponont/snsComponent/KakaoInit";
 import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
 import TopBar from "./TopBar";
-import * as React from "react";
-import {useEffect, useState} from "react";
-import {CategoryType, LedgerType} from "./TypeList";
-import axios from "axios";
-import userEvent from "@testing-library/user-event";
+import {useState} from "react";
+import {LedgerType} from "./TypeList";
+import { useAppSelector } from "app/hooks";
+import { selectAllCategories } from "app/slices/categoriesSlice";
 
 declare global {
   interface Window {
@@ -24,15 +22,11 @@ declare global {
   }
 }
 
-
 function App() {
-    const [categoryList, setCategoryList] = useState();
+    const categoryList = useAppSelector(selectAllCategories)
+    const isLogin = sessionStorage.getItem('userNo') !== null
     const [ledgerList, setLedgerList] = useState<LedgerType[]>()
     const [event, setEvent] = useState(false)
-
-    function isCategoryList(value : any){
-        setCategoryList(value);
-    }
 
     function isLedgerList( value : LedgerType[]) {
         setLedgerList(value);
@@ -46,7 +40,8 @@ function App() {
         <header className="App-header">
           <CookiesProvider>
           <Router>
-              <Routes>
+            {isLogin?<TopBar /> : ''}
+            <Routes>
                   {/* 로그인 관련 */}
                   <Route path={"/*"} element={<Login/>}/>
                   <Route path={"/userInfo"} element={<UserInfo/>}/>
@@ -56,23 +51,9 @@ function App() {
                   <Route path={"/kakaoLogout"} element={<KakaoLogout/>}/>
                   {/* 로그인 관련 */}
 
-
-                  <Route path="/Ledger"
-                      element={
-                          <>
-                              <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} ChangeEvent={ChangeEvent}/>
-                              <LedgerMain categoryList={categoryList} isLedgerList={(value : LedgerType[]) => isLedgerList(value)} />
-                          </>
-                      }
-                  />
-                  <Route path={"/MapLocation"} element={<>
-                      <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} ChangeEvent={ChangeEvent}/>
-                      <MapLocation />
-                  </>} />
-                  <Route path={"/calender"} element={<>
-                      <TopBar isCategoryList={(value: any) => isCategoryList(value)} categoryList={categoryList} ChangeEvent={ChangeEvent}/>
-                      <CalenderMain categoryList={categoryList} ChangeEvent={ChangeEvent}/>
-                  </>} />
+                  <Route path="/Ledger" element={<LedgerMain categoryList={categoryList} isLedgerList={(value : LedgerType[]) => isLedgerList(value)} />} />
+                  <Route path={"/MapLocation"} element={<MapLocation />} />
+                  <Route path={"/calender"} element={<CalenderMain categoryList={categoryList} ChangeEvent={ChangeEvent}/>} />
               </Routes>
           </Router>
         </CookiesProvider>

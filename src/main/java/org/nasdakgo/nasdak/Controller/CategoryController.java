@@ -24,9 +24,10 @@ public class CategoryController {
     private final ModelMapper modelMapper;
 
     @RequestMapping("addCategory")
-    public void addCategory(@RequestBody CategoryDto categoryDto){
+    public CategoryDto addCategory(@RequestBody CategoryDto categoryDto){
         Category category = toCategory(categoryDto);
         categoryService.addCategory(category);
+        return toCategoryDto(category);
     }
 
     @RequestMapping("updateCategory")

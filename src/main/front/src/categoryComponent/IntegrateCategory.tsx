@@ -1,11 +1,12 @@
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, FormGroup, Radio } from "@mui/material";
-import axios from "axios";
+import { CategoryType } from "TypeList";
+import { useAppDispatch } from "app/hooks";
+import { axiosIntegrateCategory } from "app/slices/categoriesSlice";
 import { useState } from "react";
 
-export default function IntegrateCategory(props : any){
-    const categoryList = props.categoryList;
-    const changeEvent = ()=>{props.changeEvent()};
-    const setIsEdit = (value:boolean)=>{props.setIsEdit(value)};
+export default function IntegrateCategory({categoryList, setIsEdit} : {categoryList : CategoryType[], setIsEdit:Function}){
+    const dispatch = useAppDispatch()
+
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
     const handleClickOpen = ()=>{setOpen(true)};
@@ -38,14 +39,10 @@ export default function IntegrateCategory(props : any){
         }
     }
 
-    function integrateCategory(){
-        const data = {before : before, after : after};
-        axios.post("/api/category/integrateCategory", JSON.stringify(data),{
-                headers : {'Content-Type' : 'application/json'}
-            }).then(res=>{
-                setIsEdit(false);
-                changeEvent();
-            });
+    async function integrateCategory(){
+        const data = {before, after};
+        await dispatch(axiosIntegrateCategory(data))
+        setIsEdit(false);
     }
 
     const stepOne = (<>

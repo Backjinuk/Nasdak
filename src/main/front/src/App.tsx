@@ -10,13 +10,8 @@ import CalenderMain from "./CalenderCompoont/CalenderMain";
 import KakaoInit from "UserComponont/snsComponent/KakaoInit";
 import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
 import TopBar from "./TopBar";
-import * as React from "react";
-import {useEffect, useState} from "react";
-import {CategoryType, LedgerType} from "./TypeList";
-import  "./firebase";
-import axios from "axios";
-import userEvent from "@testing-library/user-event";
-import {useState} from "react";
+import { useState } from "react";
+import { LedgerType } from "./TypeList";
 import { useAppSelector } from "app/hooks";
 import { selectAllCategories } from "app/slices/categoriesSlice";
 

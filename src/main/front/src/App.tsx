@@ -40,7 +40,7 @@ function App() {
         <header className="App-header">
           <CookiesProvider>
           <Router>
-            {isLogin?<TopBar /> : ''}
+            {isLogin && <TopBar /> }
             <Routes>
                   {/* 로그인 관련 */}
                   <Route path={"/*"} element={<Login/>}/>

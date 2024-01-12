@@ -22,22 +22,29 @@ export const categoriesSlice = createSlice({
         }
     },
     extraReducers(builder) {
-        builder.addCase(axiosGetCategoryList.pending, (state, action) => {
+        builder
+        .addCase(axiosGetCategoryList.pending, (state, action) => {
             state.status = 'loading'
-        }).addCase(axiosGetCategoryList.fulfilled, (state, action) => {
+        })
+        .addCase(axiosGetCategoryList.fulfilled, (state, action) => {
             state.status = 'succeeded'
             categoriesAdapter.setAll(state, action.payload)
-        }).addCase(axiosGetCategoryList.rejected, (state, action) => {
+        })
+        .addCase(axiosGetCategoryList.rejected, (state, action) => {
             state.status = 'failed'
             const message = action.error.message
             if(message !== undefined) state.error = message
-        }).addCase(axiosAddCategory.fulfilled, (state, action)=>{
+        })
+        .addCase(axiosAddCategory.fulfilled, (state, action)=>{
             categoriesAdapter.addOne(state, action.payload)
-        }).addCase(axiosUpdateCategory.fulfilled, (state, action) =>{
+        })
+        .addCase(axiosUpdateCategory.fulfilled, (state, action) =>{
             categoriesAdapter.upsertOne(state, action.payload)
-        }).addCase(axiosDeleteCategory.fulfilled, (state, action) =>{
+        })
+        .addCase(axiosDeleteCategory.fulfilled, (state, action) =>{
             categoriesAdapter.removeOne(state, action.payload.categoryNo)
-        }).addCase(axiosIntegrateCategory.fulfilled, (state, action) =>{
+        })
+        .addCase(axiosIntegrateCategory.fulfilled, (state, action) =>{
             categoriesAdapter.removeMany(state, action.payload)
         })
     },

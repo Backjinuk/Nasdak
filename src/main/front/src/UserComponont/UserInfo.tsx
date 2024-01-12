@@ -47,6 +47,7 @@ function Copyright(props : any) {
 export default function UserInfo() {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
+
     const [user, setUser] = useState({...initialUser})
     const [backup, setBackup] = useState({...initialUser})
     const [snsSet, setSnsSet] = useState({...initialSnsSet})
@@ -69,10 +70,11 @@ export default function UserInfo() {
     const handleChangeSnsDialogClose = () => setChangeSnsDialogOpen(false)
     const [selectedSns, setSelectedSns] = useState('')
     const isSNS = user.userId===null
+
     window.snsSet = snsSet
     window.setSnsSet = (set:any)=>{setSnsSet(set)}
     window.handleChangeSnsDialogOpen = handleChangeSnsDialogOpen
-
+    
     useEffect(()=>{setSnsState('connect')},[])
     useEffect(()=>{
         getUserInfo(setSnsSet, setUser, setBackup)
@@ -368,7 +370,7 @@ export default function UserInfo() {
     const infoBox = (
         <Box sx={{ mt: 3, width:'100%' }}>
             <Grid container spacing={2}>
-                {isSNS?'':userInfo}
+                {isSNS||userInfo}
                 <Grid item xs={12} sm={6}>
                     <FormControlLabel
                     control={
@@ -385,7 +387,7 @@ export default function UserInfo() {
                     label="웹 푸시 알림"
                     />
                 </Grid>
-                {isEdit?(
+                { isEdit &&
                 <Grid item xs={12}>
                     <Button component="label" sx={{width:'100%'}} variant="contained" startIcon={<CloudUploadIcon />}>
                         Upload file
@@ -397,7 +399,7 @@ export default function UserInfo() {
                             }
                         }} type="file" />
                     </Button>
-                </Grid>):undefined}
+                </Grid>}
             </Grid>
         </Box>
     )
@@ -548,36 +550,36 @@ function ChangeSnsDialog(props : any){
     )
 }
 
-function getUserInfo(setSnsSet:any, setUser:any, setBackup:any){
-    axios.post("/api/user/getUserInfo", JSON.stringify({
+async function getUserInfo(setSnsSet:any, setUser:any, setBackup:any){
+    const res = await axios.post("/api/user/getUserInfo", JSON.stringify({
         userNo : sessionStorage.getItem('userNo')
     }), {
         headers : {
             'Content-Type' : 'application/json'
         }
-    }).then(res=>{
-        const data = res.data
-        const parseUser = {
-            userNo : data.userNo,
-            userId : data.userId,
-            password : data.password,
-            email : data.email,
-            phone : data.phone,
-            profile : data.profile,
-            sendKakaoTalk : data.sendKakaoTalk,
-            sendWebPush : data.sendWebPush
-        }
-        let nextSnsSet = {...initialSnsSet}
-        data.snsDtoList.forEach((sns:any) => {
-            nextSnsSet = {
-                ...nextSnsSet,
-                [sns.snsType] : true
-            }
-        })
-        setSnsSet(nextSnsSet)
-        setUser({...parseUser})
-        setBackup({...parseUser})
     })
+    const data = res.data
+    const parseUser = {
+        userNo : data.userNo,
+        userId : data.userId,
+        password : data.password,
+        email : data.email,
+        phone : data.phone,
+        profile : data.profile,
+        sendKakaoTalk : data.sendKakaoTalk,
+        sendWebPush : data.sendWebPush
+    }
+    let nextSnsSet = {...initialSnsSet}
+    data.snsDtoList.forEach((sns:any) => {
+        nextSnsSet = {
+            ...nextSnsSet,
+            [sns.snsType] : true
+        }
+    })
+    setSnsSet(nextSnsSet)
+    setUser({...parseUser})
+    setBackup({...parseUser})
+    
 }
 
 const snsImageLink = {

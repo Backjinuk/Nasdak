@@ -14,6 +14,7 @@ import { useState } from "react";
 import { LedgerType } from "./TypeList";
 import { useAppSelector } from "app/hooks";
 import { selectAllCategories } from "app/slices/categoriesSlice";
+import "./firebase";
 
 declare global {
   interface Window {

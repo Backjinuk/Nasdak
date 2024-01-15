@@ -1,19 +1,20 @@
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import LedgerMain from "./LedgerComponont/LedgerMain";
-import { CookiesProvider } from "react-cookie";
-import MapLocation from "./MapComponont/MapLocation";
-import Login from "UserComponont/Login";
-import UserInfo from "UserComponont/UserInfo";
-import FindUser from "UserComponont/FindUser";
-import SNSLogin from "UserComponont/snsComponent/SNSLogin";
-import CalenderMain from "./CalenderCompoont/CalenderMain";
-import KakaoInit from "UserComponont/snsComponent/KakaoInit";
-import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
-import TopBar from "./TopBar";
-import { useState } from "react";
-import { LedgerType } from "./TypeList";
-import { useAppSelector } from "app/hooks";
-import { selectAllCategories } from "app/slices/categoriesSlice";
+import { BrowserRouter as Router, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import LedgerMain from './LedgerComponont/LedgerMain';
+import { CookiesProvider } from 'react-cookie';
+import MapLocation from './MapComponont/MapLocation';
+import Login from 'UserComponont/Login';
+import UserInfo from 'UserComponont/UserInfo';
+import FindUser from 'UserComponont/FindUser';
+import SNSLogin from 'UserComponont/snsComponent/SNSLogin';
+import CalenderMain from './CalenderCompoont/CalenderMain';
+import KakaoInit from 'UserComponont/snsComponent/KakaoInit';
+import KakaoLogout from 'UserComponont/snsComponent/KakaoLogout';
+import TopBar from './TopBar';
+import { useEffect, useState } from 'react';
+import { LedgerType } from './TypeList';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
+import { selectAllCategories } from 'app/slices/categoriesSlice';
+import { dropUserInfo } from 'app/slices/userSlice';
 
 declare global {
   interface Window {
@@ -23,38 +24,45 @@ declare global {
 }
 
 function App() {
-    const categoryList = useAppSelector(selectAllCategories)
-    const isLogin = sessionStorage.getItem('userNo') !== null
-    const [ledgerList, setLedgerList] = useState<LedgerType[]>()
-    const [event, setEvent] = useState(false)
+  const categoryList = useAppSelector(selectAllCategories);
+  const [ledgerList, setLedgerList] = useState<LedgerType[]>();
+  const [event, setEvent] = useState(false);
 
-    function isLedgerList( value : LedgerType[]) {
-        setLedgerList(value);
-    }
-    function ChangeEvent () {
-        event ? setEvent(false) : setEvent(true);
-    }
+  function isLedgerList(value: LedgerType[]) {
+    setLedgerList(value);
+  }
+  function ChangeEvent() {
+    event ? setEvent(false) : setEvent(true);
+  }
 
   return (
-    <div className="App">
-        <header className="App-header">
-          <CookiesProvider>
+    <div className='App'>
+      <header className='App-header'>
+        <CookiesProvider>
           <Router>
-            {isLogin && <TopBar /> }
+            <ViewTopBar />
             <Routes>
-                  {/* 로그인 관련 */}
-                  <Route path={"/*"} element={<Login/>}/>
-                  <Route path={"/userInfo"} element={<UserInfo/>}/>
-                  <Route path={"/findId"} element={<FindUser/>}/>
-                  <Route path={"/snsLogin"} element={<SNSLogin/>}/>
-                  <Route path={"/kakaoInit"} element={<KakaoInit/>}/>
-                  <Route path={"/kakaoLogout"} element={<KakaoLogout/>}/>
-                  {/* 로그인 관련 */}
+              {/* 로그인 관련 */}
+              <Route path={'/'} element={<Login />} />
+              <Route path={'/userInfo'} element={<UserInfo />} />
+              <Route path={'/findId'} element={<FindUser />} />
+              <Route path={'/snsLogin'} element={<SNSLogin />} />
+              <Route path={'/kakaoInit'} element={<KakaoInit />} />
+              <Route path={'/kakaoLogout'} element={<KakaoLogout />} />
+              {/* 로그인 관련 */}
 
-                  <Route path="/Ledger" element={<LedgerMain categoryList={categoryList} isLedgerList={(value : LedgerType[]) => isLedgerList(value)} />} />
-                  <Route path={"/MapLocation"} element={<MapLocation />} />
-                  <Route path={"/calender"} element={<CalenderMain categoryList={categoryList} ChangeEvent={ChangeEvent}/>} />
-              </Routes>
+              <Route
+                path='/Ledger'
+                element={
+                  <LedgerMain categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
+                }
+              />
+              <Route path={'/MapLocation'} element={<MapLocation />} />
+              <Route
+                path={'/calender'}
+                element={<CalenderMain categoryList={categoryList} ChangeEvent={ChangeEvent} />}
+              />
+            </Routes>
           </Router>
         </CookiesProvider>
       </header>
@@ -62,4 +70,19 @@ function App() {
   );
 }
 
+function ViewTopBar() {
+  const dispatch = useAppDispatch();
+  const isLogin = sessionStorage.getItem('userNo') !== null;
+  const { pathname } = useLocation();
+  const showTopBar = isLogin && !notShowTopBar.includes(String(pathname));
+  useEffect(() => {
+    if (!isLogin) {
+      dispatch(dropUserInfo());
+    }
+  }, [isLogin, dispatch]);
+
+  return <>{showTopBar && <TopBar />}</>;
+}
+
 export default App;
+const notShowTopBar = ['/', '/findId', '/snsLogin', '/kakaoInit', '/kakaoLogout'];

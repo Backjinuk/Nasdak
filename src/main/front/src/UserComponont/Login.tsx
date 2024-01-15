@@ -7,8 +7,7 @@ import { Checkbox, FormControlLabel, IconButton } from '@mui/material';
 import { getCookie, setCookie } from 'Cookies';
 import { handleNaverLogin, handleKakaoLogin, setSnsState } from 'UserComponont/js/snsLogin';
 import { useEffect, useState } from 'react';
-import { useAppDispatch } from 'app/hooks';
-import { axiosGetUser } from 'app/slices/userSlice';
+import { jsonHeader } from 'headers';
 declare global {
   interface Window {
     snsLoginNavigate?: any;
@@ -16,8 +15,6 @@ declare global {
 }
 
 export default function Login() {
-  const dispatch = useAppDispatch();
-
   const [id, setId] = useState(getCookie('userId') === undefined ? '' : getCookie('userId'));
   const [pwd, setPwd] = useState('');
   const [open, setOpen] = useState(false);
@@ -43,49 +40,35 @@ export default function Login() {
     transform: 'translate(50%, -50%)',
   };
 
-  const LoginMember = () => {
-    axios
-      .post(
-        '/api/user/login',
-        JSON.stringify({
-          userId: id,
-          password: pwd,
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((res) => {
-        if (res.data.userId !== '') {
-          Swal.fire({
-            icon: 'success',
-            title: '로그인 되었습니다.',
-            timer: 1000,
-          });
-
-          if (remember) {
-            setCookie('userId', id, { maxAge: 60 * 60 * 24 * 30 });
-          } else {
-            setCookie('userId', '', { maxAge: 0 });
-          }
-          sessionStorage.setItem('userId', id);
-          sessionStorage.setItem('userNo', res.data.userNo);
-          sessionStorage.setItem('userDto', JSON.stringify({ userId: id, userNo: res.data.userNo }));
-          //const accessToken = res.data;
-          // axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken.jwt}`;
-          // document.cookie = `jwtCookie=Bearer ${accessToken.jwt}`;
-          //
-          navigate('/Ledger');
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: '아이디 혹은 비밀번호를 다시 확인해주세요.',
-          });
-          return;
-        }
+  const LoginMember = async () => {
+    const res = await axios.post('/api/user/login', JSON.stringify({ userId: id, password: pwd }), jsonHeader);
+    if (res.data.userId !== '') {
+      Swal.fire({
+        icon: 'success',
+        title: '로그인 되었습니다.',
+        timer: 1000,
       });
+
+      if (remember) {
+        setCookie('userId', id, { maxAge: 60 * 60 * 24 * 30 });
+      } else {
+        setCookie('userId', '', { maxAge: 0 });
+      }
+      sessionStorage.setItem('userId', id);
+      sessionStorage.setItem('userNo', res.data.userNo);
+      sessionStorage.setItem('userDto', JSON.stringify({ userId: id, userNo: res.data.userNo }));
+      //const accessToken = res.data;
+      // axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken.jwt}`;
+      // document.cookie = `jwtCookie=Bearer ${accessToken.jwt}`;
+      //
+      navigate('/Ledger');
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '아이디 혹은 비밀번호를 다시 확인해주세요.',
+      });
+      return;
+    }
   };
 
   function handleRemember(e: any) {

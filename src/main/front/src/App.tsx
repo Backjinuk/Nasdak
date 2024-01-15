@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import LedgerMain from './LedgerComponont/LedgerMain';
 import { CookiesProvider } from 'react-cookie';
 import MapLocation from './MapComponont/MapLocation';
@@ -15,23 +15,7 @@ import { LedgerType } from './TypeList';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectAllCategories } from 'app/slices/categoriesSlice';
 import { dropUserInfo } from 'app/slices/userSlice';
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import LedgerMain from "./LedgerComponont/LedgerMain";
-import { CookiesProvider } from "react-cookie";
-import MapLocation from "./MapComponont/MapLocation";
-import Login from "UserComponont/Login";
-import UserInfo from "UserComponont/UserInfo";
-import FindUser from "UserComponont/FindUser";
-import SNSLogin from "UserComponont/snsComponent/SNSLogin";
-import CalenderMain from "./CalenderCompoont/CalenderMain";
-import KakaoInit from "UserComponont/snsComponent/KakaoInit";
-import KakaoLogout from "UserComponont/snsComponent/KakaoLogout";
-import TopBar from "./TopBar";
-import { useState } from "react";
-import { LedgerType } from "./TypeList";
-import { useAppSelector } from "app/hooks";
-import { selectAllCategories } from "app/slices/categoriesSlice";
-import "./firebase";
+import './firebase';
 
 declare global {
   interface Window {

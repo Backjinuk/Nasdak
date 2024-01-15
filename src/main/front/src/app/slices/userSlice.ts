@@ -72,7 +72,7 @@ export const axiosUpdateUser = createAsyncThunk(
 );
 
 export const axiosDeleteUser = createAsyncThunk('user/axiosDeleteUser', async (userNo: number) => {
-  await axios.post('/api/user/deleteUser', JSON.stringify(userNo), jsonHeader);
+  await axios.post('/api/user/deleteUser', JSON.stringify({ userNo }), jsonHeader);
 });
 
 export const axiosConnectSns = createAsyncThunk(

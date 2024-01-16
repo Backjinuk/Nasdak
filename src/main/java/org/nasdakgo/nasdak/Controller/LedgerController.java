@@ -32,7 +32,7 @@ public class LedgerController {
 
     private final CategoryService categoryService;
 
-    private final  FilesService filesService;
+    private final FilesService filesService;
 
     private final ModelMapper modelMapper;
 
@@ -40,10 +40,9 @@ public class LedgerController {
     String filePath;
 
     /**
-     *
      * @param requestData
-     * @apiNote DB User * @throws Exception
      * @return
+     * @apiNote DB User * @throws Exception
      */
     @RequestMapping("ledgerSave")
     public LedgerDto ledgerSave2(@RequestBody Map<String, LedgerDto> requestData) {
@@ -66,12 +65,13 @@ public class LedgerController {
 
     /**
      * Show page of the user page.
+     *
      * @param usersDto
-     * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
      * @return List<?>
+     * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
      */
     @RequestMapping("LedgerList")
-    public List<?> LedgerList(@RequestBody UserDto usersDto){
+    public List<?> LedgerList(@RequestBody UserDto usersDto) {
         List<?> allByUsers = ledgerService.findAllByUsers(usersDto.getUserNo());
         System.out.println("allByUsers = " + allByUsers);
         return allByUsers;
@@ -79,19 +79,18 @@ public class LedgerController {
     }
 
     @RequestMapping("locationList")
-    public List<LedgerDto> locationList(@RequestBody UserDto usersDto){
+    public List<LedgerDto> locationList(@RequestBody UserDto usersDto) {
         return ledgerService.findAllBylocation(modelMapper.map(usersDto, User.class))
-                            .stream()
-                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                            .collect(Collectors.toList());
+                .stream()
+                .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                .collect(Collectors.toList());
     }
 
 
     /**
-     *
      * @param ledgerDto
-     * @apiNote LedgerList 에서 가지고오는 날짜로 ledger의 정보를 가지고오는 기능
      * @return List<LedgerDto>
+     * @apiNote LedgerList 에서 가지고오는 날짜로 ledger의 정보를 가지고오는 기능
      */
     @RequestMapping("ledgerItem")
     public List<LedgerDto> ledgerItem(@RequestBody LedgerDto ledgerDto) {
@@ -122,15 +121,14 @@ public class LedgerController {
     }
 
     /**
-     *
      * @param ledgerDto
+     * @return ledgerDto
      * @apiNote ledger 상세보기
      * Issue ledger.user , ledger.category, ledger.file 이 modelMapper로 객체 맴핑이 불가
-     * @return ledgerDto
      */
 
     @RequestMapping("ledgerDetail")
-    public LedgerDto ledgerDetail(@RequestBody LedgerDto ledgerDto){
+    public LedgerDto ledgerDetail(@RequestBody LedgerDto ledgerDto) {
         Ledger ledger = ledgerService.ledgerDetail(modelMapper.map(ledgerDto, Ledger.class));
 
 //        System.out.println("ledger = " + ledger);
@@ -150,14 +148,13 @@ public class LedgerController {
     }
 
     /**
-     *
      * @param ledgerDto
-     * @apiNote ledger update를 하는 코드
      * @return "false" , "success";
+     * @apiNote ledger update를 하는 코드
      */
     @RequestMapping("ledgerItemUpdate")
-    public String ledgerItemUpdate(@RequestBody LedgerDto ledgerDto){
-        
+    public String ledgerItemUpdate(@RequestBody LedgerDto ledgerDto) {
+
 
         Ledger ledger = modelMapper.map(ledgerDto, Ledger.class);
 
@@ -169,29 +166,27 @@ public class LedgerController {
     }
 
     /**
-     *
      * @param ledgerDto
      * @apiNote ledgerDelete 하는 코드
      */
 
     @RequestMapping("ledgerDelete")
-    public void ledgerDelete(@RequestBody LedgerDto ledgerDto){
+    public void ledgerDelete(@RequestBody LedgerDto ledgerDto) {
         ledgerService.ledgerDelete(modelMapper.map(ledgerDto, Ledger.class));
     }
 
     /**
-     *
      * @param fileList
      * @param fileOwnerNo
-     * @apiNote fileUtil을 사용하여 파일을 업로드하고 파일의 정보를 db에 저장
      * @throws Exception
+     * @apiNote fileUtil을 사용하여 파일을 업로드하고 파일의 정보를 db에 저장
      */
     @RequestMapping("uploadFile")
-        public void fileUpload(@RequestParam("file")List<MultipartFile> fileList, @RequestParam("fileOwnerNo")long fileOwnerNo) throws Exception {
+    public void fileUpload(@RequestParam("file") List<MultipartFile> fileList, @RequestParam("fileOwnerNo") long fileOwnerNo) throws Exception {
 
         FileOwnerDto fileOwnerDto = modelMapper.map(ledgerService.findById(fileOwnerNo), FileOwnerDto.class);
 
-        for(MultipartFile file : fileList){
+        for (MultipartFile file : fileList) {
             String path = FileUtil.saveFileList(file, filePath);
 
             System.out.println("path = " + path);
@@ -206,39 +201,43 @@ public class LedgerController {
     }
 
     /**
-     *
      * @param checkedList
-     * @code fileOwnerNo의 정보를 받고 파일을 삭제 하는 코드
      * @return "false" , "success";
+     * @code fileOwnerNo의 정보를 받고 파일을 삭제 하는 코드
      */
     @RequestMapping("deleteFileItem")
     public String deleteFileItem(@RequestBody List<Long> checkedList) {
         int value = filesService.deleteFileItem(checkedList);
 
-        String str = value != 0 ? "success": "false";
+        String str = value != 0 ? "success" : "false";
 
         return str;
     }
 
 
     /**
-     *
      * @param ledgerDto
      * @apiNote ledger 와  fileOwnerNo가 같은 file 모두 삭제
      */
     @RequestMapping("deleteFile")
-    public void deleteFile(@RequestBody LedgerDto ledgerDto){
+    public void deleteFile(@RequestBody LedgerDto ledgerDto) {
         FileOwner fileOwner = modelMapper.map(ledgerDto, FileOwner.class);
 
         filesService.deleteFile(fileOwner);
     }
 
     @RequestMapping("ledgerAllList")
-    public List<LedgerDto> ledgerAllList(@RequestBody UserDto userDto){
+    public List<LedgerDto> ledgerAllList(@RequestBody UserDto userDto) {
 
         List<Ledger> ledgers = ledgerService.ledgerAllList(modelMapper.map(userDto, User.class));
 
         return ledgers.stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).collect(Collectors.toList());
 
+    }
+
+    @RequestMapping("ToDayLedger")
+    public int ToDayLedger(@RequestBody UserDto userDto) {
+
+        return ledgerService.TodayLedger(modelMapper.map(userDto, User.class));
     }
 }

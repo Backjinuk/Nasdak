@@ -20,7 +20,7 @@ interface JQuery {
     modal(action: 'show' | 'hide'): void;
 }
 
-export default function LedgerMain({categoryList, isLedgerList} : any){
+export default function LedgerMain({event, categoryList, isLedgerList} : any){
 
     const [ledgerList, setLedgerList] = useState<LedgerType[]>([] );
     const [landingEvent , setLendingEvent] =  useState(false);
@@ -29,6 +29,7 @@ export default function LedgerMain({categoryList, isLedgerList} : any){
     const navigate  = useNavigate();
 
     useEffect(() => {
+
         axios.post("/api/ledger/LedgerList", JSON.stringify({
             userNo: sessionStorage.getItem("userNo")
         }), {
@@ -41,7 +42,7 @@ export default function LedgerMain({categoryList, isLedgerList} : any){
         })
 
 
-    }, [landingEvent]);
+    }, [landingEvent, event]);
 
 
     function ledgerDetail(key  : number){

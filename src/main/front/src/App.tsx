@@ -32,7 +32,8 @@ function App() {
   function isLedgerList(value: LedgerType[]) {
     setLedgerList(value);
   }
-  function ChangeEvent() {
+  const ChangeEvent = () => {
+    console.log(11);
     event ? setEvent(false) : setEvent(true);
   }
 
@@ -55,13 +56,13 @@ function App() {
               <Route
                 path='/Ledger'
                 element={
-                  <LedgerMain categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
+                  <LedgerMain event={event} categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
                 }
               />
               <Route path={'/MapLocation'} element={<MapLocation />} />
               <Route
                 path={'/calender'}
-                element={<CalenderMain categoryList={categoryList} ChangeEvent={ChangeEvent} />}
+                element={<CalenderMain categoryList={categoryList}/>}
               />
             </Routes>
           </Router>

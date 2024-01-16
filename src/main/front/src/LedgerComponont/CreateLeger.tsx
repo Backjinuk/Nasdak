@@ -15,7 +15,7 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import SendIcon from '@mui/icons-material/Send';
 
-export default function CreateLeger({ChangeEvent, categoryList} : any){
+export default function CreateLeger({ChangeEvent,categoryList} : any){
 
     const [open, setOpen] = React.useState(false);
     const [location, setLocation] = useState<location>({x : 0, y : 0, address : ""});

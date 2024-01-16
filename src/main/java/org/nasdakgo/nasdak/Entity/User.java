@@ -2,10 +2,7 @@ package org.nasdakgo.nasdak.Entity;
 
 import Utils.DataUtils;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -58,4 +56,6 @@ public class User {
     public User(long userNo) {
         this.userNo = userNo;
     }
+
+
 }

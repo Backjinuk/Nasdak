@@ -47,6 +47,11 @@ export const userSlice = createSlice({
       .addCase(axiosUpdateUser.fulfilled, (state, action) => {
         const user = state.user;
         Object.assign(user, action.payload);
+      })
+      .addCase(axiosUpdateSnsUser.fulfilled, (state, action) => {
+        const user = state.user;
+        user.userId = action.payload.userId;
+        user.password = action.payload.password;
       });
   },
 });
@@ -85,6 +90,11 @@ export const axiosConnectSns = createAsyncThunk(
 
 export const axiosDisconnectSns = createAsyncThunk('user/axiosDisconnectSns', async (sns: SnsType) => {
   const res = await axios.post('/api/sns/disconnect', JSON.stringify(sns), jsonHeader);
+  return res.data;
+});
+
+export const axiosUpdateSnsUser = createAsyncThunk('user/axiosUpdateSnsUser', async (user: UserType) => {
+  const res = await axios.post('/api/user/updateSNSUser', JSON.stringify(user), jsonHeader);
   return res.data;
 });
 

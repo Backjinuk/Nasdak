@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User findByUserId(String userId);
+    @Query("select u from User u where u.userId = :userId and activeUser = true")
+    User findByUserId(@Param("userId") String userId);
 
     @Query("select u from User u where u.userId = :userId and u.password = :password and activeUser = true")
     User findByUserIdAndPassword(@Param("userId") String userId,@Param("password") String password);
@@ -33,7 +34,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE User u SET u.email= :email , u.phone= :phone WHERE u.userNo= :userNo ")
+    @Query("UPDATE User u SET u.email= :email , u.phone= :phone WHERE u.userNo= :userNo")
     void updateAuth(@Param("userNo") long userNo, @Param("email") String email, @Param("phone") String phone);
 
     @Modifying

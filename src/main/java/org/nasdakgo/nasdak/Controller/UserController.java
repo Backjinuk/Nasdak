@@ -11,8 +11,12 @@ import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
 import org.nasdakgo.nasdak.Service.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,10 +27,20 @@ public class UserController {
     private final UserService userService;
     private final CategoryService categoryService;
     private final ModelMapper modelMapper;
+
     @Value("${upload.file.profile}")
     private String uploadProfilePath;
     @Value("${download.file.profile}")
     private String downloadProfilePath;
+
+    @RequestMapping("/validateSignUpUser")
+    public ResponseEntity<?> validateSignUpUser(@RequestBody UserDto userDto){
+        User user = toUser(userDto);
+        if(!userService.canUseUserId(user)) return new ResponseEntity<>("id",HttpStatus.INTERNAL_SERVER_ERROR);
+        if(userService.findId(user)!=null) return new ResponseEntity<>("exist",HttpStatus.INTERNAL_SERVER_ERROR);
+        userService.setTempUser(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @RequestMapping("signUp")
     public UserDto signUp(@RequestBody UserDto userDto) throws Exception {
@@ -41,27 +55,36 @@ public class UserController {
         return userDto;
     }
 
-    @RequestMapping("existUserId")
-    public int existUserId(@RequestBody UserDto userDto){
-        User byId = userService.searchUserId(toUser(userDto));
-        return (byId == null) ? 0 : 1 ;
+    @RequestMapping("canUseUserId")
+    public boolean canUseUserId(@RequestBody UserDto userDto){
+        return userService.canUseUserId(toUser(userDto));
     }
 
-    @RequestMapping("existAuth")
-    public int existAuth(@RequestBody UserDto userDto){
-        User byId = userService.findId(toUser(userDto));
-        return (byId == null) ? 0 : 1 ;
+    @GetMapping("sendEmail/{email}")
+    public void sendEmail(@PathVariable String email){
+        userService.sendEmail(email);
+    }
+
+    @RequestMapping("verifyEmail")
+    public boolean verifyEmail(@RequestBody Map<String, String> map){
+        return userService.verifyEmail(map.get("email"), map.get("code"));
+    }
+
+    @GetMapping("sendPhoneMessage/{phone}")
+    public void sendPhoneMessage(@PathVariable String phone){
+    }
+
+    @RequestMapping("verifyPhoneMessage")
+    public void verifyPhoneMessage(@RequestBody Map<String, String> map){
     }
 
     @RequestMapping("login")
     public UserDto login(@RequestBody UserDto userDto){
         User user = userService.login(toUser(userDto));
-        UserDto find = toUserDto(user);
-        System.out.println("user = " + find);
-        return find;
+        return toUserDto(user);
     }
 
-    @RequestMapping("findId")
+    @PostMapping("findId")
     public String findId(@RequestBody UserDto userDto){
         return userService.findId(toUser(userDto)).getUserId();
     }

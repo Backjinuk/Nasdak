@@ -7,7 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long> {
+
+    @Query("select u from User u where u.userNo = :userNo and activeUser = true")
+    Optional<User> findById(@Param("userNo") long userNo);
 
     @Query("select u from User u where u.userId = :userId and activeUser = true")
     User findByUserId(@Param("userId") String userId);

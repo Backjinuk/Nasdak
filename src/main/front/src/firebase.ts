@@ -33,25 +33,25 @@ const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
  * @code 권환정보 확인, 사용자 인증정보 확인
  */
 async function requestPermission() {
-    console.log("권한 요청 중...");
-    Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-            console.log("알림 권한이 허용됨");
-            const token =  getToken(messaging, {
-                vapidKey : vapidKey
-            }).then(currentToken => {
-                if (currentToken) {
-                    //토큰값 session에 저장
-                    sessionStorage.setItem("FCM_TOKEN", currentToken);
-                }
-            }).catch(error => {
-                console.error("error : " + error)
-            });
-        }else if (permission === "denied") {
-            console.log("알림 권한 허용 안됨");
-            return;
-        }
-    });
+        console.log("권한 요청 중...");
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log("알림 권한이 허용됨");
+                const token =  getToken(messaging, {
+                    vapidKey : vapidKey
+                }).then(currentToken => {
+                    if (currentToken) {
+                        //토큰값 session에 저장
+                        sessionStorage.setItem("FCM_TOKEN", currentToken);
+                    }
+                }).catch(error => {
+                    console.error("error : " + error)
+                });
+            }else if (permission === "denied") {
+                console.log("알림 권한 허용 안됨");
+                return;
+            }
+        });
 
     onMessage(messaging, (payload) => {
         console.log("메시지가 도착했습니다.", payload);
@@ -59,7 +59,7 @@ async function requestPermission() {
     });
 
     /**
-     *
+     *$
      * @param userId
      * @param name
      * @param email
@@ -81,6 +81,7 @@ async function requestPermission() {
      * @code FCM에서 데이터 찾는 코드
      */
     const dbRef = ref(getDatabase());
+
     function getUserData(userId: string) {
         get(child(dbRef, `users/${userId}`)).then((snapshot) => {
             if (snapshot.exists()) {

@@ -51,4 +51,7 @@ public class LedgerService {
 
     public List<Ledger> ledgerAllList(User user) { return ledgerRepository.ledgerAllList(user.getUserNo());
     }
+
+    public int TodayLedger(User user) { return ledgerRepository.TodayLedger(user.getUserNo());
+    }
 }

@@ -74,4 +74,10 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
 
     @Query("SELECT l from Ledger l where l.user.userNo = :userNo")
     List<Ledger> ledgerAllList(long userNo);
+
+    @Query(value = "SELECT SUM(l.price) AS price FROM Ledger l " +
+            "WHERE l.user.userNo = :userNo " +
+            "AND l.useDate >= CAST(CONCAT(DATE_FORMAT(NOW(), '%Y-%m-%d'), ' 00:00:00') AS TIMESTAMP) " +
+            "AND l.useDate <= CAST(CONCAT(DATE_FORMAT(NOW(), '%Y-%m-%d'), ' 23:59:59') AS TIMESTAMP)" )
+    int  TodayLedger(@Param("userNo") long userNo);
 }

@@ -1,6 +1,7 @@
 self.addEventListener("install", function (e) {
     console.log("fcm sw install..");
     self.skipWaiting();
+    console.log(self);
 });
 
 self.addEventListener("activate", function (e) {
@@ -19,7 +20,7 @@ self.addEventListener("push", function (e) {
         tag: resultData.tag,
         ...resultData,
     };
-    console.log("push: ", { resultData, notificationTitle, notificationOptions });
+    console.log("push123: ", { resultData, notificationTitle, notificationOptions });
 
     self.registration.showNotification(notificationTitle, notificationOptions);
 });

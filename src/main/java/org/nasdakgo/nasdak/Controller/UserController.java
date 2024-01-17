@@ -156,6 +156,12 @@ public class UserController {
         userService.uploadProfile(user);
     }
 
+    @RequestMapping("notification")
+    public String notification(@RequestBody UserDto userDto){
+        User user = userService.findById(userDto.getUserNo());
+        return user.isSendWebPush() ?   "on" : "off";
+    }
+
     private boolean removeProfile(String profile) {
         int index = profile.lastIndexOf('/');
         if(index!=-1){
@@ -184,6 +190,7 @@ public class UserController {
         userDto.setSnsDtoList(user.getSnsList().stream().map(this::toSNSDto).toList());
         return userDto;
     }
+    
 
     private SNS toSNS(SNSDto snsDto){
         return modelMapper.map(snsDto, SNS.class);

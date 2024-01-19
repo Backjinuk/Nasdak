@@ -14,6 +14,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u where u.userNo = :userNo and activeUser = true")
     Optional<User> findById(@Param("userNo") long userNo);
 
+    @Query("select u from User u join fetch u.snsList s where u.userNo = :userNo and activeUser = true")
+    Optional<User> findByIdWithSNSList(@Param("userNo") long userNo);
+
     @Query("select u from User u where u.userId = :userId and activeUser = true")
     User findByUserId(@Param("userId") String userId);
 
@@ -39,17 +42,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE User u SET u.email= :email , u.phone= :phone WHERE u.userNo= :userNo")
-    void updateAuth(@Param("userNo") long userNo, @Param("email") String email, @Param("phone") String phone);
+    @Query("UPDATE User u SET u.email= :email WHERE u.userNo= :userNo")
+    void updateEmail(@Param("userNo") long userNo, @Param("email") String email);
 
     @Modifying
     @Transactional
-    @Query("update User u set u.password = :password, u.email = :email," +
-            " u.phone = :phone, u.sendKakaoTalk = :sendKakaoTalk, u.sendWebPush = :sendWebPush" +
-            " where u.userNo = :userNo")
-    void updateUserInfo(@Param("userNo") long userNo, @Param("password") String password,
-                        @Param("email") String email, @Param("phone") String phone, @Param("sendKakaoTalk") boolean sendKakaoTalk,
-                        @Param("sendWebPush") boolean sendWebPush);
+    @Query("UPDATE User u SET u.phone= :phone WHERE u.userNo= :userNo")
+    void updatePhone(@Param("userNo") long userNo, @Param("phone") String phone);
+
+    @Modifying
+    @Transactional
+    @Query("update User u set u.sendKakaoTalk = :sendKakaoTalk, u.sendWebPush = :sendWebPush where u.userNo = :userNo")
+    void updateUserInfo(@Param("userNo") long userNo, @Param("sendKakaoTalk") boolean sendKakaoTalk, @Param("sendWebPush") boolean sendWebPush);
 
     @Modifying
     @Transactional

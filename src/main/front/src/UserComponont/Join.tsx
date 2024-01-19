@@ -9,8 +9,16 @@ import { ButtonGroup, FormControl, FormControlLabel, FormGroup, Radio, RadioGrou
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { formHeader, jsonHeader } from 'headers';
 import { useAppDispatch } from 'app/hooks';
-import { axiosUpdateSnsUser } from 'app/slices/userSlice';
+import {
+  axiosCanUseUserId,
+  axiosSendEmail,
+  axiosSendPhone,
+  axiosUpdateSnsUser,
+  axiosVerifyEmail,
+  axiosVerifyPhone,
+} from 'app/slices/userSlice';
 import { User } from 'classes';
+import Timer from 'Timer';
 
 export default function Join(props: any) {
   const dispatch = useAppDispatch();
@@ -20,6 +28,7 @@ export default function Join(props: any) {
   const handleClose = () => {
     setSid('');
     setSpwd('');
+    setCheckPwd('');
     setEmail('');
     setPhone('');
     setIdSearch('');
@@ -29,10 +38,12 @@ export default function Join(props: any) {
     setCode('');
     setPage(1);
     setRadio('email');
+    setOnTimer(0);
     props.handleClose();
   };
   const [sid, setSid] = useState('');
   const [spwd, setSpwd] = useState('');
+  const [checkPwd, setCheckPwd] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [idSearch, setIdSearch] = useState('');
@@ -42,11 +53,9 @@ export default function Join(props: any) {
   const [uploadFile, setUploadFile] = useState<any>();
   const [imgBase64, setImgBase64] = useState<string[]>([]);
   const [addMemberbtn, setAddMemberBtn] = useState(false);
-  const [limit, setLimit] = useState(300 * 1000);
-  const [time, setTime] = useState(0);
-  const timer = useRef<any>(null);
+  const [onTimer, setOnTimer] = useState(0);
+  const [viewTime, setViewTime] = useState('');
   const isSNS = userNo !== undefined;
-  const leftTime = Math.floor((limit - time) / 1000);
 
   const style = {
     position: 'absolute' as 'absolute',
@@ -60,17 +69,16 @@ export default function Join(props: any) {
     p: 4,
   };
 
-  function idCheck(e: ChangeEvent<HTMLInputElement>) {
-    axios.post('/api/user/canUseUserId', JSON.stringify({ userId: e.target.value }), jsonHeader).then((res) => {
-      if (res.data) {
-        setIdSearch('사용 가능한 아이디 입니다');
-        setAddMemberBtn(false);
-      } else {
-        setIdSearch('이미 사용중인 아이디 입니다');
-        setAddMemberBtn(true);
-      }
-    });
+  async function idCheck(e: ChangeEvent<HTMLInputElement>) {
     setSid(e.target.value);
+    const action = await dispatch(axiosCanUseUserId(e.target.value));
+    if (action.payload) {
+      setIdSearch('사용 가능한 아이디 입니다');
+      setAddMemberBtn(false);
+    } else {
+      setIdSearch('이미 사용중인 아이디 입니다');
+      setAddMemberBtn(true);
+    }
   }
 
   async function requestValidationUser() {
@@ -217,7 +225,27 @@ export default function Join(props: any) {
             />
             <label htmlFor='floatingPassword'>비밀번호</label>
           </div>
-          {isSNS || (
+
+          <div className='form-floating mb-3'>
+            <input
+              type='password'
+              className='form-control'
+              id='floatingCheckPassword'
+              value={checkPwd}
+              onChange={(e) => {
+                setCheckPwd(e.target.value);
+              }}
+              placeholder='Password'
+            />
+            {spwd === checkPwd ? (
+              <label htmlFor='floatingCheckPassword'>비밀번호 확인</label>
+            ) : (
+              <label style={{ color: 'red' }} htmlFor='floatingCheckPassword'>
+                비밀번호가 일치하지 않습니다.
+              </label>
+            )}
+          </div>
+          {!isSNS && (
             <>
               <FormControl>
                 <RadioGroup
@@ -314,19 +342,16 @@ export default function Join(props: any) {
         <Button
           type='button'
           onClick={isSNS ? () => snsSignUp() : () => requestValidationUser()}
-          className={!addMemberbtn ? 'btn btn-info' : 'btn btn-danger disabled'}
+          className={spwd === checkPwd && !addMemberbtn ? 'btn btn-info' : 'btn btn-danger disabled'}
         >
           {isSNS ? '회원가입' : '다음'}
         </Button>
       </Box>
     </>
   );
+
   const sendCode = () => {
-    clearInterval(timer.current);
-    setLimit(Date.now() + 5 * 60 * 1000);
-    timer.current = setInterval(() => {
-      setTime(Date.now());
-    }, 1000);
+    setOnTimer(onTimer + 1);
     if (radio === 'email') {
       sendEmail();
     } else {
@@ -341,10 +366,9 @@ export default function Join(props: any) {
     } else {
       res = await verifyPhone();
     }
-    if (res.data) {
+    if (res) {
       alert('인증에 성공하였습니다.');
-      clearTimeout(timer.current);
-      setTime(0);
+      setOnTimer(0);
       setAddMemberBtn(true);
     } else {
       alert('인증에 실패하였습니다.');
@@ -352,22 +376,20 @@ export default function Join(props: any) {
   };
 
   const sendEmail = () => {
-    axios.get(`/api/user/sendEmail/${email}`, jsonHeader);
+    dispatch(axiosSendEmail(email));
   };
 
   const verifyEmail = async () => {
-    return await axios.post('/api/user/verifyEmail', JSON.stringify({ email, code }), jsonHeader);
+    return (await dispatch(axiosVerifyEmail({ email, code }))).payload;
   };
 
   const sendPhone = () => {
-    axios.get(`/api/user/sendPhone/${phone}`, jsonHeader);
+    dispatch(axiosSendPhone(phone));
   };
 
   const verifyPhone = async () => {
-    return await axios.post('/api/user/verifyPhone', JSON.stringify({ phone, code }), jsonHeader);
+    return (await dispatch(axiosVerifyPhone({ phone, code }))).payload;
   };
-
-  const viewTime = '0' + Math.floor(leftTime / 60) + ':' + ('0' + (leftTime % 60)).slice(-2);
 
   const pageTwo = (
     <>
@@ -382,7 +404,7 @@ export default function Join(props: any) {
               onChange={(e) => setCode(e.target.value)}
               placeholder=''
             />
-            <label htmlFor='floatingCode'>인증코드 {time === 0 ? '' : leftTime < 0 ? '시간 초과' : viewTime}</label>
+            <label htmlFor='floatingCode'>인증코드 {viewTime}</label>
           </div>
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
             <Button sx={{ width: '50%' }} onClick={sendCode}>
@@ -413,20 +435,23 @@ export default function Join(props: any) {
   );
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      aria-labelledby='modal-modal-title'
-      aria-describedby='modal-modal-description'
-      sx={{ zIndex: 1000 }}
-    >
-      <Box sx={style}>
-        <Typography id='modal-modal-title' variant='h6' component='h1'>
-          회원가입
-        </Typography>
-        <Stack spacing={2}>{page === 1 ? pageOne : pageTwo}</Stack>
-      </Box>
-    </Modal>
+    <>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby='modal-modal-title'
+        aria-describedby='modal-modal-description'
+        sx={{ zIndex: 1000 }}
+      >
+        <Box sx={style}>
+          <Typography id='modal-modal-title' variant='h6' component='h1'>
+            회원가입
+          </Typography>
+          <Stack spacing={2}>{page === 1 ? pageOne : pageTwo}</Stack>
+        </Box>
+      </Modal>
+      <Timer onTimer={onTimer} setOnTimer={setOnTimer} setViewTime={setViewTime} duration={5} type='분' />
+    </>
   );
 }
 

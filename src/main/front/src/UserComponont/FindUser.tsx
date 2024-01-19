@@ -8,22 +8,17 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
-import {
-  FormControl,
-  FormControlLabel,
-  Grid,
-  InputAdornment,
-  Radio,
-  RadioGroup,
-  Stack,
-  TextField,
-} from '@mui/material';
+import { FormControl, FormControlLabel, Grid, InputAdornment, Radio, RadioGroup, TextField } from '@mui/material';
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { jsonHeader } from 'headers';
 import SendIcon from '@mui/icons-material/Send';
+import { useAppDispatch } from 'app/hooks';
+import { axiosSendEmail, axiosSendPhone, axiosVerifyEmail, axiosVerifyPhone } from 'app/slices/userSlice';
+import Timer from 'Timer';
 
 const steps = ['아이디 찾기', '아이디 확인', '비밀번호 변경', '완료'];
+const noUser = 'there is no user';
 
 export default function FindUser() {
   const navigate = useNavigate();
@@ -34,6 +29,9 @@ export default function FindUser() {
   const [userNo, setUserNo] = useState('');
   const handleNext = () => {
     setStep(step + 1);
+  };
+  const handleReset = () => {
+    setStep(0);
   };
 
   function getStep(step: number) {
@@ -52,6 +50,7 @@ export default function FindUser() {
       case 1:
         return (
           <StepTwo
+            handleReset={handleReset}
             userId={userId}
             auth={auth}
             radio={radio}
@@ -101,19 +100,33 @@ export default function FindUser() {
 }
 
 function StepOne(props: any) {
-  const [status, setStatus] = useState('none');
+  const dispatch = useAppDispatch();
+  const [status, setStatus] = useState('');
   const [code, setCode] = useState('');
+  const [onTimer, setOnTimer] = useState(0);
+  const [viewTime, setViewTime] = useState('');
 
   const auth = props.auth;
   const radio = props.radio;
   const setAuth = (data: any) => {
+    setCode('');
+    setStatus('');
+    setOnTimer(0);
     props.setAuth(data);
   };
   const setRadio = (e: any) => {
+    setAuth({
+      email: '',
+      phone: '',
+    });
+    setCode('');
+    setStatus('');
+    setOnTimer(0);
     props.setRadio(e);
   };
   const handleNext = () => {
     props.handleNext();
+    setOnTimer(0);
   };
   const setUserId = (userId: string) => {
     props.setUserId(userId);
@@ -126,31 +139,44 @@ function StepOne(props: any) {
     } else {
       data = { phone: auth.phone };
     }
-    const res = await axios.post('/api/user/findId', JSON.stringify(data), jsonHeader);
-    setUserId(res.data);
+    try {
+      const res = await axios.post('/api/user/findId', JSON.stringify(data), jsonHeader);
+      setUserId(res.data);
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AxiosError) {
+        setUserId(noUser);
+      }
+    }
     handleNext();
   }
 
   const sendEmail = () => {
-    axios.get(`/api/user/sendEmail/${auth.email}`, jsonHeader);
+    dispatch(axiosSendEmail(auth.email));
+    setOnTimer(onTimer + 1);
     setStatus('sended');
   };
 
-  const sendPhoneMessage = () => {};
+  const sendPhoneMessage = () => {
+    dispatch(axiosSendPhone(auth.phone));
+    setOnTimer(onTimer + 1);
+    setStatus('sended');
+  };
 
   const verifyAuth = async () => {
-    let res;
+    let action;
     let data;
     if (radio === 'email') {
       data = { email: auth.email, code };
-      res = await axios.post('/api/user/verifyEmail', JSON.stringify(data), jsonHeader);
+      action = await dispatch(axiosVerifyEmail(data));
     } else {
       data = { phone: auth.phone, code };
-      res = await axios.post('/api/user/verifyPhoneMessage', JSON.stringify(data), jsonHeader);
+      action = await dispatch(axiosVerifyPhone(data));
     }
-    if (res.data) {
+    if (action.payload) {
       setStatus('succeeded');
       alert('인증에 성공했습니다.');
+      setOnTimer(0);
     } else {
       alert('인증에 실패했습니다.');
     }
@@ -158,6 +184,7 @@ function StepOne(props: any) {
 
   return (
     <>
+      <Timer setViewTime={setViewTime} onTimer={onTimer} setOnTimer={setOnTimer} duration={5} type='분' />
       <FormControl>
         <RadioGroup
           defaultValue='email'
@@ -231,7 +258,7 @@ function StepOne(props: any) {
               <TextField
                 fullWidth
                 id='code'
-                label='인증코드'
+                label={`인증코드 ${viewTime}`}
                 name='code'
                 value={code}
                 onChange={(e) => {
@@ -276,11 +303,15 @@ function StepOne(props: any) {
 
 function StepTwo(props: any) {
   const userId = props.userId;
+  const isUser = userId !== noUser;
   const navigate = props.navigate;
   const radio = props.radio;
   const auth = props.auth;
   const setUserNo = (val: any) => {
     props.setUserNo(val);
+  };
+  const handleReset = () => {
+    props.handleReset();
   };
   const handleNext = async () => {
     let data;
@@ -298,18 +329,30 @@ function StepTwo(props: any) {
       <React.Fragment>
         <Typography component='h1' variant='h6' align='center'>
           <p></p>
-          아이디는 '{userId}'입니다.
+          {isUser ? `아이디는 '${userId}'입니다.` : '해당하는 회원이 없습니다.'}
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button
-            variant='contained'
-            onClick={() => {
-              handleNext();
-            }}
-            sx={{ mt: 3, ml: 1 }}
-          >
-            비밀번호 변경하기
-          </Button>
+          {isUser ? (
+            <Button
+              variant='contained'
+              onClick={() => {
+                handleNext();
+              }}
+              sx={{ mt: 3, ml: 1 }}
+            >
+              비밀번호 변경하기
+            </Button>
+          ) : (
+            <Button
+              variant='contained'
+              onClick={() => {
+                handleReset();
+              }}
+              sx={{ mt: 3, ml: 1 }}
+            >
+              아이디 찾기
+            </Button>
+          )}
           <Button
             variant='contained'
             onClick={() => {
@@ -317,7 +360,7 @@ function StepTwo(props: any) {
             }}
             sx={{ mt: 3, ml: 1 }}
           >
-            로그인하기
+            {isUser ? '로그인하기' : '회원가입하기'}
           </Button>
         </Box>
       </React.Fragment>

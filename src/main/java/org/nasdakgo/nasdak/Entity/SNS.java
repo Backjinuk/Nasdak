@@ -30,4 +30,10 @@ public class SNS {
 
     @Transient
     private String accessToken;
+
+    @Transient
+    private String email;
+
+    @Transient
+    private String phone;
 }

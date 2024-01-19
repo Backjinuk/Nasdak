@@ -1,6 +1,7 @@
 import { Box, CircularProgress } from '@mui/material';
+import { UserType } from 'TypeList';
 import { axiosConnectSns, connectSns } from 'app/slices/userSlice';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { jsonHeader } from 'headers';
 
 export default function SNSLogin() {
@@ -37,22 +38,42 @@ export default function SNSLogin() {
 }
 
 async function login(map: any) {
-  const res = await axios.post('/api/sns/login', JSON.stringify(map), jsonHeader);
-  window.opener.snsLoginNavigate(res.data.userNo, res.data.snsType, res.data.accessToken);
-  if (res.data.snsType === 'KAKAO') {
-    window.opener.Kakao.Auth.setAccessToken(res.data.accessToken);
+  try {
+    const res = await axios.post('/api/sns/login', JSON.stringify(map), jsonHeader);
+    window.opener.snsLoginNavigate(res.data.userNo, res.data.snsType, res.data.accessToken);
+    if (res.data.snsType === 'KAKAO') {
+      window.opener.Kakao.Auth.setAccessToken(res.data.accessToken);
+    }
+    window.close();
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const data = error.response?.data;
+      window.opener.setSnsKey(data.key);
+      setExistUsers(data.existUsers);
+      window.opener.handleOpenExistUsers();
+      window.close();
+    } else {
+      alert('error');
+      console.log(error);
+    }
   }
-  window.close();
 }
 
 async function connect(map: any) {
   const dispatch = window.opener.dispatch;
-  const action = await dispatch(axiosConnectSns(map));
-  if (action.payload === 0) {
-    await dispatch(connectSns(map.snsType));
-  } else {
-    window.opener.sessionStorage.setItem('dbSnsNo', action.payload);
-    window.opener.handleChangeSnsDialogOpen();
+  try {
+    await dispatch(axiosConnectSns(map));
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      window.opener.sessionStorage.setItem('dbSnsNo', error.response?.data);
+      window.opener.handleChangeSnsDialogOpen();
+    } else {
+      alert('error!');
+    }
   }
   window.close();
 }
+
+const setExistUsers = (data: { email: UserType; phone: UserType }) => {
+  window.opener.setExistUsers(data);
+};

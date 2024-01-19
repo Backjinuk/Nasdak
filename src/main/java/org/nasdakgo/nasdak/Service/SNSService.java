@@ -2,15 +2,13 @@ package org.nasdakgo.nasdak.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.nasdakgo.nasdak.Entity.SNS;
-import org.nasdakgo.nasdak.Entity.SNSType;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.SNSRepository;
 import org.nasdakgo.nasdak.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,28 +20,9 @@ public class SNSService {
 
     private final CategoryService categoryService;
 
-    ////////////////////////////// 공통 //////////////////////////////
-    public SNS snsLogin(SNS sns){
-        // 로그인 수행
-        SNS find = this.login(sns);
+    private final UserService userService;
 
-        // 계정이 없을 경우 신규 가입
-        if(find==null){
-            find = this.signUp(sns);
-            categoryService.saveDefaultCategory(find.getUser());
-        }
-
-        // 카카오는 리프레시 토큰 갱신
-        if(sns.getSnsType()== SNSType.KAKAO){
-            find.setRefreshToken(sns.getRefreshToken());
-            this.updateRefreshToken(find);
-        }
-
-        find.setAccessToken(sns.getAccessToken());
-        return find;
-    }
-
-    public void connect(SNS sns){
+    public User connect(SNS sns){
         SNS find = this.findByUserAndSnsType(sns);
         if(find==null){
             snsRepository.save(sns);
@@ -51,6 +30,7 @@ public class SNSService {
             find.setRefreshToken(sns.getRefreshToken());
             this.updateRefreshToken(find);
         }
+        return updateUserEmailAnaPhoneByConnectionSns(sns);
     }
 
     public long connectCheck(SNS sns){
@@ -59,6 +39,21 @@ public class SNSService {
         long dbUserNo = find.get().getUser().getUserNo();
         long newUserNo = sns.getUser().getUserNo();
         return dbUserNo==newUserNo?0:find.get().getSnsNo();
+    }
+
+    public User updateUserEmailAnaPhoneByConnectionSns(SNS sns){
+        User user = userService.findByIdWithSNSList(sns.getUser().getUserNo());
+        User emailUser = userService.findByEmail(sns.getEmail());
+        User phoneUser = userService.findByPhone(sns.getPhone());
+        if(emailUser==null&&user.getEmail()==null){
+            userRepository.updateEmail(user.getUserNo(), sns.getEmail());
+            user.setEmail(sns.getEmail());
+        }
+        if(phoneUser==null&&user.getPhone()==null){
+            userRepository.updatePhone(user.getUserNo(), sns.getPhone());
+            user.setPhone(sns.getPhone());
+        }
+        return user;
     }
 
     public void changeConnection(SNS sns){
@@ -76,11 +71,26 @@ public class SNSService {
                 .sendKakaoTalk(false)
                 .sendWebPush(false)
                 .pushTime("23:00")
+                .email(sns.getEmail())
+                .phone(sns.getPhone())
                 .build();
+        if(userService.findByEmail(sns.getEmail())!=null)user.setEmail(null);
+        if(userService.findByPhone(sns.getPhone())!=null)user.setPhone(null);
         userRepository.save(user);
         sns.setUser(user);
         snsRepository.save(sns);
+        categoryService.saveDefaultCategory(user);
         return sns;
+    }
+
+    public List<User> findExistedUser(SNS sns){
+        List<User> list = new ArrayList<>();
+        User emailUser = userService.findByEmail(sns.getEmail());
+        User phoneUser = userService.findByPhone(sns.getPhone());
+        if(emailUser!=null) list.add(emailUser);
+        if(emailUser==phoneUser) return list;
+        if(phoneUser!=null) list.add(phoneUser);
+        return list;
     }
 
     public List<SNS> findByUser(User user){
@@ -98,6 +108,11 @@ public class SNSService {
     public void disconnect(SNS sns){
         snsRepository.deleteSNSUser(sns.getUser().getUserNo(), sns.getSnsType());
     }
-    ////////////////////////////// 공통 //////////////////////////////
+
+    public User findUserBySns(SNS sns){
+        SNS find = snsRepository.findById(sns.getSnsNo()).orElse(null);
+        if(find==null) return null;
+        return find.getUser();
+    }
 
 }

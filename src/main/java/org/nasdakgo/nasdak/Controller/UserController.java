@@ -33,7 +33,7 @@ public class UserController {
     @Value("${download.file.profile}")
     private String downloadProfilePath;
 
-    @RequestMapping("/validateSignUpUser")
+    @RequestMapping("validateSignUpUser")
     public ResponseEntity<?> validateSignUpUser(@RequestBody UserDto userDto){
         User user = toUser(userDto);
         if(!userService.canUseUserId(user)) return new ResponseEntity<>("id",HttpStatus.INTERNAL_SERVER_ERROR);
@@ -72,10 +72,12 @@ public class UserController {
 
     @GetMapping("sendPhoneMessage/{phone}")
     public void sendPhoneMessage(@PathVariable String phone){
+        userService.sendPhoneMessage(phone);
     }
 
     @RequestMapping("verifyPhoneMessage")
-    public void verifyPhoneMessage(@RequestBody Map<String, String> map){
+    public boolean verifyPhoneMessage(@RequestBody Map<String, String> map){
+        return userService.verifyPhoneMessage(map.get("phone"), map.get("code"));
     }
 
     @RequestMapping("login")
@@ -110,9 +112,24 @@ public class UserController {
         userService.updateUserInfo(toUser(userDto));
     }
 
-    @RequestMapping("updateAuth")
-    public void updateAuth(@RequestBody UserDto userDto){
-        userService.updateAuth(toUser(userDto));
+    @RequestMapping("updateEmail")
+    public void updateEmail(@RequestBody UserDto userDto){
+        userService.updateEmail(toUser(userDto));
+    }
+
+    @RequestMapping("updatePhone")
+    public void updatePhone(@RequestBody UserDto userDto){
+        userService.updatePhone(toUser(userDto));
+    }
+
+    @GetMapping("isDuplicatedEmail/{email}")
+    public boolean isDuplicatedEmail(@PathVariable String email){
+        return userService.isDuplicatedEmail(email);
+    }
+
+    @GetMapping("isDuplicatedPhone/{phone}")
+    public boolean isDuplicatedPhone(@PathVariable String phone){
+        return userService.isDuplicatedPhone(phone);
     }
 
     @RequestMapping("deleteUser")

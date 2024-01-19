@@ -13,7 +13,7 @@ public interface ApiService {
     Map<String, String> getToken(String code, String state) throws JsonProcessingException;
 
     // 정보 조회
-    Map<String, Object> getProfile(String accessToken) throws JsonProcessingException;
+    Map<String, String> getProfile(String accessToken) throws JsonProcessingException;
 
     // 연동 계정 탈퇴
     String disconnect(String accessToken);

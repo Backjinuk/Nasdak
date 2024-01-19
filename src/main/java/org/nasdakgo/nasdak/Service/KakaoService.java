@@ -56,7 +56,7 @@ public class KakaoService implements ApiService{
     }
 
     @Override
-    public Map<String, Object> getProfile(String accessToken) throws JsonProcessingException {
+    public Map<String, String> getProfile(String accessToken) throws JsonProcessingException {
         accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
         String header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
 
@@ -67,8 +67,16 @@ public class KakaoService implements ApiService{
         requestHeaders.put("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         String json = httpUtil.get(apiURL, requestHeaders);
+        Map<String, Object> jsonMap = objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> accountMap = (Map<String,Object>)jsonMap.get("kakao_account");
+        Map<String, String> map = new HashMap<>();
+        map.put("id", jsonMap.get("id").toString());
+        Object email = accountMap.get("email");
+        Object phone = accountMap.get("phone");
+        if(email!=null) map.put("email", email.toString());
+        if(phone!=null) map.put("phone", phone.toString());
 
-        return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+        return map;
     }
 
     @Override

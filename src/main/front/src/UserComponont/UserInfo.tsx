@@ -4,7 +4,7 @@ import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { Avatar, Badge, FormControlLabel, Stack, Switch, Tooltip } from '@mui/material';
+import { Avatar, Badge, FormControlLabel, InputAdornment, Stack, Switch, Tooltip } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material';
@@ -29,6 +29,9 @@ import ChangeSnsDialog from './userInfo/ChangeSnsDialog';
 import DisconnectSnsDialog from './userInfo/DisconnectSnsDialog';
 import DeleteUserDialog from './userInfo/DeleteUserDialog';
 import { Sns } from 'classes';
+import ChangePasswordDialog from './userInfo/ChangePasswordDialog';
+import ChangeEmailDialog from './userInfo/ChangeEmailDialog';
+import ChangePhoneDialog from './userInfo/ChangePhoneDialog';
 
 declare global {
   interface Window {
@@ -200,10 +203,25 @@ export default function UserInfo() {
           label='Email Address'
           name='email'
           value={user.email === null ? '' : user.email}
-          disabled={!isEdit}
-          onChange={(e) => {
-            handleChange(e);
-          }}
+          disabled
+          InputProps={
+            isEdit
+              ? {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <Button
+                        onClick={() => {
+                          setOpen('changeEmailDialog');
+                        }}
+                        variant='contained'
+                      >
+                        {user.email === null ? '등록' : '변경'}
+                      </Button>
+                    </InputAdornment>
+                  ),
+                }
+              : {}
+          }
         />
       </Grid>
       <Grid item xs={12}>
@@ -213,10 +231,25 @@ export default function UserInfo() {
           label='Phone Number'
           name='phone'
           value={user.phone === null ? '' : user.phone}
-          disabled={!isEdit}
-          onChange={(e) => {
-            handleChange(e);
-          }}
+          disabled
+          InputProps={
+            isEdit
+              ? {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <Button
+                        onClick={() => {
+                          setOpen('changePhoneDialog');
+                        }}
+                        variant='contained'
+                      >
+                        {user.phone === null ? '등록' : '변경'}
+                      </Button>
+                    </InputAdornment>
+                  ),
+                }
+              : {}
+          }
         />
       </Grid>
       <Grid item xs={12}>
@@ -228,10 +261,25 @@ export default function UserInfo() {
           type='password'
           id='password'
           value={user.password}
-          disabled={!isEdit}
-          onChange={(e) => {
-            handleChange(e);
-          }}
+          disabled
+          InputProps={
+            isEdit
+              ? {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <Button
+                        onClick={() => {
+                          setOpen('changePasswordDialog');
+                        }}
+                        variant='contained'
+                      >
+                        변경
+                      </Button>
+                    </InputAdornment>
+                  ),
+                }
+              : {}
+          }
         />
       </Grid>
     </>
@@ -444,6 +492,9 @@ export default function UserInfo() {
         snsType={selectedSns}
       />
       <Join open={open === 'signUpDialog'} handleClose={handleClose} userNo={user.userNo} />
+      <ChangePasswordDialog open={open === 'changePasswordDialog'} handleClose={handleClose} />
+      <ChangeEmailDialog open={open === 'changeEmailDialog'} handleClose={handleClose} />
+      <ChangePhoneDialog open={open === 'changePhoneDialog'} handleClose={handleClose} />
     </Fragment>
   );
 }

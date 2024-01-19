@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SnsType, UserType } from 'TypeList';
+import { useAppDispatch } from 'app/hooks';
 import { RootState } from 'app/store';
 import axios from 'axios';
 import { Sns, User } from 'classes';
@@ -52,6 +53,22 @@ export const userSlice = createSlice({
         const user = state.user;
         user.userId = action.payload.userId;
         user.password = action.payload.password;
+      })
+      .addCase(axiosChangePassword.fulfilled, (state, action) => {
+        const user = state.user;
+        user.password = action.payload;
+      })
+      .addCase(axiosUpdateEmail.fulfilled, (state, action) => {
+        const user = state.user;
+        user.email = action.payload;
+      })
+      .addCase(axiosUpdatePhone.fulfilled, (state, action) => {
+        const user = state.user;
+        user.phone = action.payload;
+      })
+      .addCase(axiosConnectSns.fulfilled, (state, action) => {
+        const user = state.user;
+        Object.assign(user, action.payload);
       });
   },
 });
@@ -96,6 +113,85 @@ export const axiosDisconnectSns = createAsyncThunk('user/axiosDisconnectSns', as
 export const axiosUpdateSnsUser = createAsyncThunk('user/axiosUpdateSnsUser', async (user: UserType) => {
   const res = await axios.post('/api/user/updateSNSUser', JSON.stringify(user), jsonHeader);
   return res.data;
+});
+
+export const axiosCanUseUserId = createAsyncThunk('user/axiosCanUseUserId', async (userId: string) => {
+  const res = await axios.post('/api/user/canUseUserId', JSON.stringify({ userId }), jsonHeader);
+  return res.data;
+});
+
+export const axiosIsDuplicatedEmail = createAsyncThunk('user/axiosIsDuplicatedEmail', async (email: string) => {
+  const res = await axios.get(`/api/user/isDuplicatedEmail/${email}`, jsonHeader);
+  return res.data;
+});
+
+export const axiosIsDuplicatedPhone = createAsyncThunk('user/axiosIsDuplicatedPhone', async (phone: string) => {
+  const res = await axios.get(`/api/user/isDuplicatedPhone/${phone}`, jsonHeader);
+  return res.data;
+});
+
+export const axiosSendEmail = createAsyncThunk('user/axiosSendEmail', (email: string) => {
+  axios.get(`/api/user/sendEmail/${email}`, jsonHeader);
+});
+
+export const axiosSendPhone = createAsyncThunk('user/axiosSendPhone', (phone: string) => {
+  axios.get(`/api/user/sendPhoneMessage/${phone}`, jsonHeader);
+});
+
+export const axiosVerifyEmail = createAsyncThunk(
+  'user/axiosVerifyEmail',
+  async ({ email, code }: { email: string; code: string }) => {
+    const res = await axios.post('/api/user/verifyEmail', JSON.stringify({ email, code }), jsonHeader);
+    return res.data;
+  }
+);
+
+export const axiosVerifyPhone = createAsyncThunk(
+  'user/axiosVerifyPhone',
+  async ({ phone, code }: { phone: string; code: string }) => {
+    const res = await axios.post('/api/user/verifyPhoneMessage', JSON.stringify({ phone, code }), jsonHeader);
+    return res.data;
+  }
+);
+
+export const axiosUpdateEmail = createAsyncThunk(
+  'user/axiosUpdateEmail',
+  async ({ userNo, email }: { userNo: number; email: string }) => {
+    await axios.post('/api/user/updateEmail', JSON.stringify({ userNo, email }), jsonHeader);
+    return email;
+  }
+);
+
+export const axiosUpdatePhone = createAsyncThunk(
+  'user/axiosUpdatePhone',
+  async ({ userNo, phone }: { userNo: number; phone: string }) => {
+    await axios.post('/api/user/updatePhone', JSON.stringify({ userNo, phone }), jsonHeader);
+    return phone;
+  }
+);
+
+export const axiosChangePassword = createAsyncThunk(
+  'user/axiosChangePassword',
+  ({ userNo, password }: { userNo: number; password: string }) => {
+    axios.post('/api/user/updatePassword', JSON.stringify({ userNo, password }), jsonHeader);
+    return password;
+  }
+);
+
+export const axiosConnectNewSns = createAsyncThunk(
+  'user/axiosConnectNewSns',
+  async (data: { key: string; userNo: number }) => {
+    const res = await axios.post(
+      `/api/sns/connectNewSNS/${data.key}`,
+      JSON.stringify({ userNo: data.userNo }),
+      jsonHeader
+    );
+    return res.data;
+  }
+);
+
+export const axiosDeleteSnsMap = createAsyncThunk('user/axiosDeleteSnsMap', (key: string) => {
+  axios.get(`/api/sns/deleteSnsMap/${key}`, jsonHeader);
 });
 
 export const { dropUserInfo, connectSns, disConnectSns } = userSlice.actions;

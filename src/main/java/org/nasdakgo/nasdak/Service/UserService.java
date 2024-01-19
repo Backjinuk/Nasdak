@@ -64,10 +64,18 @@ public class UserService {
 
     public User findId(User user){
         if(user.getPhone()==null){
-            return userRepository.findByEmail(user.getEmail());
+            return this.findByEmail(user.getEmail());
         }else{
-            return userRepository.findByPhone(user.getPhone());
+            return this.findByPhone(user.getPhone());
         }
+    }
+
+    public User findByEmail(String email){
+        return userRepository.findByEmail(email);
+    }
+
+    public User findByPhone(String phone){
+        return userRepository.findByPhone(phone);
     }
 
     public User findPassword(User user){
@@ -88,15 +96,31 @@ public class UserService {
 
     @Transactional
     public void updateUserInfo(User user){
-        userRepository.updateUserInfo(user.getUserNo(), user.getPassword(), user.getEmail(), user.getPhone(), user.isSendKakaoTalk(), user.isSendWebPush());
+        userRepository.updateUserInfo(user.getUserNo(), user.isSendKakaoTalk(), user.isSendWebPush());
     }
 
-    public void updateAuth(User user){
-        userRepository.updateAuth(user.getUserNo(), user.getEmail(), user.getPhone());
+    public void updateEmail(User user){
+        userRepository.updateEmail(user.getUserNo(), user.getEmail());
+    }
+
+    public void updatePhone(User user){
+        userRepository.updatePhone(user.getUserNo(), user.getPhone());
+    }
+
+    public boolean isDuplicatedEmail(String email){
+        return userRepository.findByEmail(email)!=null;
+    }
+
+    public boolean isDuplicatedPhone(String phone){
+        return userRepository.findByPhone(phone)!=null;
     }
 
     public User findById(long userNo){
         return userRepository.findById(userNo).orElse(null);
+    }
+
+    public User findByIdWithSNSList(long userNo){
+        return userRepository.findByIdWithSNSList(userNo).orElse(null);
     }
 
     public void deleteUser(User user){
@@ -112,9 +136,13 @@ public class UserService {
     }
 
     @Scheduled(fixedDelay = minutesInMilli)
-    public void deleteExpiredToken(){
+    public void executeMinuteSchedule(){
         LocalDateTime now = LocalDateTime.now();
+        deleteExpiredToken(now);
+        deleteExpiredIds(now);
+    }
 
+    public void deleteExpiredToken(LocalDateTime now){
         Iterator<Map.Entry<String, ValidationToken>> tokenIterator = tokenMap.entrySet().iterator();
         while (tokenIterator.hasNext()) {
             Map.Entry<String, ValidationToken> entry = tokenIterator.next();
@@ -124,7 +152,9 @@ public class UserService {
                 tokenIterator.remove();
             }
         }
+    }
 
+    public void deleteExpiredIds(LocalDateTime now){
         Iterator<Map.Entry<String, String>> idIterator = signUpIdsMap.entrySet().iterator();
         while (idIterator.hasNext()) {
             Map.Entry<String, String> entry = idIterator.next();
@@ -144,12 +174,32 @@ public class UserService {
                 .append("인증코드 : ")
                 .append(code);
         mailUtil.sendEmail(email, subject, body.toString());
+//        log.info(body);
         ValidationToken token = new ValidationToken(code);
         tokenMap.put(email, token);
     }
 
     public boolean verifyEmail(String email, String code){
         ValidationToken token = tokenMap.get(email);
+        return token!=null&&token.validateToken(code);
+    }
+
+    public void sendPhoneMessage(String phone){
+        String subject = "[nasdak] 이메일 인증 코드입니다.";
+        StringBuilder body = new StringBuilder();
+        String code = generateVerificationCode();
+        body.append("[nasdak] 인증 번호 안내\n")
+                .append("아래 인증코드를 복사하여 입력해주시기 바랍니다.\n")
+                .append("인증코드 : ")
+                .append(code);
+//        mailUtil.sendEmail(email, subject, body.toString());
+        log.info(body);
+        ValidationToken token = new ValidationToken(code);
+        tokenMap.put(phone, token);
+    }
+
+    public boolean verifyPhoneMessage(String phone, String code){
+        ValidationToken token = tokenMap.get(phone);
         return token!=null&&token.validateToken(code);
     }
 

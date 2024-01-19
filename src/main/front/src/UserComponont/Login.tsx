@@ -8,21 +8,31 @@ import { getCookie, setCookie } from 'Cookies';
 import { handleNaverLogin, handleKakaoLogin, setSnsState } from 'UserComponont/js/snsLogin';
 import { useEffect, useState } from 'react';
 import { jsonHeader } from 'headers';
+import { UserType } from 'TypeList';
+import ConnectToExistUserDialog from './ConnectToExistUserDialog';
 declare global {
   interface Window {
     snsLoginNavigate?: any;
+    setExistUsers?: any;
+    handleOpenExistUsers?: any;
+    setSnsKey?: any;
   }
 }
 
 export default function Login() {
   const [id, setId] = useState(getCookie('userId') === undefined ? '' : getCookie('userId'));
   const [pwd, setPwd] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState('');
   const [remember, setRemember] = useState(Boolean(getCookie('remember') === null ? false : getCookie('remember')));
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
+  const [existUsers, setExistUsers] = useState<{ email: UserType; phone: UserType }>();
+  const [snsKey, setSnsKey] = useState('');
+  const handleOpen = () => setOpen('join');
+  const handleOpenExistUsers = () => setOpen('connectToExistUserDialog');
+  const handleClose = () => setOpen('');
   const navigate = useNavigate();
+  window.setExistUsers = setExistUsers;
+  window.handleOpenExistUsers = handleOpenExistUsers;
+  window.setSnsKey = setSnsKey;
 
   useEffect(() => {
     setSnsState('login');
@@ -76,8 +86,7 @@ export default function Login() {
     setCookie('remember', e.target.checked, { maxAge: 60 * 60 * 24 * 30 });
   }
 
-  // sns 로그인 후 세션 저장
-  window.snsLoginNavigate = (userNo: any, snsType: any, token: any) => {
+  const snsLoginNavigate = (userNo: any, snsType: any, token: any) => {
     sessionStorage.setItem('accessToken', token);
     sessionStorage.setItem('userNo', userNo);
     sessionStorage.setItem('snsType', snsType);
@@ -85,6 +94,9 @@ export default function Login() {
     sessionStorage.removeItem('userId');
     navigate('/ledger');
   };
+
+  // sns 로그인 후 세션 저장
+  window.snsLoginNavigate = snsLoginNavigate;
 
   return (
     <>
@@ -155,7 +167,14 @@ export default function Login() {
         </div>
       </div>
 
-      <Join open={open} handleClose={handleClose} />
+      <Join open={open === 'join'} handleClose={handleClose} />
+      <ConnectToExistUserDialog
+        open={open === 'connectToExistUserDialog'}
+        handleClose={handleClose}
+        existUsers={existUsers}
+        snsKey={snsKey}
+        snsLoginNavigate={snsLoginNavigate}
+      />
     </>
   );
 }

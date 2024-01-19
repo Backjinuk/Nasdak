@@ -49,7 +49,7 @@ public class NaverService implements ApiService{
 
     // 정보 조회
     @Override
-    public Map<String, Object> getProfile(String accessToken) throws JsonProcessingException {
+    public Map<String, String> getProfile(String accessToken) throws JsonProcessingException {
         accessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
         String header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
 
@@ -60,7 +60,16 @@ public class NaverService implements ApiService{
 
         String json = httpUtil.get(apiURL,requestHeaders);
         Map<String, Object> profileResponse = objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
-        return (Map<String, Object>)profileResponse.get("response");
+        Map<String, String> response = (Map<String, String>) profileResponse.get("response");
+        Map<String, String> map = new HashMap<>();
+        map.put("id", response.get("id"));
+        map.put("email", response.get("email"));
+        String nationalPhone = response.get("mobile_e164");
+        String phone = response.get("mobile");
+        if(phone!=null) phone = phone.replaceAll("-","");
+        map.put("phone", phone);
+
+        return map;
     }
 
     // 연동 계정 탈퇴

@@ -43,10 +43,15 @@ public class UserController {
     }
 
     @RequestMapping("signUp")
-    public UserDto signUp(@RequestBody UserDto userDto) throws Exception {
-        User user = userService.signUp(toUser(userDto));
+    public ResponseEntity<UserDto> signUp(@RequestBody UserDto userDto) throws Exception {
+        User user;
+        try{
+            user = userService.signUp(toUser(userDto));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().build();
+        }
         categoryService.saveDefaultCategory(user);
-        return toUserDto(user);
+        return ResponseEntity.ok(toUserDto(user));
     }
 
     @RequestMapping("updateSNSUser")
@@ -67,7 +72,7 @@ public class UserController {
 
     @RequestMapping("verifyEmail")
     public boolean verifyEmail(@RequestBody Map<String, String> map){
-        return userService.verifyEmail(map.get("email"), map.get("code"));
+        return userService.verifyCode(map.get("email"), map.get("code"));
     }
 
     @GetMapping("sendPhoneMessage/{phone}")
@@ -77,7 +82,12 @@ public class UserController {
 
     @RequestMapping("verifyPhoneMessage")
     public boolean verifyPhoneMessage(@RequestBody Map<String, String> map){
-        return userService.verifyPhoneMessage(map.get("phone"), map.get("code"));
+        return userService.verifyCode(map.get("phone"), map.get("code"));
+    }
+
+    @RequestMapping("cancelSignUp")
+    public void cancelSignUp(@RequestBody UserDto userDto){
+        userService.finishSignUp(toUser(userDto).getAuthentication());
     }
 
     @RequestMapping("login")

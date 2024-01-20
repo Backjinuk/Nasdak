@@ -1,20 +1,16 @@
 package org.nasdakgo.nasdak.Service;
 
+import Utils.Delay;
 import Utils.MailUtil;
 import Utils.ValidationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.UserRepository;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,26 +18,32 @@ import java.util.Random;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final SchedulerService schedulerService;
     private final MailUtil mailUtil;
 
     private final Map<String, ValidationToken> tokenMap = new HashMap<>();
     private final Map<String, String> signUpIdsMap = new HashMap<>();
 
-    private final long minutesInMilli = 60*1000;
-
     public void setTempUser(User user){
-        if(user.getPhone()==null){
-            signUpIdsMap.put(user.getUserId(), user.getEmail());
-        }else{
-            signUpIdsMap.put(user.getUserId(), user.getPhone());
-        }
+        signUpIdsMap.put(user.getAuthentication(), user.getUserId());
     }
 
     public User signUp(User user){
+        if(userRepository.findByUserId(user.getUserId())!=null) throw new RuntimeException();
+
         user.setRegDate(LocalDateTime.now());
         user.setActiveUser(true);
         user.setPushTime("23:00");
+
+        String key = user.getAuthentication();
+        this.finishSignUp(key);
+
         return userRepository.save(user);
+    }
+
+    public void finishSignUp(String key){
+        schedulerService.removeTimer(key);
+        this.deleteSignUpMapData(key);
     }
 
     public void updateSNSUser(User user){
@@ -51,11 +53,7 @@ public class UserService {
     public boolean canUseUserId(User user){
         User find = userRepository.findByUserId(user.getUserId());
         if(find!=null) return false;
-        if(!signUpIdsMap.containsKey(user.getUserId())) return true;
-        String tokenKey = signUpIdsMap.get(user.getUserId());
-        if(!tokenMap.containsKey(tokenKey)) return true;
-        ValidationToken token = tokenMap.get(tokenKey);
-        return !token.validateTime();
+        return !signUpIdsMap.containsValue(user.getUserId());
     }
 
     public User login(User user) {
@@ -94,7 +92,6 @@ public class UserService {
         return userRepository.findById(user.getUserNo()).orElse(null);
     }
 
-    @Transactional
     public void updateUserInfo(User user){
         userRepository.updateUserInfo(user.getUserNo(), user.isSendKakaoTalk(), user.isSendWebPush());
     }
@@ -135,34 +132,9 @@ public class UserService {
         userRepository.updateProfile(user.getUserNo(), user.getProfile());
     }
 
-    @Scheduled(fixedDelay = minutesInMilli)
-    public void executeMinuteSchedule(){
-        LocalDateTime now = LocalDateTime.now();
-        deleteExpiredToken(now);
-        deleteExpiredIds(now);
-    }
-
-    public void deleteExpiredToken(LocalDateTime now){
-        Iterator<Map.Entry<String, ValidationToken>> tokenIterator = tokenMap.entrySet().iterator();
-        while (tokenIterator.hasNext()) {
-            Map.Entry<String, ValidationToken> entry = tokenIterator.next();
-            ValidationToken token = entry.getValue();
-
-            if (!token.validateTime(now)) {
-                tokenIterator.remove();
-            }
-        }
-    }
-
-    public void deleteExpiredIds(LocalDateTime now){
-        Iterator<Map.Entry<String, String>> idIterator = signUpIdsMap.entrySet().iterator();
-        while (idIterator.hasNext()) {
-            Map.Entry<String, String> entry = idIterator.next();
-            String tokenKey = entry.getValue();
-            if(!tokenMap.containsKey(tokenKey)){
-                idIterator.remove();
-            }
-        }
+    public void deleteSignUpMapData(String key){
+        tokenMap.remove(key);
+        signUpIdsMap.remove(key);
     }
 
     public void sendEmail(String email){
@@ -173,15 +145,9 @@ public class UserService {
                 .append("아래 인증코드를 복사하여 입력해주시기 바랍니다.\n")
                 .append("인증코드 : ")
                 .append(code);
-        mailUtil.sendEmail(email, subject, body.toString());
-//        log.info(body);
-        ValidationToken token = new ValidationToken(code);
-        tokenMap.put(email, token);
-    }
-
-    public boolean verifyEmail(String email, String code){
-        ValidationToken token = tokenMap.get(email);
-        return token!=null&&token.validateToken(code);
+//        mailUtil.sendEmail(email, subject, body.toString());
+        log.info(body);
+        saveToken(email, code);
     }
 
     public void sendPhoneMessage(String phone){
@@ -194,16 +160,25 @@ public class UserService {
                 .append(code);
 //        mailUtil.sendEmail(email, subject, body.toString());
         log.info(body);
+        saveToken(phone, code);
+    }
+
+    private void saveToken(String key, String code){
         ValidationToken token = new ValidationToken(code);
-        tokenMap.put(phone, token);
+        tokenMap.put(key, token);
+        schedulerService.addTimer(key, ()->this.deleteSignUpMapData(key), Delay.ofMinutes(5));
     }
 
-    public boolean verifyPhoneMessage(String phone, String code){
-        ValidationToken token = tokenMap.get(phone);
-        return token!=null&&token.validateToken(code);
+    public boolean verifyCode(String key, String code){
+        ValidationToken token = tokenMap.get(key);
+        boolean isValidate = token != null && token.validateToken(code);
+        if(isValidate) {
+            schedulerService.addTimer(key, ()->this.deleteSignUpMapData(key), Delay.ofMinutes(5));
+        }
+        return isValidate;
     }
 
-    public String generateVerificationCode(){
+    private String generateVerificationCode(){
         int length = 6;
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();

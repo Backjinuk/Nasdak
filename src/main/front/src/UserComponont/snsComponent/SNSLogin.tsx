@@ -1,6 +1,6 @@
 import { Box, CircularProgress } from '@mui/material';
 import { UserType } from 'TypeList';
-import { axiosConnectSns, connectSns } from 'app/slices/userSlice';
+import { axiosConnectSns } from 'app/slices/userSlice';
 import axios, { AxiosError } from 'axios';
 import { jsonHeader } from 'headers';
 

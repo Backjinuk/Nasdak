@@ -1,4 +1,4 @@
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import Swal from 'sweetalert2';
 import Box from '@mui/material/Box';
@@ -11,6 +11,7 @@ import { formHeader, jsonHeader } from 'headers';
 import { useAppDispatch } from 'app/hooks';
 import {
   axiosCanUseUserId,
+  axiosCancelSignUp,
   axiosSendEmail,
   axiosSendPhone,
   axiosUpdateSnsUser,
@@ -39,6 +40,10 @@ export default function Join(props: any) {
     setPage(1);
     setRadio('email');
     setOnTimer(0);
+    let data;
+    if (email !== '') data = { email };
+    if (phone !== '') data = { phone };
+    if (data) dispatch(axiosCancelSignUp(data));
     props.handleClose();
   };
   const [sid, setSid] = useState('');
@@ -138,15 +143,26 @@ export default function Join(props: any) {
     } else {
       data.phone = phone;
     }
-    const res = await axios.post(`/api/user/signUp`, JSON.stringify(data), jsonHeader);
-    profileUpload(res.data.userNo);
-    Swal.fire({
-      icon: 'success',
-      title: '회원가입 되었습니다..',
-      timer: 2000,
-    }).then(() => {
-      handleClose();
-    });
+    try {
+      const res = await axios.post(`/api/user/signUp`, JSON.stringify(data), jsonHeader);
+      profileUpload(res.data.userNo);
+      Swal.fire({
+        icon: 'success',
+        title: '회원가입 되었습니다..',
+        timer: 5000,
+      }).then(() => {
+        handleClose();
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: '회원가입에 실패했습니다..',
+        text: '다시 시도해주세요',
+        timer: 5000,
+      }).then(() => {
+        handleClose();
+      });
+    }
   }
 
   async function snsSignUp() {

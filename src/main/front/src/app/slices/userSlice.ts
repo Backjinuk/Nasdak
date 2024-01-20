@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SnsType, UserType } from 'TypeList';
-import { useAppDispatch } from 'app/hooks';
 import { RootState } from 'app/store';
 import axios from 'axios';
 import { Sns, User } from 'classes';
@@ -193,6 +192,13 @@ export const axiosConnectNewSns = createAsyncThunk(
 export const axiosDeleteSnsMap = createAsyncThunk('user/axiosDeleteSnsMap', (key: string) => {
   axios.get(`/api/sns/deleteSnsMap/${key}`, jsonHeader);
 });
+
+export const axiosCancelSignUp = createAsyncThunk(
+  'user/axiosCancelSignUp',
+  (data: { email: string } | { phone: string }) => {
+    axios.post(`/api/user/cancelSignUp`, JSON.stringify(data), jsonHeader);
+  }
+);
 
 export const { dropUserInfo, connectSns, disConnectSns } = userSlice.actions;
 

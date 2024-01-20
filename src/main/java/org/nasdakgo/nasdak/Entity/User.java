@@ -57,5 +57,13 @@ public class User {
         this.userNo = userNo;
     }
 
+    public String getAuthentication(){
+        if(this.getEmail()==null){
+            return this.getPhone();
+        }else{
+            return this.getEmail();
+        }
+    }
+
 
 }

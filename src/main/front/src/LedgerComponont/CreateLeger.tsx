@@ -14,6 +14,7 @@ import * as React from "react";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import SendIcon from '@mui/icons-material/Send';
+import {store} from "../app/store";
 
 export default function CreateLeger({ChangeEvent,categoryList} : any){
 
@@ -81,7 +82,8 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
                     timer: 400
                 }).then(r => {
 
-                    ChangeEvent();
+                    store.dispatch({type : "INSERT_LEDGER"});
+
                     setOpen(false);
 
                 });

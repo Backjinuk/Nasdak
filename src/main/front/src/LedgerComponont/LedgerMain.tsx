@@ -14,13 +14,19 @@ import MapLocation from "../MapComponont/MapLocation";
 import {useNavigate} from "react-router-dom";
 import TopBar from "TopBar"
 import * as React from "react";
+import {useSelector} from "react-redux";
 
 
 interface JQuery {
     modal(action: 'show' | 'hide'): void;
 }
 
-export default function LedgerMain({event, categoryList, isLedgerList} : any){
+interface RootState {
+    event: boolean;
+}
+
+
+export default function LedgerMain({categoryList, isLedgerList} : any){
 
     const [ledgerList, setLedgerList] = useState<LedgerType[]>([] );
     const [landingEvent , setLendingEvent] =  useState(false);
@@ -28,8 +34,10 @@ export default function LedgerMain({event, categoryList, isLedgerList} : any){
     const [open, setOpen] = useState<boolean>(false);
     const navigate  = useNavigate();
 
-    useEffect(() => {
+    const event = useSelector( (state : RootState) => state.event )
 
+    useEffect(() => {
+        console.log("event : " + event);
         axios.post("/api/ledger/LedgerList", JSON.stringify({
             userNo: sessionStorage.getItem("userNo")
         }), {

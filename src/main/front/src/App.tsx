@@ -56,7 +56,7 @@ function App() {
               <Route
                 path='/Ledger'
                 element={
-                  <LedgerMain event={event} categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
+                  <LedgerMain categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
                 }
               />
               <Route path={'/MapLocation'} element={<MapLocation />} />

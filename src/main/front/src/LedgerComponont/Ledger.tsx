@@ -1,8 +1,11 @@
 import {LedgerType} from "../TypeList";
 import {useEffect, useState} from "react";
 import axios from "axios";
+import {useAppDispatch, useAppSelector} from "../app/hooks";
+import {RootState} from "../app/store";
+import {axiosGetLedgerItem} from "../app/slices/ledgerSilce";
 
-export default function Ledger({ ledger, landingEvent, ledgertDetail }:{ ledger: LedgerType; landingEvent: any , ledgertDetail: any}) {
+export default function Ledger({ ledger, event, ledgertDetail }:{ ledger: LedgerType; event: any , ledgertDetail: any}) {
     // 컴포넌트 내용...
     const [ledgerItem, setLedgerItem] = useState<LedgerType[]>([]);
 
@@ -17,7 +20,18 @@ export default function Ledger({ ledger, landingEvent, ledgertDetail }:{ ledger:
         }).then(res => {
             setLedgerItem(res.data);
         })
-    }, [landingEvent]);
+    }, [event]);
+
+/*
+    const dispatch = useAppDispatch();
+    const ledgerItem = useAppSelector((state : RootState) => state.ledger.ledgerItem)
+    useEffect(() => {
+        dispatch(axiosGetLedgerItem({
+            regDate: ledger , userNo :parseInt(sessionStorage.getItem("userNo") as string) as number}
+        ));
+    }, [event]);
+
+ */
 
     return (
         <div className={"itemWarp"}>

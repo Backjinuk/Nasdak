@@ -12,12 +12,14 @@ import {useEffect} from 'react';
 import {useAppDispatch, useAppSelector} from 'app/hooks';
 import {axiosGetCategoryList, selectAllCategories} from 'app/slices/categoriesSlice';
 import axios from "axios";
+import {store} from "./app/store";
+import {connect} from "react-redux";
+import {changeEvent} from "./app/slices/ledgerSilce";
 
-export default function TopBar({ChangeEvent}: any) {
+export default function TopBar() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate(); // 변경
     const categoryList = useAppSelector(selectAllCategories);
-
     const categoryStatus = useAppSelector((state) => state.categories.status);
 
     useEffect(() => {
@@ -26,7 +28,7 @@ export default function TopBar({ChangeEvent}: any) {
             dispatch(axiosGetCategoryList(userNo));
         }
 
-        startEventTimer();
+        //startEventTimer();
 
     }, []);
 
@@ -58,8 +60,6 @@ export default function TopBar({ChangeEvent}: any) {
         }
 
     }
-
-
 
     //9시 이후 시작되는 이벤트
     const startEvent = async () => {
@@ -112,8 +112,6 @@ export default function TopBar({ChangeEvent}: any) {
         }
     }
 
-
-
     function startEventTimer() {
         const currentDate = new Date();
         const targetTime = new Date();
@@ -129,7 +127,9 @@ export default function TopBar({ChangeEvent}: any) {
         setTimeout(startEvent, 1000);
     }
 
-
+    const ChangeEvent = () => {
+        store.dispatch(changeEvent());
+    }
 
     return (
         <Box sx={{flexGrow: 1, my: 2}}>
@@ -145,6 +145,7 @@ export default function TopBar({ChangeEvent}: any) {
                         <MenuIcon/>
                     </IconButton>
                     <CreateLeger ChangeEvent={ChangeEvent} categoryList={categoryList}/>
+                    {/*<ConnectCreateLedger/>*/}
                     <Button sx={{color: '#fff'}} variant="outlined" onClick={() => navigate("/MapLocation")}>지도
                         모아보기</Button>
                     <Button sx={{color: '#fff'}} variant="outlined" onClick={() => navigate("/Ledger")}>메인페이지</Button>

@@ -19,12 +19,11 @@ import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 
 
-export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen, open} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any, isOpen : (value: boolean) => void, open : boolean }){
+export default function  LedgerDetail({categoryList, ledger, isOpen, open} : {categoryList : CategoryType[], ledger : LedgerType, isOpen : (value: boolean) => void, open : boolean }){
 
     const [price, setPrice] = useState(() => ledger.price);
     const [location, setLocation] = useState(() => ledger.location);
     const [comment, setComment] = useState(() => ledger.comment);
-    const [lodinMap, setLodingMap] = useState(false);
     const [checkedList, setCheckedList] = useState([]);
     const [categoryNo, setCategoryNo] = useState(() => ledger.categoryDto.categoryNo);
     const [ledgerType , setLedgerType] = useState(() => ledger.ledgerType)
@@ -278,7 +277,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
      */
     function UtilsEvent(){
         isOpen(false);
-        ChangeEvent();
     }
 
 

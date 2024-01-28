@@ -2,15 +2,18 @@ import {useEffect, useState} from "react";
 import "./Map.css"
 import axios from "axios";
 import {CategoryType, LedgerType, location} from "../TypeList";
-import MapLedgerDetail from "./MapLedgerDetail";
-import Button from "@mui/material/Button";
-import {useNavigate} from "react-router-dom";
 import LedgerDetail from "../LedgerComponont/LedgerDetail";
 import Swal from "sweetalert2";
-export default function MapLocation() {
+import {useAppDispatch, useAppSelector} from "app/hooks";
+import {RootState} from "../app/store";
+import {axiosGetLedgerDetail} from "../app/slices/ledgerSilce";
 
+export default function MapLocation({event} : any) {
+
+    const dispatch = useAppDispatch();
+    const ledger = useAppSelector((state : RootState) => state.ledger.ledger) ;
     const [locationList , setLocationList] = useState<LedgerType[]>()
-    const [ledger , setLedger] = useState<LedgerType>()
+    //const [ledger , setLedger] = useState<LedgerType>()
     const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
     const [changeEvent, setChangeEvent] = useState(false);
     const [open , setOpen] = useState<boolean>(false)
@@ -28,7 +31,6 @@ export default function MapLocation() {
             }
         }).then( res => {
             setLocationList(res.data)
-
             displayPlaces(res.data );
         })
 
@@ -213,70 +215,24 @@ export default function MapLocation() {
 
     }, [changeEvent]);
 
-    const  MapLedgerDetailFn = (fileOwnerNo  : any) => {
-        //alert(key)
-        axios.post("/api/ledger/ledgerDetail",JSON.stringify({
-            "fileOwnerNo" : fileOwnerNo
-        }), {
-            headers : {
-                "Content-Type" : "application/json"
-            }
-        }).then((res) => {
-            setLedger(res.data);
+    const  MapLedgerDetailFn = async (fileOwnerNo  : any) => {
+
+        try {
+            await dispatch(axiosGetLedgerDetail(fileOwnerNo));
             isOpen(true);
-        })
+        } catch (e) {
+            Swal.fire({
+                title: '에러',
+                text: "관리자에게 문의 하세요",
+                icon: 'error',
+                confirmButtonText: '확인',
+                timer : 1000
+            })
 
-        axios.post("/api/category/getCategoryList", sessionStorage.getItem("userDto"),
-            { headers : {"Content-Type" : "application/json"}
-            }).then(res => {
-            setCategoryList(res.data);
-        })
+            console.log(e);
+        }
     }
 
-    const MapLedgerDeleteFn = (fileOwnerNo : any ) => {
-        axios.post("/api/ledger/ledgerDelete", JSON.stringify({
-            "fileOwnerNo" : fileOwnerNo
-        }), {
-            headers : {
-                "Content-Type" : "application/json"
-            }
-        }).then( res => {
-            axios.post("/api/ledger/deleteFile", JSON.stringify({
-                "fileOwnerNo" : res.data.fileOwnerNo
-            }), {
-                headers : {
-                    "Content-Type" : "application/json"
-                }
-            }).catch (err => {
-                console.error(err)
-            })
-
-            ChangeEvent();
-
-            Swal.fire({
-                icon : "success",
-                title : "삭제 되었습니다." ,
-                timer : 2000
-            })
-        }).catch (err => {
-            Swal.fire({
-                icon : "error",
-                title : "에러가 발생하였습니다." ,
-                timer : 2000
-            })
-
-            console.error( err )
-        })
-    }
-
-    $(".MapLedgerUpdate").off().on("click", function(){
-        //alert($(this).val() );
-        MapLedgerDetailFn($(this).val());
-    })
-
-    $(".MapLedgerDelete").off().on("click", function(){
-        MapLedgerDeleteFn($(this).val());
-    })
 
     const ChangeEvent = () =>{
         if(changeEvent){
@@ -303,7 +259,7 @@ export default function MapLocation() {
 
             </div>
 
-            {ledger && ( <LedgerDetail categoryList={categoryList} ledger={ledger}  ChangeEvent={ChangeEvent} isOpen={isOpen} open={open}/> )}
+            {ledger && ( <LedgerDetail categoryList={categoryList} ledger={ledger}  isOpen={isOpen} open={open}/> )}
         </>
     )
 }

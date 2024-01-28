@@ -115,7 +115,7 @@ export default function CalendarMain({categoryList, ChangeEvent} : any) {
         </div>
 
 
-            {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} ChangeEvent={ChangeEvent} isOpen={isOpen} open={open}/>}
+            {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger}  isOpen={isOpen} open={open}/>}
         </>
     );
 }

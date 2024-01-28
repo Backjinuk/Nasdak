@@ -14,13 +14,11 @@ import * as React from "react";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import SendIcon from '@mui/icons-material/Send';
-import {store} from "../app/store";
 
 export default function CreateLeger({ChangeEvent,categoryList} : any){
 
     const [open, setOpen] = React.useState(false);
     const [location, setLocation] = useState<location>({x : 0, y : 0, address : ""});
-
 
     const handleOpen = (check : any) =>{
         setOpen(true);
@@ -48,7 +46,6 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
 
         for (let field of frm) {
             LedgerDto[field.name] = field.value;
-            console.log("filedId : " + field.name + " file.value : " + field.value)
             if (field.name === 'category_no') {
                 LedgerDto["categoryDto"] = {
                     categoryNo: field.value
@@ -57,9 +54,6 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
         }
         LedgerDto["userDto"] = userDto;
         LedgerDto["location"] = location;
-
-        console.log("ledgerDto : " + JSON.stringify({LedgerDto}))
-
 
         axios.post("/api/ledger/ledgerSave", JSON.stringify({LedgerDto}), {
             headers: {
@@ -82,8 +76,7 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
                     timer: 400
                 }).then(r => {
 
-                    store.dispatch({type : "INSERT_LEDGER"});
-
+                    ChangeEvent();
                     setOpen(false);
 
                 });

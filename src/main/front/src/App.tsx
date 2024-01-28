@@ -10,12 +10,13 @@ import CalenderMain from './CalenderCompoont/CalenderMain';
 import KakaoInit from 'UserComponont/snsComponent/KakaoInit';
 import KakaoLogout from 'UserComponont/snsComponent/KakaoLogout';
 import TopBar from './TopBar';
-import { useEffect, useState } from 'react';
-import { LedgerType } from './TypeList';
+import { useEffect} from 'react';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectAllCategories } from 'app/slices/categoriesSlice';
 import { dropUserInfo } from 'app/slices/userSlice';
 import './firebase';
+import {connect, useSelector} from "react-redux";
+import {RootState} from "./app/store";
 
 declare global {
   interface Window {
@@ -26,16 +27,16 @@ declare global {
 
 function App() {
   const categoryList = useAppSelector(selectAllCategories);
-  const [ledgerList, setLedgerList] = useState<LedgerType[]>();
-  const [event, setEvent] = useState(false);
+  const event = useSelector( (state : RootState) => state.ledger.event);
 
-  function isLedgerList(value: LedgerType[]) {
-    setLedgerList(value);
-  }
-  const ChangeEvent = () => {
-    console.log(11);
-    event ? setEvent(false) : setEvent(true);
-  }
+  const mapStateToProps = (state: { categoryList: any; event: any; }) => {
+    return {
+      categoryList: state.categoryList, // state의 구조에 따라 적절하게 수정하세요.
+      event: state.event // state의 구조에 따라 적절하게 수정하세요.
+    };
+  };
+
+  const ConnectedLedgerMain = connect(mapStateToProps)(LedgerMain);
 
   return (
     <div className='App'>
@@ -55,14 +56,11 @@ function App() {
 
               <Route
                 path='/Ledger'
-                element={
-                  <LedgerMain categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
-                }
-              />
-              <Route path={'/MapLocation'} element={<MapLocation />} />
+                element={ <LedgerMain event={event} categoryList={categoryList}/>} />
+              <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
               <Route
                 path={'/calender'}
-                element={<CalenderMain categoryList={categoryList}/>}
+                element={<CalenderMain categoryList={categoryList} event={event}/> }
               />
             </Routes>
           </Router>

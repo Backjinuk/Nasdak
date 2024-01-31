@@ -3,14 +3,26 @@ import {LedgerType} from "../../TypeList";
 import {Ledger} from "../../classes";
 import {jsonHeader} from "../../headers";
 import axios from "axios";
+import Swal from "sweetalert2";
 
-const initialState: { event: boolean , ledgerList : LedgerType[], ledger : LedgerType, ledgerItem : LedgerType[] ,status : string, error : string} = {
+interface LedgerData {
+    [key: string]: any[]; // 모든 종류의 배열을 값으로 갖는 객체
+}
+
+const initialState: {
+    event: boolean;
+    ledgerList: LedgerData;
+    ledger: LedgerType;
+    ledgerItem: LedgerType[];
+    status: string;
+    error: string;
+} = {
     event: false,
-    ledgerList: [],
-    ledger: {...new Ledger()},
-    ledgerItem : [],
-    status : "idle",
-    error : ""
+    ledgerList: {},  // 빈 객체로 초기화
+    ledger: { ...new Ledger() },
+    ledgerItem: [],
+    status: "idle",
+    error: ""
 };
 
 
@@ -24,21 +36,14 @@ const ledgerSlice = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(axiosGetLedger.pending, (state, action) => {
-                state.status = "loading";
-            })
-            .addCase(axiosGetLedger.fulfilled,  (state, action) =>{
+            .addCase(axiosGetLedgerAllDay.fulfilled,  (state, action) =>{
                 state.status = "succeeded";
                 state.ledgerList =  action.payload;
-
             })
-            .addCase(axiosGetLedger.rejected, (state, action) => {
-                state.status  = "falied";
+            .addCase(axiosGetLedgerAllDay.rejected, (state, action) => {
+                state.status  = "failed";
                 const message = action.error.message;
                 if(message !== undefined ) state.error = message;
-            })
-            .addCase(axiosGetLedgerDetail.pending,(state, action) => {
-                state.status = "loading";
             })
             .addCase(axiosGetLedgerDetail.fulfilled, (state, action) => {
                 state.status = "succeeded";
@@ -49,26 +54,34 @@ const ledgerSlice = createSlice({
                 const message = action.error.message;
                 if(message !== undefined ) state.error = message;
             })
-            .addCase(axiosGetLedgerItem.pending, (state, action) => {
-               state.status = "loading";
-            })
-            .addCase(axiosGetLedgerItem.fulfilled, ( state, action) => {
+            .addCase(axiosDeleteLedger.fulfilled, (state , action) => {
                 state.status = "succeeded";
-                state.ledgerItem = action.payload;
             })
-            .addCase(axiosGetLedgerItem.rejected , (state, action) => {
-                state.status = "failed";
-                const message = action.error.message;
-                if(message !== undefined ) state.error = message;
+            .addCase(axiosDeleteFile.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                Swal.fire({
+                    icon : "success",
+                    title : "삭제되었습니다.",
+                    timer : 2000
+                })
             })
+            .addCase(axiosDeleteFileItem.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                Swal.fire({
+                    icon : "success",
+                    title : "삭제되었습니다.",
+                    timer : 2000
+                })
+            })
+
     }
 });
 
 
-export const axiosGetLedger = createAsyncThunk(
-    "ledger/axiosGetLedgerList",
+export const axiosGetLedgerAllDay = createAsyncThunk(
+    "ledger/axiosGetLedgerAllDay",
     async (userNo : number) => {
-        const res = await axios.post("/api/ledger/LedgerList", JSON.stringify({userNo}), jsonHeader);
+        const res = await axios.post("/api/ledger/LedgerAllDayList", JSON.stringify({userNo}), jsonHeader);
         return res.data;
     }
 )
@@ -80,14 +93,40 @@ export const axiosGetLedgerDetail = createAsyncThunk(
         return res.data;
     }
 )
+export const axiosDeleteLedger = createAsyncThunk(
+    "ledger/axiosDeleteLedger",
+    async (ledgerNo : number) => {
+        const res = await axios.post("/api/ledger/ledgerDelete", JSON.stringify({"fileOwnerNo" : ledgerNo}), jsonHeader);
+        return res.data
+    }
+)
 
-export const axiosGetLedgerItem = createAsyncThunk(
-    "ledger/axiosGetLedgerItem",
-    async ({regDate, userNo} : {regDate : string, userNo : number}) => {
-        const res = await axios.post("/api/ledger/ledgerItem", JSON.stringify({"regDate2" : regDate, "userNo" : userNo}), jsonHeader);
+export const axiosDeleteFile = createAsyncThunk(
+    "ledger/deleteFile",
+    async (fileOwnerNo : number) => {
+        const res = await axios.post("/api/ledger/deleteFile", JSON.stringify({"fileOwnerNo" : fileOwnerNo}), jsonHeader);
+        return res.data;
+    }
+);
+
+export const axiosFileUpload = createAsyncThunk(
+    "ledger/fileUpload",
+    async (file : FormData) => {
+        const res = await axios.post("/api/ledger/uploadFile", file, {headers : {'Content-type' : 'multipart/form-data'}});
         return res.data;
     }
 )
+
+export const axiosDeleteFileItem = createAsyncThunk(
+    "ledger/deleteFileItem",
+    async (checkedList : never[]) => {
+        const res = await axios.post("/api/ledger/deleteFileItem", checkedList, jsonHeader);
+        return res.data;
+    }
+)
+
+
+
 
 export const {changeEvent} = ledgerSlice.actions;
 export default ledgerSlice.reducer;

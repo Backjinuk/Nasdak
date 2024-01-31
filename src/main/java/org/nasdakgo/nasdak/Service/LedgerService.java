@@ -36,6 +36,10 @@ public class LedgerService {
         return ledgerRepository.findAllUsers(userNo);
     }
 
+    public List<Ledger> findAllByUsers2(long userNo) {
+        return ledgerRepository.findAllUsers2(userNo);
+    }
+
     public List<Ledger> ledgerItem(String regDate, long userNo) {
         return ledgerRepository.ledgerItem(regDate, userNo);
     }
@@ -54,4 +58,6 @@ public class LedgerService {
 
     public int TodayLedger(User user) { return ledgerRepository.TodayLedger(user.getUserNo());
     }
+
+
 }

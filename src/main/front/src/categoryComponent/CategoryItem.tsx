@@ -9,7 +9,6 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material';
-import { CategoryType } from 'TypeList';
 import { useAppDispatch } from 'app/hooks';
 import { axiosDeleteCategory, axiosUpdateCategory, selectCategoryById } from 'app/slices/categoriesSlice';
 import { RootState } from 'app/store';

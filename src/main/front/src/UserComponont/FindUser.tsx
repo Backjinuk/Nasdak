@@ -10,12 +10,12 @@ import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import { FormControl, FormControlLabel, Grid, InputAdornment, Radio, RadioGroup, TextField } from '@mui/material';
 import React, { useState } from 'react';
-import axios, { AxiosError } from 'axios';
-import { jsonHeader } from 'headers';
+import { isAxiosError } from 'axios';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch } from 'app/hooks';
 import { axiosSendEmail, axiosSendPhone, axiosVerifyEmail, axiosVerifyPhone } from 'app/slices/userSlice';
 import Timer from 'Timer';
+import axios from 'customFunction/customAxios';
 
 const steps = ['아이디 찾기', '아이디 확인', '비밀번호 변경', '완료'];
 const noUser = 'there is no user';
@@ -140,11 +140,11 @@ function StepOne(props: any) {
       data = { phone: auth.phone };
     }
     try {
-      const res = await axios.post('/api/user/findId', JSON.stringify(data), jsonHeader);
+      const res = await axios.post('/api/user/public/findId', JSON.stringify(data));
       setUserId(res.data);
     } catch (error) {
       console.log(error);
-      if (error instanceof AxiosError) {
+      if (isAxiosError(error)) {
         setUserId(noUser);
       }
     }
@@ -320,7 +320,7 @@ function StepTwo(props: any) {
     } else {
       data = { phone: auth.phone };
     }
-    const res = await axios.post('/api/user/findPassword', JSON.stringify({ ...data, userId: userId }), jsonHeader);
+    const res = await axios.post('/api/user/public/findPassword', JSON.stringify({ ...data, userId: userId }));
     setUserNo(res.data);
     props.handleNext();
   };
@@ -380,7 +380,7 @@ function StepThree(props: any) {
       userNo: userNo,
       password: password,
     };
-    axios.post('/api/user/updatePassword', JSON.stringify(data), jsonHeader).then((res) => {
+    axios.post('/api/user/public/updatePassword', JSON.stringify(data)).then((res) => {
       handleNext();
     });
   }

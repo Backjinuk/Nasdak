@@ -1,5 +1,4 @@
 import { ChangeEvent, useState } from 'react';
-import axios, { AxiosError } from 'axios';
 import Swal from 'sweetalert2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -7,7 +6,6 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import { ButtonGroup, FormControl, FormControlLabel, FormGroup, Radio, RadioGroup, Stack, styled } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { formHeader, jsonHeader } from 'headers';
 import { useAppDispatch } from 'app/hooks';
 import {
   axiosCanUseUserId,
@@ -19,10 +17,13 @@ import {
   axiosVerifyPhone,
 } from 'app/slices/userSlice';
 import { User } from 'classes';
-import Timer from 'Timer';
+import { useTimer } from 'customFunction/useTimer';
+import axios from 'customFunction/customAxios';
+import { isAxiosError } from 'axios';
 
 export default function Join(props: any) {
   const dispatch = useAppDispatch();
+  const { restart, stop, viewTime } = useTimer(5, '분');
 
   const open = props.open;
   const userNo = props.userNo;
@@ -39,7 +40,7 @@ export default function Join(props: any) {
     setCode('');
     setPage(1);
     setRadio('email');
-    setOnTimer(0);
+    stop();
     let data;
     if (email !== '') data = { email };
     if (phone !== '') data = { phone };
@@ -58,8 +59,6 @@ export default function Join(props: any) {
   const [uploadFile, setUploadFile] = useState<any>();
   const [imgBase64, setImgBase64] = useState<string[]>([]);
   const [addMemberbtn, setAddMemberBtn] = useState(false);
-  const [onTimer, setOnTimer] = useState(0);
-  const [viewTime, setViewTime] = useState('');
   const isSNS = userNo !== undefined;
 
   const style = {
@@ -113,13 +112,13 @@ export default function Join(props: any) {
       return false;
     }
     try {
-      await axios.post('/api/user/validateSignUpUser', JSON.stringify(data), jsonHeader);
+      await axios.post('/api/user/public/validateSignUpUser', JSON.stringify(data));
 
       sendCode();
       setPage(2);
       setAddMemberBtn(false);
     } catch (error) {
-      if (error instanceof AxiosError) {
+      if (isAxiosError(error)) {
         const res = error.response?.data;
         if (res === 'id') {
           alert('사용중인 아이디입니다.');
@@ -144,7 +143,7 @@ export default function Join(props: any) {
       data.phone = phone;
     }
     try {
-      const res = await axios.post(`/api/user/signUp`, JSON.stringify(data), jsonHeader);
+      const res = await axios.post(`/api/user/public/signUp`, JSON.stringify(data));
       profileUpload(res.data.userNo);
       Swal.fire({
         icon: 'success',
@@ -198,7 +197,7 @@ export default function Join(props: any) {
       fd.append('mf', uploadFile);
       fd.append('userNo', userNo);
 
-      axios.post('/api/user/uploadProfile', fd, formHeader);
+      axios.formData('/api/user/public/uploadProfile', fd);
     }
   }
 
@@ -367,7 +366,7 @@ export default function Join(props: any) {
   );
 
   const sendCode = () => {
-    setOnTimer(onTimer + 1);
+    restart();
     if (radio === 'email') {
       sendEmail();
     } else {
@@ -384,7 +383,7 @@ export default function Join(props: any) {
     }
     if (res) {
       alert('인증에 성공하였습니다.');
-      setOnTimer(0);
+      stop();
       setAddMemberBtn(true);
     } else {
       alert('인증에 실패하였습니다.');
@@ -466,7 +465,6 @@ export default function Join(props: any) {
           <Stack spacing={2}>{page === 1 ? pageOne : pageTwo}</Stack>
         </Box>
       </Modal>
-      <Timer onTimer={onTimer} setOnTimer={setOnTimer} setViewTime={setViewTime} duration={5} type='분' />
     </>
   );
 }

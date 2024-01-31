@@ -4,6 +4,8 @@ import Utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.nasdakgo.nasdak.Config.JwtTokenProvider;
+import org.nasdakgo.nasdak.Dto.JwtTokenDto;
 import org.nasdakgo.nasdak.Dto.SNSDto;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.SNS;
@@ -13,6 +15,10 @@ import org.nasdakgo.nasdak.Service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +30,8 @@ import java.util.Map;
 @Log4j2
 public class UserController {
 
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final UserService userService;
     private final CategoryService categoryService;
     private final ModelMapper modelMapper;
@@ -33,7 +41,7 @@ public class UserController {
     @Value("${download.file.profile}")
     private String downloadProfilePath;
 
-    @RequestMapping("validateSignUpUser")
+    @RequestMapping("public/validateSignUpUser")
     public ResponseEntity<?> validateSignUpUser(@RequestBody UserDto userDto){
         User user = toUser(userDto);
         if(!userService.canUseUserId(user)) return new ResponseEntity<>("id",HttpStatus.INTERNAL_SERVER_ERROR);
@@ -42,7 +50,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping("signUp")
+    @RequestMapping("public/signUp")
     public ResponseEntity<UserDto> signUp(@RequestBody UserDto userDto) throws Exception {
         User user;
         try{
@@ -60,53 +68,56 @@ public class UserController {
         return userDto;
     }
 
-    @RequestMapping("canUseUserId")
+    @RequestMapping("public/canUseUserId")
     public boolean canUseUserId(@RequestBody UserDto userDto){
         return userService.canUseUserId(toUser(userDto));
     }
 
-    @GetMapping("sendEmail/{email}")
+    @GetMapping("public/sendEmail/{email}")
     public void sendEmail(@PathVariable String email){
         userService.sendEmail(email);
     }
 
-    @RequestMapping("verifyEmail")
+    @RequestMapping("public/verifyEmail")
     public boolean verifyEmail(@RequestBody Map<String, String> map){
         return userService.verifyCode(map.get("email"), map.get("code"));
     }
 
-    @GetMapping("sendPhoneMessage/{phone}")
+    @GetMapping("public/sendPhoneMessage/{phone}")
     public void sendPhoneMessage(@PathVariable String phone){
         userService.sendPhoneMessage(phone);
     }
 
-    @RequestMapping("verifyPhoneMessage")
+    @RequestMapping("public/verifyPhoneMessage")
     public boolean verifyPhoneMessage(@RequestBody Map<String, String> map){
         return userService.verifyCode(map.get("phone"), map.get("code"));
     }
 
-    @RequestMapping("cancelSignUp")
+    @RequestMapping("public/cancelSignUp")
     public void cancelSignUp(@RequestBody UserDto userDto){
         userService.finishSignUp(toUser(userDto).getAuthentication());
     }
 
-    @RequestMapping("login")
-    public UserDto login(@RequestBody UserDto userDto){
-        User user = userService.login(toUser(userDto));
-        return toUserDto(user);
+    @RequestMapping("public/login")
+    public JwtTokenDto login(@RequestBody UserDto userDto){
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                new UsernamePasswordAuthenticationToken(userDto.getUserId(), userDto.getPassword());
+        Authentication authenticate = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        return jwtTokenProvider.generateToken(authenticate);
     }
 
-    @PostMapping("findId")
+    @PostMapping("public/findId")
     public String findId(@RequestBody UserDto userDto){
         return userService.findId(toUser(userDto)).getUserId();
     }
 
-    @RequestMapping("findPassword")
+    @RequestMapping("public/findPassword")
     public long findPassword(@RequestBody UserDto userDto){
         return userService.findPassword(toUser(userDto)).getUserNo();
     }
 
-    @RequestMapping("updatePassword")
+    @RequestMapping("public/updatePassword")
     public void updatePassword(@RequestBody UserDto userDto){
         userService.updatePassword(toUser(userDto));
     }
@@ -132,12 +143,12 @@ public class UserController {
         userService.updatePhone(toUser(userDto));
     }
 
-    @GetMapping("isDuplicatedEmail/{email}")
+    @GetMapping("public/isDuplicatedEmail/{email}")
     public boolean isDuplicatedEmail(@PathVariable String email){
         return userService.isDuplicatedEmail(email);
     }
 
-    @GetMapping("isDuplicatedPhone/{phone}")
+    @GetMapping("public/isDuplicatedPhone/{phone}")
     public boolean isDuplicatedPhone(@PathVariable String phone){
         return userService.isDuplicatedPhone(phone);
     }
@@ -153,7 +164,7 @@ public class UserController {
 
     }
     
-    @RequestMapping("uploadProfile")
+    @RequestMapping("public/uploadProfile")
     public String uploadProfile(@RequestParam(name = "userNo") Long userNo,
                               @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
         String fileName = FileUtil.saveFileList(mf, uploadProfilePath);

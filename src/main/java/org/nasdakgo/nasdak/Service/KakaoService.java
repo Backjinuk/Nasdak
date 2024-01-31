@@ -26,13 +26,13 @@ public class KakaoService implements ApiService{
     private final ObjectMapper objectMapper;
 
     @Value("${kakao.rest.api.key}")
-    protected String kakaoRestApiKey;
+    private String kakaoRestApiKey;
 
     @Value("${kakao.admin.key}")
-    protected String kakaoAdminKey;
+    private String kakaoAdminKey;
 
     @Value("${kakao.secret}")
-    protected String kakaoSecret;
+    private String kakaoSecret;
 
     @Override
     public Map<String, String> getToken(String code, String state) throws JsonProcessingException {

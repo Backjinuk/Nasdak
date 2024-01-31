@@ -1,6 +1,8 @@
 package org.nasdakgo.nasdak.Service;
 
+import Utils.Delay;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.nasdakgo.nasdak.Entity.SNS;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.SNSRepository;
@@ -12,33 +14,30 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class SNSService {
 
     private final SNSRepository snsRepository;
-
     private final UserRepository userRepository;
-
     private final CategoryService categoryService;
-
     private final UserService userService;
+    private final SchedulerService schedulerService;
+
+    private final Map<String, SNS> snsMap = new HashMap<>();
 
     public User connect(SNS sns){
         SNS find = this.findByUserAndSnsType(sns);
         if(find==null){
             snsRepository.save(sns);
-        }else{
-            find.setRefreshToken(sns.getRefreshToken());
-            this.updateRefreshToken(find);
         }
         return updateUserEmailAnaPhoneByConnectionSns(sns);
     }
 
-    public long connectCheck(SNS sns){
-        Optional<SNS> find = snsRepository.findBySnsId(sns.getSnsId());
-        if(find.isEmpty()) return 0;
+    public boolean isDuplicatiedSns(long snsNo, long userNo){
+        Optional<SNS> find = snsRepository.findById(snsNo);
+        if(find.isEmpty()) return false;
         long dbUserNo = find.get().getUser().getUserNo();
-        long newUserNo = sns.getUser().getUserNo();
-        return dbUserNo==newUserNo?0:find.get().getSnsNo();
+        return dbUserNo!=userNo;
     }
 
     public User updateUserEmailAnaPhoneByConnectionSns(SNS sns){
@@ -62,6 +61,10 @@ public class SNSService {
 
     public SNS login(SNS sns){
         return snsRepository.login(sns.getSnsId()).orElse(null);
+    }
+
+    public SNS findById(SNS sns){
+        return snsRepository.findById(sns.getSnsNo()).orElse(null);
     }
 
     public SNS signUp(SNS sns){
@@ -97,12 +100,33 @@ public class SNSService {
         return snsRepository.findByUser_UserNo(user.getUserNo());
     }
 
+    public String cacheSns(SNS sns){
+        String key = UUID.randomUUID().toString();
+        snsMap.put(key, sns);
+        resetCachedSnsTimer(key);
+        return key;
+    }
+
+    public void deleteCachedSns(String key){
+        snsMap.remove(key);
+    }
+
+    public SNS findCachedSns(String key){
+        resetCachedSnsTimer(key);
+        return snsMap.get(key);
+    }
+
+    public void resetCachedSnsTimer(String key){
+        schedulerService.removeTimer(key);
+        schedulerService.addTimer(key, ()->this.deleteCachedSns(key), Delay.ofMinutes(10));
+    }
+
     public SNS findByUserAndSnsType(SNS sns){
         return snsRepository.findByUser_UserNoAndSnsType(sns.getUser().getUserNo(), sns.getSnsType());
     }
 
     public void updateRefreshToken(SNS sns){
-        snsRepository.updateRefreshToken(sns.getSnsNo(), sns.getRefreshToken());
+        snsRepository.updateRefreshToken(sns.getSnsId(), sns.getRefreshToken());
     }
 
     public void disconnect(SNS sns){

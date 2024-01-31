@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.SNSDto;
+import org.nasdakgo.nasdak.Dto.SNSLoginDto;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.SNS;
 import org.nasdakgo.nasdak.Entity.SNSType;
@@ -35,46 +36,22 @@ public class SNSController {
 
     private final KakaoService kakaoService;
 
-    private final Map<String, SNS> snsMap = new HashMap<>();
-
     @Value("${download.file.profile}")
     private String downloadProfilePath;
 
     ////////////////////////////// 공통 //////////////////////////////
-    // 플랫폼의 API를 통해 토큰 조회 및 SNS 생성 후 반환
-    private SNS connectSNS(Map<String, String> map) throws Exception {
-        // snsType 지정
-        SNSType snsType = SNSType.valueOf(map.get("snsType"));
-        
-        // 해당 service 지정
-        ApiService apiService = getApiService(snsType);
-
-        // 토큰 데이터 받아오기
-        Map<String, String> tokenData = apiService.getToken(map.get("code"),map.get("state"));
-
-        // 프로필 정보 받아오기
-        Map<String, String> profile = apiService.getProfile(tokenData.get("access_token"));
-        SNS sns = SNS.builder()
-                .snsId(profile.get("id"))
-                .refreshToken(tokenData.get("refresh_token"))
-                .snsType(snsType)
-                .accessToken(tokenData.get("access_token"))
-                .email(profile.get("email"))
-                .phone(profile.get("phone"))
-                .build();
-
-        return sns;
-    }
-
     @RequestMapping("/connect")
-    public ResponseEntity<?> connect(@RequestBody Map<String, String> map) throws Exception {
-        SNS sns = connectSNS(map);
+    public ResponseEntity<?> connect(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
+        SNS sns;
+        if(snsLoginDto.isExist()){
+            sns = snsService.findById(SNS.builder().snsNo(snsLoginDto.getSnsNo()).build());
+            boolean duplicatied = snsService.isDuplicatiedSns(snsLoginDto.getSnsNo(), snsLoginDto.getUserNo());
+            if(duplicatied) return new ResponseEntity<>(snsLoginDto.getSnsNo(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }else{
+            sns = snsService.findCachedSns(snsLoginDto.getKey());
+        }
 
-        sns.setUser(User.builder().userNo(Long.parseLong(map.get("userNo"))).build());
-
-        long existSnsNo = snsService.connectCheck(sns);
-        if(existSnsNo!=0) return new ResponseEntity<>(existSnsNo, HttpStatus.INTERNAL_SERVER_ERROR);
-
+        sns.setUser(User.builder().userNo(snsLoginDto.getUserNo()).build());
         User user = snsService.connect(sns);
 
         return new ResponseEntity<>(toUserDtoWithSNS(user),HttpStatus.OK);
@@ -83,7 +60,7 @@ public class SNSController {
     @RequestMapping("/connectNewSNS/{key}")
     public SNSDto connectNewSNS(@RequestBody UserDto userDto, @PathVariable String key){
         User user = toUser(userDto);
-        SNS sns = snsMap.get(key);
+        SNS sns = snsService.findCachedSns(key);
         if(user.getUserNo()==0){
             snsService.signUp(sns);
         }else{
@@ -96,38 +73,37 @@ public class SNSController {
 
     @RequestMapping("/deleteSnsMap/{key}")
     public void deleteSnsMap(@PathVariable String key){
-        snsMap.remove(key);
+        snsService.deleteCachedSns(key);
     }
 
-    @RequestMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> map) throws Exception {
-        SNS sns = connectSNS(map);
-
-        SNS find = snsService.login(sns);
-
-        if(find==null){
-            List<User> list = snsService.findExistedUser(sns);
-            if(list.isEmpty()){
-                find = snsService.signUp(sns);
-            }else{
-                String key = UUID.randomUUID().toString();
-                snsMap.put(key,sns);
-                Map<String, Object> responseMap = new HashMap<>();
-                List<UserDto> dtoList = new ArrayList<>();
-                responseMap.put("key",key);
-                list.forEach(user -> dtoList.add(toUserDtoWithSNS(user)));
-                responseMap.put("existUsers",dtoList);
-                return new ResponseEntity<>(responseMap, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        if(sns.getSnsType()==SNSType.KAKAO){
-            find.setRefreshToken(sns.getRefreshToken());
-            snsService.updateRefreshToken(find);
-        }
-
-        find.setAccessToken(sns.getAccessToken());
+    @RequestMapping("/snsLogin")
+    public ResponseEntity<?> snsLogin(@RequestBody SNSDto snsDto) throws Exception {
+        SNS find = snsService.findById(toSNS(snsDto));
         return new ResponseEntity<>(toSNSDto(find), HttpStatus.OK);
+    }
+
+    @RequestMapping("/isDuplicatedUserInfo")
+    public ResponseEntity<SNSLoginDto> isDuplicatedUserInfo(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
+        SNS sns = snsService.findCachedSns(snsLoginDto.getKey());
+        List<User> list = snsService.findExistedUser(sns);
+        if(list.isEmpty()){
+            snsLoginDto.setResult(false);
+            return ResponseEntity.ok(snsLoginDto);
+        }else{
+            Map<String, Object> responseMap = new HashMap<>();
+            List<UserDto> dtoList = new ArrayList<>();
+            list.forEach(user -> dtoList.add(toUserDtoWithSNS(user)));
+            snsLoginDto.setExistUsers(dtoList);
+            snsLoginDto.setResult(true);
+            return ResponseEntity.ok(snsLoginDto);
+        }
+    }
+
+    @RequestMapping("/signUp")
+    public ResponseEntity<SNSDto> signUp(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
+        SNS sns = snsService.findCachedSns(snsLoginDto.getKey());
+        snsService.signUp(sns);
+        return ResponseEntity.ok(toSNSDto(sns));
     }
 
     @RequestMapping("/disconnect")
@@ -194,7 +170,9 @@ public class SNSController {
         return sns;
     }
     private SNSDto toSNSDto(SNS sns){
-        return modelMapper.map(sns, SNSDto.class);
+        SNSDto snsDto = modelMapper.map(sns, SNSDto.class);
+        snsDto.setUserNo(sns.getUser().getUserNo());
+        return snsDto;
     }
     private User toUser(UserDto userDto){
         return modelMapper.map(userDto, User.class);

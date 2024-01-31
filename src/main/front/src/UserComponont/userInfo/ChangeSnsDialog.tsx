@@ -1,8 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useAppDispatch } from 'app/hooks';
 import { connectSns } from 'app/slices/userSlice';
-import axios from 'axios';
-import { jsonHeader } from 'headers';
+import axios from 'customFunction/customAxios';
 
 export default function ChangeSnsDialog(props: any) {
   const dispatch = useAppDispatch();
@@ -19,7 +18,7 @@ export default function ChangeSnsDialog(props: any) {
       userNo: sessionStorage.getItem('userNo'),
       snsNo: sessionStorage.getItem('dbSnsNo'),
     };
-    await axios.post('/api/sns/changeConnection', JSON.stringify(data), jsonHeader);
+    await axios.post('/api/sns/changeConnection', JSON.stringify(data));
     dispatch(connectSns(snsType));
     sessionStorage.removeItem('dbSnsNo');
     handleClose();

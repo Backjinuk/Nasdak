@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -13,6 +14,9 @@ import java.net.UnknownHostException;
 @ComponentScan(basePackages = "Utils")
 public class WebMvcConfig implements WebMvcConfigurer {
 
+    @Value("${path.front}")
+    private String frontBaseUrl;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         String localUrl = "http://";
@@ -23,7 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
             throw new RuntimeException(e);
         }
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", localUrl)
+                .allowedOrigins(frontBaseUrl, localUrl)
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*");
     }

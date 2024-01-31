@@ -3,10 +3,12 @@ package org.nasdakgo.nasdak.Service;
 import Utils.Delay;
 import Utils.MailUtil;
 import Utils.ValidationToken;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,9 +22,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final SchedulerService schedulerService;
     private final MailUtil mailUtil;
+    private final PasswordEncoder passwordEncoder;
 
     private final Map<String, ValidationToken> tokenMap = new HashMap<>();
     private final Map<String, String> signUpIdsMap = new HashMap<>();
+
+    @PostConstruct
+    public void initializeService(){
+        List<User> userList = userRepository.findAllUserWithNotEncodedPassword();
+        userList.forEach(user -> userRepository.updatePassword(user.getUserNo(), passwordEncoder.encode(user.getPassword())));
+    }
 
     public void setTempUser(User user){
         signUpIdsMap.put(user.getAuthentication(), user.getUserId());
@@ -31,6 +40,7 @@ public class UserService {
     public User signUp(User user){
         if(userRepository.findByUserId(user.getUserId())!=null) throw new RuntimeException();
 
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRegDate(LocalDateTime.now());
         user.setActiveUser(true);
         user.setPushTime("23:00");
@@ -47,7 +57,7 @@ public class UserService {
     }
 
     public void updateSNSUser(User user){
-        userRepository.updateSNSUser(user.getUserNo(), user.getUserId(), user.getPassword());
+        userRepository.updateSNSUser(user.getUserNo(), user.getUserId(), passwordEncoder.encode(user.getPassword()));
     }
 
     public boolean canUseUserId(User user){

@@ -1,9 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { SnsType, UserType } from 'TypeList';
 import { RootState } from 'app/store';
-import axios from 'axios';
 import { Sns, User } from 'classes';
-import { formHeader, jsonHeader } from 'headers';
+import axios from 'customFunction/customAxios';
 
 const initialState: { user: UserType; status: string; error: string } = {
   user: { ...new User() },
@@ -73,14 +72,14 @@ export const userSlice = createSlice({
 });
 
 export const axiosGetUser = createAsyncThunk('user/axiosGetUser', async (userNo: number) => {
-  const res = await axios.post('/api/user/getUserInfo', JSON.stringify({ userNo }), jsonHeader);
+  const res = await axios.post('/api/user/getUserInfo', JSON.stringify({ userNo }));
   return res.data;
 });
 
 export const axiosUpdateUser = createAsyncThunk(
   'user/axiosUpdateUser',
   async ({ user, uploadFile, existingFile }: { user: UserType; uploadFile: any; existingFile: string }) => {
-    await axios.post('/api/user/updateUserInfo', JSON.stringify(user), jsonHeader);
+    await axios.post('/api/user/updateUserInfo', JSON.stringify(user));
     //새로 등록시 업로드
     if (uploadFile !== undefined) {
       updateUserProfile(user, uploadFile);
@@ -93,54 +92,60 @@ export const axiosUpdateUser = createAsyncThunk(
 );
 
 export const axiosDeleteUser = createAsyncThunk('user/axiosDeleteUser', async (userNo: number) => {
-  await axios.post('/api/user/deleteUser', JSON.stringify({ userNo }), jsonHeader);
+  await axios.post('/api/user/deleteUser', JSON.stringify({ userNo }));
 });
 
 export const axiosConnectSns = createAsyncThunk(
   'user/axiosConnectSns',
-  async (map: { code: string; state: string; snsType: string; userNo: number }) => {
-    const res = await axios.post('/api/sns/connect', JSON.stringify(map), jsonHeader);
+  async (map: { exist: boolean; snsNo: string; key: string; userNo: number }) => {
+    const input = {
+      exist: map.exist,
+      snsNo: map.snsNo,
+      key: map.key,
+      userNo: map.userNo,
+    };
+    const res = await axios.post('/api/sns/connect', JSON.stringify(input));
     return res.data;
   }
 );
 
 export const axiosDisconnectSns = createAsyncThunk('user/axiosDisconnectSns', async (sns: SnsType) => {
-  const res = await axios.post('/api/sns/disconnect', JSON.stringify(sns), jsonHeader);
+  const res = await axios.post('/api/sns/disconnect', JSON.stringify(sns));
   return res.data;
 });
 
 export const axiosUpdateSnsUser = createAsyncThunk('user/axiosUpdateSnsUser', async (user: UserType) => {
-  const res = await axios.post('/api/user/updateSNSUser', JSON.stringify(user), jsonHeader);
+  const res = await axios.post('/api/user/updateSNSUser', JSON.stringify(user));
   return res.data;
 });
 
 export const axiosCanUseUserId = createAsyncThunk('user/axiosCanUseUserId', async (userId: string) => {
-  const res = await axios.post('/api/user/canUseUserId', JSON.stringify({ userId }), jsonHeader);
+  const res = await axios.public.post('/api/user/public/canUseUserId', JSON.stringify({ userId }));
   return res.data;
 });
 
 export const axiosIsDuplicatedEmail = createAsyncThunk('user/axiosIsDuplicatedEmail', async (email: string) => {
-  const res = await axios.get(`/api/user/isDuplicatedEmail/${email}`, jsonHeader);
+  const res = await axios.public.get(`/api/user/public/isDuplicatedEmail/${email}`);
   return res.data;
 });
 
 export const axiosIsDuplicatedPhone = createAsyncThunk('user/axiosIsDuplicatedPhone', async (phone: string) => {
-  const res = await axios.get(`/api/user/isDuplicatedPhone/${phone}`, jsonHeader);
+  const res = await axios.public.get(`/api/user/public/isDuplicatedPhone/${phone}`);
   return res.data;
 });
 
 export const axiosSendEmail = createAsyncThunk('user/axiosSendEmail', (email: string) => {
-  axios.get(`/api/user/sendEmail/${email}`, jsonHeader);
+  axios.public.get(`/api/user/public/sendEmail/${email}`);
 });
 
 export const axiosSendPhone = createAsyncThunk('user/axiosSendPhone', (phone: string) => {
-  axios.get(`/api/user/sendPhoneMessage/${phone}`, jsonHeader);
+  axios.public.get(`/api/user/public/sendPhoneMessage/${phone}`);
 });
 
 export const axiosVerifyEmail = createAsyncThunk(
   'user/axiosVerifyEmail',
   async ({ email, code }: { email: string; code: string }) => {
-    const res = await axios.post('/api/user/verifyEmail', JSON.stringify({ email, code }), jsonHeader);
+    const res = await axios.public.post('/api/user/public/verifyEmail', JSON.stringify({ email, code }));
     return res.data;
   }
 );
@@ -148,7 +153,7 @@ export const axiosVerifyEmail = createAsyncThunk(
 export const axiosVerifyPhone = createAsyncThunk(
   'user/axiosVerifyPhone',
   async ({ phone, code }: { phone: string; code: string }) => {
-    const res = await axios.post('/api/user/verifyPhoneMessage', JSON.stringify({ phone, code }), jsonHeader);
+    const res = await axios.public.post('/api/user/public/verifyPhoneMessage', JSON.stringify({ phone, code }));
     return res.data;
   }
 );
@@ -156,7 +161,7 @@ export const axiosVerifyPhone = createAsyncThunk(
 export const axiosUpdateEmail = createAsyncThunk(
   'user/axiosUpdateEmail',
   async ({ userNo, email }: { userNo: number; email: string }) => {
-    await axios.post('/api/user/updateEmail', JSON.stringify({ userNo, email }), jsonHeader);
+    await axios.post('/api/user/updateEmail', JSON.stringify({ userNo, email }));
     return email;
   }
 );
@@ -164,7 +169,7 @@ export const axiosUpdateEmail = createAsyncThunk(
 export const axiosUpdatePhone = createAsyncThunk(
   'user/axiosUpdatePhone',
   async ({ userNo, phone }: { userNo: number; phone: string }) => {
-    await axios.post('/api/user/updatePhone', JSON.stringify({ userNo, phone }), jsonHeader);
+    await axios.post('/api/user/updatePhone', JSON.stringify({ userNo, phone }));
     return phone;
   }
 );
@@ -172,7 +177,7 @@ export const axiosUpdatePhone = createAsyncThunk(
 export const axiosChangePassword = createAsyncThunk(
   'user/axiosChangePassword',
   ({ userNo, password }: { userNo: number; password: string }) => {
-    axios.post('/api/user/updatePassword', JSON.stringify({ userNo, password }), jsonHeader);
+    axios.post('/api/user/updatePassword', JSON.stringify({ userNo, password }));
     return password;
   }
 );
@@ -180,23 +185,19 @@ export const axiosChangePassword = createAsyncThunk(
 export const axiosConnectNewSns = createAsyncThunk(
   'user/axiosConnectNewSns',
   async (data: { key: string; userNo: number }) => {
-    const res = await axios.post(
-      `/api/sns/connectNewSNS/${data.key}`,
-      JSON.stringify({ userNo: data.userNo }),
-      jsonHeader
-    );
+    const res = await axios.post(`/api/sns/connectNewSNS/${data.key}`, JSON.stringify({ userNo: data.userNo }));
     return res.data;
   }
 );
 
 export const axiosDeleteSnsMap = createAsyncThunk('user/axiosDeleteSnsMap', (key: string) => {
-  axios.get(`/api/sns/deleteSnsMap/${key}`, jsonHeader);
+  axios.get(`/api/sns/deleteSnsMap/${key}`);
 });
 
 export const axiosCancelSignUp = createAsyncThunk(
   'user/axiosCancelSignUp',
   (data: { email: string } | { phone: string }) => {
-    axios.post(`/api/user/cancelSignUp`, JSON.stringify(data), jsonHeader);
+    axios.public.post(`/api/user/public/cancelSignUp`, JSON.stringify(data));
   }
 );
 
@@ -211,7 +212,7 @@ const updateUserProfile = async (user: UserType, uploadFile: any) => {
   fd.append('mf', uploadFile);
   fd.append('userNo', String(user.userNo));
   fd.append('before', user.profile);
-  const res = await axios.post('/api/user/updateProfile', fd, formHeader);
+  const res = await axios.formData('/api/user/updateProfile', fd);
   user.profile = res.data;
 };
 
@@ -220,5 +221,5 @@ const deleteUserProfile = (user: UserType, existingFile: string) => {
     userNo: user.userNo,
     profile: existingFile,
   };
-  axios.post('/api/user/deleteProfile', JSON.stringify(data), jsonHeader);
+  axios.post('/api/user/deleteProfile', JSON.stringify(data));
 };

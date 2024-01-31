@@ -1,4 +1,5 @@
 import { Button } from '@mui/material';
+import { setCookie } from 'Cookies';
 import logout from 'UserComponont/js/logout';
 import { useAppDispatch } from 'app/hooks';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,8 @@ export default function Logout() {
       window.Kakao.Auth.logout();
     }
     logout(dispatch);
+    setCookie('accessToken', '', { maxAge: 0 });
+    setCookie('refreshToken', '', { maxAge: 0 });
     navigate('/');
   }
 

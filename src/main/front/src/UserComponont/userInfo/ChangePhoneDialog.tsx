@@ -8,7 +8,7 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import {
@@ -18,11 +18,12 @@ import {
   axiosVerifyPhone,
   selectUser,
 } from 'app/slices/userSlice';
-import Timer from 'Timer';
+import { useTimer } from 'customFunction/useTimer';
 
 export default function ChangePhoneDialog(props: any) {
   const dispatch = useAppDispatch();
   const userNo = useAppSelector(selectUser).userNo;
+  const { restart, stop, viewTime } = useTimer(5, 'min');
 
   const open = props.open;
   const handleClose = () => {
@@ -30,19 +31,18 @@ export default function ChangePhoneDialog(props: any) {
     setPhone('');
     setCode('');
     setStatus('');
+    stop();
   };
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('');
-  const [onTimer, setOnTimer] = useState(0);
-  const [viewTime, setViewTime] = useState('');
 
   const sendPhone = async () => {
     const action = await dispatch(axiosIsDuplicatedPhone(phone));
     if (action.payload) {
       alert('사용중인 휴대폰입니다.');
     } else {
-      setOnTimer(onTimer + 1);
+      restart();
       dispatch(axiosSendPhone(phone));
       setStatus('sended');
     }
@@ -53,6 +53,7 @@ export default function ChangePhoneDialog(props: any) {
     if (action.payload) {
       alert('인증에 성공하였습니다.');
       setStatus('succeeded');
+      stop();
     } else {
       alert('인증에 실패하였습니다.');
     }
@@ -134,7 +135,6 @@ export default function ChangePhoneDialog(props: any) {
           변경
         </Button>
       </DialogActions>
-      <Timer onTimer={onTimer} setOnTimer={setOnTimer} setViewTime={setViewTime} duration={5} type='분' />
     </Dialog>
   );
 }

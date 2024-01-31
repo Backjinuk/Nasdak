@@ -14,7 +14,7 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import logout from 'UserComponont/js/logout';
 import Join from './Join';
-import { handleNaverLogin, handleKakaoLogin, setSnsState } from 'UserComponont/js/snsLogin';
+import { handleSNSLogin, setSnsState } from 'UserComponont/js/snsLogin';
 import CategoryList from 'categoryComponent/CategortList';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import {
@@ -138,16 +138,7 @@ export default function UserInfo() {
 
   function connectSns(snsType: string) {
     setSelectedSns(snsType);
-    switch (snsType) {
-      case 'NAVER':
-        handleNaverLogin();
-        break;
-      case 'KAKAO':
-        handleKakaoLogin();
-        break;
-      case 'GOOGLE':
-        break;
-    }
+    handleSNSLogin(snsType);
   }
 
   async function disconnectSns(snsType: string) {
@@ -164,7 +155,7 @@ export default function UserInfo() {
       handleClose();
       return true;
     } else {
-      handleKakaoLogin();
+      handleSNSLogin('kakao');
       return false;
     }
   }
@@ -260,7 +251,7 @@ export default function UserInfo() {
           label='Password'
           type='password'
           id='password'
-          value={user.password}
+          value={user.password ? '********' : ''}
           disabled
           InputProps={
             isEdit

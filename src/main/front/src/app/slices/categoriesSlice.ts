@@ -1,8 +1,7 @@
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import { CategoryType } from 'TypeList';
 import { RootState } from 'app/store';
-import axios from 'axios';
-import { jsonHeader } from 'headers';
+import axios from 'customFunction/customAxios';
 
 const categoriesAdapter = createEntityAdapter({
   selectId: (category: CategoryType) => category.categoryNo,
@@ -52,19 +51,19 @@ export const categoriesSlice = createSlice({
 });
 
 export const axiosGetCategoryList = createAsyncThunk('categories/axiosGetCategoryList', async (userNo: number) => {
-  const res = await axios.post('/api/category/getCategoryList', JSON.stringify({ userNo }), jsonHeader);
+  const res = await axios.post('/api/category/getCategoryList', JSON.stringify({ userNo }));
   return res.data;
 });
 
 export const axiosAddCategory = createAsyncThunk('categories/axiosAddCategory', async (category: CategoryType) => {
-  const res = await axios.post('/api/category/addCategory', JSON.stringify(category), jsonHeader);
+  const res = await axios.post('/api/category/addCategory', JSON.stringify(category));
   return res.data;
 });
 
 export const axiosUpdateCategory = createAsyncThunk(
   'categories/axiosUpdateCategory',
   async (category: CategoryType) => {
-    await axios.post('/api/category/updateCategory', JSON.stringify(category), jsonHeader);
+    await axios.post('/api/category/updateCategory', JSON.stringify(category));
     return { ...category };
   }
 );
@@ -72,7 +71,7 @@ export const axiosUpdateCategory = createAsyncThunk(
 export const axiosDeleteCategory = createAsyncThunk(
   'categories/axiosDeleteCategory',
   async (category: CategoryType) => {
-    await axios.post('/api/category/deleteCategory', JSON.stringify(category), jsonHeader);
+    await axios.post('/api/category/deleteCategory', JSON.stringify(category));
     return category;
   }
 );
@@ -80,7 +79,7 @@ export const axiosDeleteCategory = createAsyncThunk(
 export const axiosIntegrateCategory = createAsyncThunk(
   'categories/axiosIntegrateCategory',
   async (data: { before: number[]; after: number }) => {
-    await axios.post('/api/category/integrateCategory', JSON.stringify(data), jsonHeader);
+    await axios.post('/api/category/integrateCategory', JSON.stringify(data));
     return data.before;
   }
 );

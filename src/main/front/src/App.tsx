@@ -7,7 +7,6 @@ import UserInfo from 'UserComponont/UserInfo';
 import FindUser from 'UserComponont/FindUser';
 import SNSLogin from 'UserComponont/snsComponent/SNSLogin';
 import CalenderMain from './CalenderCompoont/CalenderMain';
-import KakaoInit from 'UserComponont/snsComponent/KakaoInit';
 import KakaoLogout from 'UserComponont/snsComponent/KakaoLogout';
 import TopBar from './TopBar';
 import { useEffect, useState } from 'react';
@@ -35,7 +34,7 @@ function App() {
   const ChangeEvent = () => {
     console.log(11);
     event ? setEvent(false) : setEvent(true);
-  }
+  };
 
   return (
     <div className='App'>
@@ -49,21 +48,21 @@ function App() {
               <Route path={'/userInfo'} element={<UserInfo />} />
               <Route path={'/findId'} element={<FindUser />} />
               <Route path={'/snsLogin'} element={<SNSLogin />} />
-              <Route path={'/kakaoInit'} element={<KakaoInit />} />
               <Route path={'/kakaoLogout'} element={<KakaoLogout />} />
               {/* 로그인 관련 */}
 
               <Route
                 path='/Ledger'
                 element={
-                  <LedgerMain event={event} categoryList={categoryList} isLedgerList={(value: LedgerType[]) => isLedgerList(value)} />
+                  <LedgerMain
+                    event={event}
+                    categoryList={categoryList}
+                    isLedgerList={(value: LedgerType[]) => isLedgerList(value)}
+                  />
                 }
               />
               <Route path={'/MapLocation'} element={<MapLocation />} />
-              <Route
-                path={'/calender'}
-                element={<CalenderMain categoryList={categoryList}/>}
-              />
+              <Route path={'/calender'} element={<CalenderMain categoryList={categoryList} />} />
             </Routes>
           </Router>
         </CookiesProvider>

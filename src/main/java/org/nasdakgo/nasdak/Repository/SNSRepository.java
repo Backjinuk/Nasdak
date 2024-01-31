@@ -27,8 +27,8 @@ public interface SNSRepository extends JpaRepository<SNS, Long> {
 
     @Modifying
     @Transactional
-    @Query("update SNS s set s.refreshToken = :refreshToken where s.snsNo = :snsNo")
-    void updateRefreshToken(@Param("snsNo") long snsNo, @Param("refreshToken") String refreshToken);
+    @Query("update SNS s set s.refreshToken = :refreshToken where s.snsId = :snsId")
+    void updateRefreshToken(@Param("snsId") String snsId, @Param("refreshToken") String refreshToken);
 
     @Modifying
     @Transactional

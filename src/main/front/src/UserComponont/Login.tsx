@@ -1,15 +1,14 @@
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Join from './Join';
 import Button from '@mui/material/Button';
 import { Checkbox, FormControlLabel, IconButton } from '@mui/material';
 import { getCookie, setCookie } from 'Cookies';
-import { handleNaverLogin, handleKakaoLogin, setSnsState } from 'UserComponont/js/snsLogin';
+import { handleSNSLogin, setSnsState } from 'UserComponont/js/snsLogin';
 import { useEffect, useState } from 'react';
-import { jsonHeader } from 'headers';
 import { UserType } from 'TypeList';
 import ConnectToExistUserDialog from './ConnectToExistUserDialog';
+import axios from 'customFunction/customAxios';
 declare global {
   interface Window {
     snsLoginNavigate?: any;
@@ -24,7 +23,7 @@ export default function Login() {
   const [pwd, setPwd] = useState('');
   const [open, setOpen] = useState('');
   const [remember, setRemember] = useState(Boolean(getCookie('remember') === null ? false : getCookie('remember')));
-  const [existUsers, setExistUsers] = useState<{ email: UserType; phone: UserType }>();
+  const [existUsers, setExistUsers] = useState<UserType[]>();
   const [snsKey, setSnsKey] = useState('');
   const handleOpen = () => setOpen('join');
   const handleOpenExistUsers = () => setOpen('connectToExistUserDialog');
@@ -51,8 +50,8 @@ export default function Login() {
   };
 
   const LoginMember = async () => {
-    const res = await axios.post('/api/user/login', JSON.stringify({ userId: id, password: pwd }), jsonHeader);
-    if (res.data.userId !== '') {
+    try {
+      const res = await axios.public.post('/api/user/public/login', JSON.stringify({ userId: id, password: pwd }));
       Swal.fire({
         icon: 'success',
         title: '로그인 되었습니다.',
@@ -67,12 +66,11 @@ export default function Login() {
       sessionStorage.setItem('userId', id);
       sessionStorage.setItem('userNo', res.data.userNo);
       sessionStorage.setItem('userDto', JSON.stringify({ userId: id, userNo: res.data.userNo }));
-      //const accessToken = res.data;
-      // axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken.jwt}`;
-      // document.cookie = `jwtCookie=Bearer ${accessToken.jwt}`;
-      //
-      navigate('/Ledger');
-    } else {
+      setCookie('accessToken', res.data.accessToken, { maxAge: Number(res.data.accessTokenExpiresIn) / 1000 });
+      setCookie('refreshToken', res.data.refreshToken, { maxAge: Number(res.data.refreshTokenExpiresIn) / 1000 });
+      // navigate('/userInfo');
+      navigate('/ledger');
+    } catch (error) {
       Swal.fire({
         icon: 'error',
         title: '아이디 혹은 비밀번호를 다시 확인해주세요.',
@@ -86,12 +84,12 @@ export default function Login() {
     setCookie('remember', e.target.checked, { maxAge: 60 * 60 * 24 * 30 });
   }
 
-  const snsLoginNavigate = (userNo: any, snsType: any, token: any) => {
-    sessionStorage.setItem('accessToken', token);
+  const snsLoginNavigate = (userNo: any, snsType: any) => {
     sessionStorage.setItem('userNo', userNo);
     sessionStorage.setItem('snsType', snsType);
     sessionStorage.setItem('userDto', JSON.stringify({ userNo: userNo }));
     sessionStorage.removeItem('userId');
+    // navigate('/userInfo');
     navigate('/ledger');
   };
 
@@ -158,10 +156,10 @@ export default function Login() {
           >
             아이디 찾기
           </Button>
-          <IconButton className='w-50' onClick={handleNaverLogin}>
+          <IconButton className='w-50' onClick={() => handleSNSLogin('naver')}>
             <img style={{ width: '100%' }} src='/image/loginImage/btnG_완성형.png' alt='네이버로그인' />
           </IconButton>
-          <IconButton className='w-50' onClick={handleKakaoLogin}>
+          <IconButton className='w-50' onClick={() => handleSNSLogin('kakao')}>
             <img style={{ width: '100%' }} src='/image/loginImage/kakao_login_large_narrow.png' alt='카카오로그인' />
           </IconButton>
         </div>

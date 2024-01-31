@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -69,5 +70,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query("update User u set u.userId = :userId, u.password = :password where u.userNo = :userNo")
     void updateSNSUser(@Param("userNo") long userNo, @Param("userId") String userId, @Param("password") String password);
+
+    @Query("select u from User u where not u.password like '{bcrypt}%'")
+    List<User> findAllUserWithNotEncodedPassword();
 
 }

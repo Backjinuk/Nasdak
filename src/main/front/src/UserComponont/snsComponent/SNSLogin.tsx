@@ -1,8 +1,8 @@
 import { Box, CircularProgress } from '@mui/material';
+import { setCookie } from 'Cookies';
 import { UserType } from 'TypeList';
 import { axiosConnectSns } from 'app/slices/userSlice';
-import axios, { AxiosError } from 'axios';
-import { jsonHeader } from 'headers';
+import axios from 'customFunction/customAxios';
 
 export default function SNSLogin() {
   const data = window.location.href.split('?')[1];
@@ -11,24 +11,26 @@ export default function SNSLogin() {
   const snsType = state.snsType;
   const action = state.action;
   let map = {
-    code: '',
-    state: '',
     snsType: snsType,
     userNo: userNo,
+    accessToken: '',
+    refreshToken: '',
+    accessTokenExpiresIn: '',
+    refreshTokenExpiresIn: '',
+    result: '',
+    key: '',
+    snsNo: '',
+    exist: false,
   };
+
   data.split('&').forEach((item) => {
     const [key, val] = item.split('=');
     map = { ...map, [key]: val };
   });
 
-  switch (action) {
-    case 'login':
-      login(map);
-      break;
-    case 'connect':
-      connect(map);
-      break;
-  }
+  map.exist = map.result === 'exist';
+
+  executeAction(action, map);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -37,43 +39,66 @@ export default function SNSLogin() {
   );
 }
 
-async function login(map: any) {
-  try {
-    const res = await axios.post('/api/sns/login', JSON.stringify(map), jsonHeader);
-    window.opener.snsLoginNavigate(res.data.userNo, res.data.snsType, res.data.accessToken);
-    if (res.data.snsType === 'KAKAO') {
-      window.opener.Kakao.Auth.setAccessToken(res.data.accessToken);
-    }
-    window.close();
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      const data = error.response?.data;
-      window.opener.setSnsKey(data.key);
-      setExistUsers(data.existUsers);
-      window.opener.handleOpenExistUsers();
-      window.close();
-    } else {
-      alert('error');
-      console.log(error);
-    }
+async function executeAction(action: string, map: any) {
+  switch (action) {
+    case 'login':
+      setCookie('accessToken', map.accessToken, { maxAge: Number(map.accessTokenExpiresIn) / 1000 });
+      setCookie('refreshToken', map.refreshToken, { maxAge: Number(map.refreshTokenExpiresIn) / 1000 });
+      if (map.exist) {
+        login(map.snsNo);
+        break;
+      }
+      const data = await checkSignup(map.key);
+      if (data.result) {
+        selectNewConnection(data.key, data.existUsers);
+      } else {
+        signUp(data.key);
+      }
+      break;
+    case 'connect':
+      connect(map);
+      break;
   }
+}
+
+async function login(snsNo: string) {
+  const res = await axios.post('/api/sns/snsLogin', JSON.stringify({ snsNo }));
+  window.opener.snsLoginNavigate(res.data.userNo, res.data.snsType);
+  window.close();
+}
+
+async function checkSignup(key: string) {
+  const res = await axios.post('/api/sns/isDuplicatedUserInfo', JSON.stringify({ key }));
+  return res.data;
+}
+
+async function signUp(key: string) {
+  const res = await axios.post('/api/sns/signUp', JSON.stringify({ key }));
+  window.opener.snsLoginNavigate(res.data.userNo, res.data.snsType);
+  window.close();
+}
+
+async function selectNewConnection(key: string, existUsers: UserType[]) {
+  window.opener.setSnsKey(key);
+  setExistUsers(existUsers);
+  window.opener.handleOpenExistUsers();
+  window.close();
 }
 
 async function connect(map: any) {
   const dispatch = window.opener.dispatch;
-  try {
-    await dispatch(axiosConnectSns(map));
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      window.opener.sessionStorage.setItem('dbSnsNo', error.response?.data);
+  const res = await dispatch(axiosConnectSns(map));
+  if (res.error) {
+    const error = res.error;
+    if (error.name === 'AxiosError') {
+      window.opener.sessionStorage.setItem('dbSnsNo', map.snsNo);
       window.opener.handleChangeSnsDialogOpen();
-    } else {
-      alert('error!');
     }
   }
+
   window.close();
 }
 
-const setExistUsers = (data: { email: UserType; phone: UserType }) => {
+const setExistUsers = (data: UserType[]) => {
   window.opener.setExistUsers(data);
 };

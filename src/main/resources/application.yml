@@ -39,6 +39,7 @@ decorator:
 
 logging:
   level:
+#    root: off
     p6spy: info
 #    org.nasdakgo.nasdak.*: warn
 #    org:
@@ -65,6 +66,8 @@ logging:
 
 path:
   context-root : ${user.dir}
+  front: http://localhost:3000
+  back: http://localhost:9090
 upload:
   file:
 #    path: D:/Devspace/uploadFile
@@ -73,7 +76,3 @@ upload:
 download:
   file:
     profile: /image/userProfile/
-#
-#jwt:
-#  secret: hellowordaabbccddeeffgghhrrjjkkooppqqrrssttuu
-

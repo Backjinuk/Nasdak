@@ -47,6 +47,7 @@ export const categoriesSlice = createSlice({
       .addCase(axiosIntegrateCategory.fulfilled, (state, action) => {
         categoriesAdapter.removeMany(state, action.payload);
       });
+
   },
 });
 

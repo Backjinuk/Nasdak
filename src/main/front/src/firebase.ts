@@ -33,10 +33,8 @@ const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
  * @code 권환정보 확인, 사용자 인증정보 확인
  */
 async function requestPermission() {
-        console.log("권한 요청 중...");
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
-                console.log("알림 권한이 허용됨");
                 const token =  getToken(messaging, {
                     vapidKey : vapidKey
                 }).then(currentToken => {
@@ -48,7 +46,6 @@ async function requestPermission() {
                     console.error("error : " + error)
                 });
             }else if (permission === "denied") {
-                console.log("알림 권한 허용 안됨");
                 return;
             }
         });

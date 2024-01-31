@@ -1,100 +1,77 @@
-import Ledger from './Ledger';
-import axios from 'axios';
-import { useCallback, useEffect, useState } from 'react';
-import { CategoryType, LedgerType } from '../TypeList';
-import './Ledger.css';
-import LedgerDetail from './LedgerDetail';
-import CategoryList from '../categoryComponent/CategortList';
-import Logout from 'UserComponont/Logout';
-import UserInfoButton from 'UserComponont/UserInfoButton';
-import CreateLeger from './CreateLeger';
-import { BabyChangingStation } from '@mui/icons-material';
-import Button from '@mui/material/Button';
-import MapLocation from '../MapComponont/MapLocation';
-import { useNavigate } from 'react-router-dom';
-import TopBar from 'TopBar';
-import * as React from 'react';
+import Ledger from "./Ledger"
+import {useEffect, useState} from "react";
+import "./Ledger.css";
+import * as React from "react";
+import {axiosGetLedgerAllDay, axiosGetLedgerDetail} from "../app/slices/ledgerSilce";
+import {useAppDispatch, useAppSelector} from "../app/hooks";
+import {RootState} from "../app/store";
+import LedgerDetail from "./LedgerDetail";
+import Button from "@mui/material/Button";
 
-interface JQuery {
-  modal(action: 'show' | 'hide'): void;
-}
+export default function LedgerMain({categoryList , event} : any){
 
-export default function LedgerMain({ event, categoryList, isLedgerList }: any) {
-  const [ledgerList, setLedgerList] = useState<LedgerType[]>([]);
-  const [landingEvent, setLendingEvent] = useState(false);
-  const [ledger, setLedger] = useState<LedgerType>();
-  const [open, setOpen] = useState<boolean>(false);
-  const navigate = useNavigate();
+    const dispatch= useAppDispatch();
+    const ledgerList = useAppSelector((state : RootState) => state.ledger.ledgerList);
+    const ledger = useAppSelector((state : RootState) => state.ledger.ledger) ;
+    const [open, setOpen] = useState<boolean>(false);
+    const [selectButton, setSelectButton] = useState<number>(1);
 
-  useEffect(() => {
-    axios
-      .post(
-        '/api/ledger/LedgerList',
-        JSON.stringify({
-          userNo: sessionStorage.getItem('userNo'),
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((res) => {
-        setLedgerList(res.data);
-        isLedgerList(res.data);
-      });
-  }, [landingEvent, event]);
+    useEffect(() => {
+      dispatch(axiosGetLedgerAllDay(parseInt(sessionStorage.getItem("userNo") as string) as number));
+    }, [event]);
 
-  function ledgerDetail(key: number) {
-    axios
-      .post(
-        '/api/ledger/ledgerDetail',
-        JSON.stringify({
-          fileOwnerNo: key,
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((res) => {
-        setLedger(res.data);
-      });
-  }
-
-  const isOpen = (value: boolean) => {
-    setOpen(value);
-
-    return value;
-  };
-
-  const ChangeEvent = () => {
-    if (!landingEvent) {
-      setLendingEvent(true);
-    } else {
-      setLendingEvent(false);
+    function ledgerDetail(key  : number){
+      dispatch(axiosGetLedgerDetail(key));
     }
-  };
 
-  return (
-    <div>
-      <div className={'warp'}>
-        {ledgerList.map((ledger: LedgerType, index: number) => (
-          <div className='card shadow-lg' key={index} onClick={() => setOpen(true)}>
-            <Ledger ledger={ledger} landingEvent={landingEvent} ledgertDetail={ledgerDetail} />
-          </div>
-        ))}
-        {ledger && (
-          <LedgerDetail
-            categoryList={categoryList}
-            ledger={ledger}
-            ChangeEvent={ChangeEvent}
-            isOpen={isOpen}
-            open={open}
-          />
-        )}
-      </div>
-    </div>
-  );
+    const isOpen = (value : boolean) => {
+        setOpen(value);
+        return value;
+    }
+
+    function searchLedger(value : number){
+
+        setSelectButton(value);
+
+        switch (value) {
+            case 1:
+                console.log("일자별 보기");
+                dispatch(axiosGetLedgerAllDay(parseInt(sessionStorage.getItem("userNo") as string) as number));
+                break;
+            case 2:
+                console.log("1주일별 보기");
+                break;
+            case 3:
+                console.log("1개월별 보기");
+                break;
+            case 4:
+                console.log("3개월별 보기");
+                break;
+            default:
+                console.log("일자별 보기");
+                break;
+        }
+    }
+
+
+    return(
+        <div>
+            <div className={"warp"}>
+                <div className={"search-tag-result"}>
+                    <Button variant={selectButton == 1 ? "outlined" : "contained"} sx={{ marginRight: 2 }} onClick={() => searchLedger(1)}>일자별 보기</Button>
+                    <Button variant={selectButton == 2 ? "outlined" : "contained"} sx={{ marginRight: 2 }} onClick={() => searchLedger(2)}>1주일별 보기</Button>
+                    <Button variant={selectButton == 3 ? "outlined" : "contained"} sx={{ marginRight: 2 }} onClick={() => searchLedger(3)}>1개월별 보기</Button>
+                    <Button variant={selectButton == 4 ? "outlined" : "contained"} sx={{ marginRight: 2 }} onClick={() => searchLedger(4)}>3개월별 보기</Button>
+                </div>
+
+                {Object.entries(ledgerList).map(([date, ledgerData], index) => (
+                    <div className="card shadow-lg" onClick={() => isOpen(true)} key={index}>
+                        <Ledger date={date} ledgerData={ledgerData} ledgerDetail={ledgerDetail}/>
+                    </div>
+                ))}
+
+                {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} isOpen={isOpen} open={open}/>}
+            </div>
+        </div>
+    )
 }

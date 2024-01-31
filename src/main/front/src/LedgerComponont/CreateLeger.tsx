@@ -20,7 +20,6 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
     const [open, setOpen] = React.useState(false);
     const [location, setLocation] = useState<location>({x : 0, y : 0, address : ""});
 
-
     const handleOpen = (check : any) =>{
         setOpen(true);
     }
@@ -47,7 +46,6 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
 
         for (let field of frm) {
             LedgerDto[field.name] = field.value;
-            console.log("filedId : " + field.name + " file.value : " + field.value)
             if (field.name === 'category_no') {
                 LedgerDto["categoryDto"] = {
                     categoryNo: field.value
@@ -56,9 +54,6 @@ export default function CreateLeger({ChangeEvent,categoryList} : any){
         }
         LedgerDto["userDto"] = userDto;
         LedgerDto["location"] = location;
-
-        console.log("ledgerDto : " + JSON.stringify({LedgerDto}))
-
 
         axios.post("/api/ledger/ledgerSave", JSON.stringify({LedgerDto}), {
             headers: {

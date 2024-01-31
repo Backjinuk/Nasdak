@@ -43,6 +43,15 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     List<?> findAllUsers(@Param("userNo") long userNo);
 
 
+    @Query(
+            "SELECT  l " +
+            "FROM Ledger l " +
+            "WHERE l.user.userNo= :userNo " +
+            "ORDER BY DATE_FORMAT(l.useDate, '%Y-%m-%d') DESC "
+    )
+    List<Ledger> findAllUsers2(@Param("userNo") long userNo);
+
+
 //    SELECT DISTINCT DATE_FORMAT(use_date, '%Y-%m-%d') AS REG_DATE
 //    FROM Ledger l
 //    WHERE l.user_no = 1

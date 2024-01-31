@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -70,13 +72,15 @@ public class LedgerController {
      * @return List<?>
      * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
      */
-    @RequestMapping("LedgerList")
-    public List<?> LedgerList(@RequestBody UserDto usersDto) {
-        List<?> allByUsers = ledgerService.findAllByUsers(usersDto.getUserNo());
-        System.out.println("allByUsers = " + allByUsers);
-        return allByUsers;
+    @RequestMapping("LedgerAllDayList")
+    public Map<String, List<?>> LedgerList(@RequestBody UserDto usersDto) {
+        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(usersDto.getUserNo()).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
 
+        return TranformMap(allByUsers2,"Day");
     }
+
+
+
 
     @RequestMapping("locationList")
     public List<LedgerDto> locationList(@RequestBody UserDto usersDto) {
@@ -89,44 +93,10 @@ public class LedgerController {
 
     /**
      * @param ledgerDto
-     * @return List<LedgerDto>
-     * @apiNote LedgerList 에서 가지고오는 날짜로 ledger의 정보를 가지고오는 기능
-     */
-    @RequestMapping("ledgerItem")
-    public List<LedgerDto> ledgerItem(@RequestBody LedgerDto ledgerDto) {
-        return ledgerService.ledgerItem(String.valueOf(ledgerDto.getRegDate2()), ledgerDto.getUserNo())
-                .stream()
-                .map(ledger -> {
-
-                    LedgerDto ledgerDto2 = modelMapper.map(ledger, LedgerDto.class);
-
-//                    if(ledger.getFilesList().size()>0)
-//                    System.out.println("ledger.getFilesList().get(0) = " + ledger.getFilesList().get(0));
-
-                    // 파일찾기 List => DtoList
-                    ledgerDto2.setFilesDtoList(
-                            filesService.findByFileOwner(ledger.getFileOwnerNo())
-                                    .stream()
-                                    .map(files -> modelMapper.map(files, FilesDto.class))
-                                    .toList()
-                    );
-
-                    // Entity를 Dto로 변환
-                    Optional.ofNullable(ledger.getUser()).map(user -> modelMapper.map(user, UserDto.class)).ifPresent(ledgerDto2::setUserDto);
-                    Optional.ofNullable(ledger.getCategory()).map(category -> modelMapper.map(category, CategoryDto.class)).ifPresent(ledgerDto2::setCategoryDto);
-
-                    return ledgerDto2;
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * @param ledgerDto
      * @return ledgerDto
      * @apiNote ledger 상세보기
      * Issue ledger.user , ledger.category, ledger.file 이 modelMapper로 객체 맴핑이 불가
      */
-
     @RequestMapping("ledgerDetail")
     public LedgerDto ledgerDetail(@RequestBody LedgerDto ledgerDto) {
         Ledger ledger = ledgerService.ledgerDetail(modelMapper.map(ledgerDto, Ledger.class));
@@ -239,5 +209,125 @@ public class LedgerController {
     public int ToDayLedger(@RequestBody UserDto userDto) {
 
         return ledgerService.TodayLedger(modelMapper.map(userDto, User.class));
+    }
+
+
+    public Map<String,List<?>> TranformMap(List<LedgerDto> ledgerDtoList, String type){
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // List<LocalDateTime>을 Set<String>으로 변환합니다.
+        Set<String> useDateSet = ledgerDtoList.stream()
+                .map(ledger -> ledger.getUseDate().format(formatter))
+                .sorted()
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Map<String, List<LedgerDto>> sortedMap;
+        List<String> collect;
+
+        Map<String, List<?>> ledgerMap = new HashMap<>();
+
+        switch (type) {
+            case "Day":
+                // Map<String, List<Ledger>>를 생성하고 값 넣기
+                sortedMap = useDateSet.stream()
+                        .collect(Collectors.toMap(
+                                s -> s,
+                                s -> ledgerDtoList.stream()
+                                        .filter(ledger -> ledger.getUseDate().format(formatter).equals(s))
+                                        .peek(ledger -> {
+
+                                            // 파일찾기 List => DtoList
+                                            ledger.setFilesDtoList(
+                                                    filesService.findByFileOwner(ledger.getFileOwnerNo())
+                                                            .stream()
+                                                            .map(files -> modelMapper.map(files, FilesDto.class))
+                                                            .toList()
+                                            );
+                                        })
+                                        .toList(),
+                                (oldValue, newValue) -> newValue, // 병합 로직이 필요하지 않으므로 간단하게 newValue로 설정
+                                TreeMap::new // 역순으로 정렬된 맵을 생성
+                        ));
+
+
+                collect = sortedMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
+
+                ledgerMap = collect.stream()
+                        .collect(Collectors.toMap(
+                                key -> key,
+                                sortedMap::get,
+                                (oldValue, newValue) -> newValue,
+                                LinkedHashMap::new
+                        ));
+                break;
+            case "Week":
+                // Map<String, List<LedgerDto>>를 생성하고 값 넣기
+                sortedMap = useDateSet.stream()
+                        .collect(Collectors.groupingBy(
+                                date -> LocalDate.parse(date, formatter)
+                                        .with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY))
+                                        .format(formatter),
+                                Collectors.flatMapping(
+                                        date -> ledgerDtoList.stream()
+                                                .filter(ledger -> ledger.getUseDate().format(formatter).equals(date))
+                                                .peek(ledger -> {
+                                                    // 파일찾기 List => DtoList
+                                                    ledger.setFilesDtoList(
+                                                            filesService.findByFileOwner(ledger.getFileOwnerNo())
+                                                                    .stream()
+                                                                    .map(files -> modelMapper.map(files, FilesDto.class))
+                                                                    .toList()
+                                                    );
+                                                }),
+                                        Collectors.toList()
+                                )
+                        ));
+
+                collect = sortedMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
+
+                 ledgerMap = collect.stream()
+                        .collect(Collectors.toMap(
+                                key -> key,
+                                sortedMap::get,
+                                (oldValue, newValue) -> newValue,
+                                LinkedHashMap::new
+                        ));
+            break;
+
+            case "Month":
+                // Map<String, List<LedgerDto>>를 생성하고 값 넣기 (개월 단위로 그룹화)
+                sortedMap = useDateSet.stream()
+                        .collect(Collectors.groupingBy(
+                                date -> LocalDate.parse(date, formatter).with(TemporalAdjusters.firstDayOfMonth()).format(formatter),
+                                Collectors.flatMapping(
+                                        date -> ledgerDtoList.stream()
+                                                .filter(ledger -> ledger.getUseDate().format(formatter).equals(date))
+                                                .peek(ledger -> {
+                                                    // 파일찾기 List => DtoList
+                                                    ledger.setFilesDtoList(
+                                                            filesService.findByFileOwner(ledger.getFileOwnerNo())
+                                                                    .stream()
+                                                                    .map(files -> modelMapper.map(files, FilesDto.class))
+                                                                    .toList()
+                                                    );
+                                                }),
+                                        Collectors.toList()
+                                )
+                        ));
+
+                collect = sortedMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
+
+                ledgerMap = collect.stream()
+                        .collect(Collectors.toMap(
+                                key -> key,
+                                sortedMap::get,
+                                (oldValue, newValue) -> newValue,
+                                LinkedHashMap::new
+                        ));
+            break;
+        }
+
+        return ledgerMap;
     }
 }

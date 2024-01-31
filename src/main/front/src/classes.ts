@@ -1,4 +1,4 @@
-import { CategoryType, SnsType, UserType } from 'TypeList';
+import {CategoryType, FilesType, LedgerType, SnsType, UserType} from 'TypeList';
 
 export class User implements UserType {
   userNo = 0;
@@ -49,6 +49,49 @@ export class Sns implements SnsType {
   snsNo = 0;
   snsType = '';
   userNo = 0;
+
+  static getByString(json: string) {
+    const data = JSON.parse(json);
+    return this.getByData(data);
+  }
+
+  static getByData(data: any) {
+    const object = new this();
+    Object.assign(object, data);
+    return object;
+  }
+}
+
+export class Ledger implements LedgerType {
+  fileOwnerNo = 0;
+  userDto = {...new User()};
+  categoryDto = {...new Category()};
+  x = 0;
+  y = 0;
+  price = 0;
+  ledgerType = '';
+  location = {...new location()};
+  comment = '';
+  regDate = '';
+  filesDtoList = [] as FilesType[];
+
+  static getByString(json: string) {
+    const data = JSON.parse(json);
+    return this.getByData(data);
+  }
+
+  static getByData(data: any) {
+    const object = new this();
+    Object.assign(object, data);
+    return object;
+  }
+
+}
+
+export class location implements location {
+  x = 0;
+  y = 0;
+  address = '';
 
   static getByString(json: string) {
     const data = JSON.parse(json);

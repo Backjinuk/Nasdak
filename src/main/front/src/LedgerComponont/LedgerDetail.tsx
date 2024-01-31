@@ -1,13 +1,10 @@
 import {CategoryType, FilesType, LedgerType, location} from "../TypeList";
 import axios from "axios";
 import {useEffect, useState} from "react";
-import Ledger from "./Ledger";
 import Swal from "sweetalert2";
 import DeleteIcon from '@mui/icons-material/Delete';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
-import {red} from "@mui/material/colors";
-import KakaoMap2 from "MapComponont/LedgerMapComponont/KakaoMap2";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
 import Modal from "@mui/material/Modal";
@@ -17,14 +14,22 @@ import MenuItem from "@mui/material/MenuItem";
 import KakaoMap from "../MapComponont/LedgerMapComponont/KakaoMap";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
+import "./Ledger.css"
+import {
+    axiosDeleteFile,
+    axiosDeleteFileItem,
+    axiosDeleteLedger,
+    axiosFileUpload,
+    changeEvent
+} from "../app/slices/ledgerSilce";
+import {useAppDispatch} from "../app/hooks";
 
+export default function  LedgerDetail({categoryList, ledger, isOpen, open} : {categoryList : CategoryType[], ledger : LedgerType, isOpen : (value: boolean) => void, open : boolean }){
 
-export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen, open} : {categoryList : CategoryType[], ledger : LedgerType, ChangeEvent : any, isOpen : (value: boolean) => void, open : boolean }){
-
+    const dispatch = useAppDispatch();
     const [price, setPrice] = useState(() => ledger.price);
     const [location, setLocation] = useState(() => ledger.location);
     const [comment, setComment] = useState(() => ledger.comment);
-    const [lodinMap, setLodingMap] = useState(false);
     const [checkedList, setCheckedList] = useState([]);
     const [categoryNo, setCategoryNo] = useState(() => ledger.categoryDto.categoryNo);
     const [ledgerType , setLedgerType] = useState(() => ledger.ledgerType)
@@ -72,13 +77,12 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
                 })
                 return false;
             }else{
-
                 let formData = formDataArray();
                 // formData 배열이 비어있지 않고, 첫 번째 요소의 fileOwnerNo가 null이 아닌 경우에만 실행
                 // @ts-ignore
                 if (formData && formData.getAll('file').length > 0) {
-                    // @ts-ignore
-                    fileUpload(formData, String(fileOwnerNo));
+                    formData.append('fileOwnerNo', fileOwnerNo);
+                    dispatch(axiosFileUpload(formData));
                 }
 
                 Swal.fire({
@@ -87,45 +91,19 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
                     timer : 2000
                 })
                 UtilsEvent();
+
             }
 
         })
     }
 
-    function ledgerDelete(fileOwnerNo : number){
-        axios.post("/api/ledger/ledgerDelete", JSON.stringify({
-            "fileOwnerNo" : fileOwnerNo
-        }), {
-            headers : {
-                "Content-Type" : "application/json"
-            }
-        }).then(res => {
+    async function ledgerDelete(fileOwnerNo: number) {
 
-            fileDelete(fileOwnerNo);
-
-            Swal.fire({
-                icon : "success",
-                title : "삭제되었습니다.",
-                timer : 2000
-            })
-
-            UtilsEvent();
-        })
+        await dispatch(axiosDeleteLedger(fileOwnerNo));
+        await dispatch(axiosDeleteFile(fileOwnerNo));
+        UtilsEvent();
     }
 
-    function fileDelete( fileOwnerNo : number){
-        axios.post("/api/ledger/deleteFile", JSON.stringify({
-            "fileOwnerNo" : fileOwnerNo
-        }), {
-            headers : {
-                "Content-Type" : "application/json"
-            }
-        }).then(res => {
-
-        }).catch( error => {
-            console.log(error);
-        })
-    }
 
     function formDataArray(){
         const file = document.getElementById("file2");
@@ -143,26 +121,6 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
         return formData;
     }
 
-
-    /**
-     *
-     * @param formData - form안에 file의 정보가지고 있는 변수
-     * @param fileOwnerNo - ledgerNo
-     */
-    function fileUpload(formData: FormData, fileOwnerNo : string){
-        formData.append('fileOwnerNo', fileOwnerNo);
-
-        axios.post("/api/ledger/uploadFile", formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                // "Authorization": Cookies.get("jwtCookie")
-            }
-        }).then(response => {
-            console.log(response.data); // 서버 응답 확인용 로그
-        }).catch(error => {
-            console.error(error); // 오류 발생 시 콘솔에 표시
-        });
-    }
 
     /**
      *
@@ -218,44 +176,11 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
             cancelButtonText : "취소",
             confirmButtonText : "삭제",
             reverseButtons : false
-        }).then(res => {
-            if(res.isConfirmed ){
+        }).then(async res => {
+            if (res.isConfirmed) {
+                await dispatch(axiosDeleteFileItem(checkedList));
+                UtilsEvent();
 
-                axios.post("/api/ledger/deleteFileItem", checkedList,{
-                    headers : {
-                        "Content-Type" : "application/json"
-                    }
-                }).then(res => {
-                    alert(res.data );
-                    if (res.data === 'success') {
-                        alertCustom.fire({
-                            title: "삭제성공",
-                            icon: "success",
-                            timer: 1000
-                        }).then( () => {
-
-                            UtilsEvent();
-                        })
-
-
-                    }else{
-                        alertCustom.fire({
-                            title: "삭제 실패",
-                            text : "관리자에게 문의 하십시요",
-                            icon: "error",
-                            timer: 1000
-                        })
-                    }
-                }).catch( error => {
-                    console.log(error);
-
-                    alertCustom.fire({
-                        title: "삭제 실패",
-                        text : "관리자에게 문의 하십시요",
-                        icon: "error",
-                        timer: 1000
-                    })
-                })
             }
         })
     }
@@ -267,7 +192,8 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
     const alertCustom =  Swal.mixin({
         customClass: {
             cancelButton: "btn btn-success",
-            confirmButton: "btn btn-danger"
+            confirmButton: "btn btn-danger",
+            popup: "swal-custom-popup-class"
         },
         buttonsStyling : false
     })
@@ -277,8 +203,8 @@ export default function  LedgerDetail({categoryList, ledger, ChangeEvent, isOpen
      * @constructor
      */
     function UtilsEvent(){
+        dispatch(changeEvent());
         isOpen(false);
-        ChangeEvent();
     }
 
 

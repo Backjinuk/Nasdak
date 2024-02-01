@@ -17,7 +17,10 @@ export default function LedgerMain({categoryList , event} : any){
     const [selectButton, setSelectButton] = useState<number>(1);
 
     useEffect(() => {
-      dispatch(axiosGetLedgerAllDay(parseInt(sessionStorage.getItem("userNo") as string) as number));
+        dispatch(axiosGetLedgerAllDay({
+            userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+            searchKey: "Day"
+        }));
     }, [event]);
 
     function ledgerDetail(key  : number){
@@ -36,16 +39,31 @@ export default function LedgerMain({categoryList , event} : any){
         switch (value) {
             case 1:
                 console.log("일자별 보기");
-                dispatch(axiosGetLedgerAllDay(parseInt(sessionStorage.getItem("userNo") as string) as number));
+                dispatch(axiosGetLedgerAllDay({
+                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+                    searchKey: "Day"
+                }));
                 break;
             case 2:
                 console.log("1주일별 보기");
+                dispatch(axiosGetLedgerAllDay({
+                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+                    searchKey: "Week"
+                }));
                 break;
             case 3:
                 console.log("1개월별 보기");
+                dispatch(axiosGetLedgerAllDay({
+                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+                    searchKey: "Month"
+                }));
                 break;
             case 4:
                 console.log("3개월별 보기");
+                dispatch(axiosGetLedgerAllDay({
+                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+                    searchKey: "Month3"
+                }));
                 break;
             default:
                 console.log("일자별 보기");

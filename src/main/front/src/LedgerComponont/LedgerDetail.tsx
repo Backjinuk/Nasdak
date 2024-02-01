@@ -30,7 +30,7 @@ export default function  LedgerDetail({categoryList, ledger, isOpen, open} : {ca
     const [price, setPrice] = useState(() => ledger.price);
     const [location, setLocation] = useState(() => ledger.location);
     const [comment, setComment] = useState(() => ledger.comment);
-    const [checkedList, setCheckedList] = useState([]);
+    const [checkedList, setCheckedList] = useState<number[]>([]);
     const [categoryNo, setCategoryNo] = useState(() => ledger.categoryDto.categoryNo);
     const [ledgerType , setLedgerType] = useState(() => ledger.ledgerType)
 

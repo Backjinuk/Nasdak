@@ -6,6 +6,11 @@ async function post(url: string, data: string | null) {
   const res = await authenticationWrapper(() => existAxios.post(url, data, getJsonHeader()));
   return res;
 }
+
+async function numberArrayPost(url: string, data: number[] | null) {
+  const res = await authenticationWrapper(() => existAxios.post(url, data, getJsonHeader()));
+  return res;
+}
 async function get(url: string) {
   const res = await authenticationWrapper(() => existAxios.get(url, getJsonHeader()));
   return res;
@@ -67,6 +72,7 @@ const axios = {
   post,
   get,
   formData,
+  numberArrayPost,
   public: {
     post: publicPost,
     get: publicGet,

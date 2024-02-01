@@ -2,7 +2,7 @@ import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {LedgerType} from "../../TypeList";
 import {Ledger} from "../../classes";
 import {jsonHeader} from "../../headers";
-import axios from "axios";
+import axios from "customFunction/customAxios";
 import Swal from "sweetalert2";
 
 interface LedgerData {
@@ -36,6 +36,9 @@ const ledgerSlice = createSlice({
     },
     extraReducers(builder) {
         builder
+            .addCase(axiosGetLedgerAllDay.pending, (state, action) => {
+                state.status = "loading";
+            })
             .addCase(axiosGetLedgerAllDay.fulfilled,  (state, action) =>{
                 state.status = "succeeded";
                 state.ledgerList =  action.payload;
@@ -77,11 +80,10 @@ const ledgerSlice = createSlice({
     }
 });
 
-
 export const axiosGetLedgerAllDay = createAsyncThunk(
     "ledger/axiosGetLedgerAllDay",
-    async (userNo : number) => {
-        const res = await axios.post("/api/ledger/LedgerAllDayList", JSON.stringify({userNo}), jsonHeader);
+    async ({userNo, searchKey} : { userNo : number , searchKey : string}) => {
+        const res = await axios.post("/api/ledger/LedgerAllDayList", JSON.stringify({"userNo" : userNo, "searchKey" : searchKey}));
         return res.data;
     }
 )
@@ -89,14 +91,14 @@ export const axiosGetLedgerAllDay = createAsyncThunk(
 export const axiosGetLedgerDetail = createAsyncThunk(
     "ledger/axiosGetLedgerDetail",
     async (ledgerNo : number) => {
-        const res = await axios.post("/api/ledger/ledgerDetail", JSON.stringify({"fileOwnerNo" : ledgerNo}), jsonHeader);
+        const res = await axios.post("/api/ledger/ledgerDetail", JSON.stringify({"fileOwnerNo" : ledgerNo}));
         return res.data;
     }
 )
 export const axiosDeleteLedger = createAsyncThunk(
     "ledger/axiosDeleteLedger",
     async (ledgerNo : number) => {
-        const res = await axios.post("/api/ledger/ledgerDelete", JSON.stringify({"fileOwnerNo" : ledgerNo}), jsonHeader);
+        const res = await axios.post("/api/ledger/ledgerDelete", JSON.stringify({"fileOwnerNo" : ledgerNo}));
         return res.data
     }
 )
@@ -104,7 +106,7 @@ export const axiosDeleteLedger = createAsyncThunk(
 export const axiosDeleteFile = createAsyncThunk(
     "ledger/deleteFile",
     async (fileOwnerNo : number) => {
-        const res = await axios.post("/api/ledger/deleteFile", JSON.stringify({"fileOwnerNo" : fileOwnerNo}), jsonHeader);
+        const res = await axios.post("/api/ledger/deleteFile", JSON.stringify({"fileOwnerNo" : fileOwnerNo}));
         return res.data;
     }
 );
@@ -112,15 +114,15 @@ export const axiosDeleteFile = createAsyncThunk(
 export const axiosFileUpload = createAsyncThunk(
     "ledger/fileUpload",
     async (file : FormData) => {
-        const res = await axios.post("/api/ledger/uploadFile", file, {headers : {'Content-type' : 'multipart/form-data'}});
+        const res = await axios.formData("/api/ledger/uploadFile", file);
         return res.data;
     }
 )
 
 export const axiosDeleteFileItem = createAsyncThunk(
     "ledger/deleteFileItem",
-    async (checkedList : never[]) => {
-        const res = await axios.post("/api/ledger/deleteFileItem", checkedList, jsonHeader);
+    async (checkedList : number[]) => {
+        const res = await axios.numberArrayPost("/api/ledger/deleteFileItem", checkedList);
         return res.data;
     }
 )

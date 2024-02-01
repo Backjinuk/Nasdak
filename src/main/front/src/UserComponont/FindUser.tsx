@@ -14,8 +14,8 @@ import { isAxiosError } from 'axios';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch } from 'app/hooks';
 import { axiosSendEmail, axiosSendPhone, axiosVerifyEmail, axiosVerifyPhone } from 'app/slices/userSlice';
-import Timer from 'Timer';
 import axios from 'customFunction/customAxios';
+import { useTimer } from 'customFunction/useTimer';
 
 const steps = ['아이디 찾기', '아이디 확인', '비밀번호 변경', '완료'];
 const noUser = 'there is no user';
@@ -100,18 +100,17 @@ export default function FindUser() {
 }
 
 function StepOne(props: any) {
+  const { restart, stop, viewTime } = useTimer(5, 'min');
   const dispatch = useAppDispatch();
   const [status, setStatus] = useState('');
   const [code, setCode] = useState('');
-  const [onTimer, setOnTimer] = useState(0);
-  const [viewTime, setViewTime] = useState('');
 
   const auth = props.auth;
   const radio = props.radio;
   const setAuth = (data: any) => {
     setCode('');
     setStatus('');
-    setOnTimer(0);
+    stop();
     props.setAuth(data);
   };
   const setRadio = (e: any) => {
@@ -121,12 +120,12 @@ function StepOne(props: any) {
     });
     setCode('');
     setStatus('');
-    setOnTimer(0);
+    stop();
     props.setRadio(e);
   };
   const handleNext = () => {
     props.handleNext();
-    setOnTimer(0);
+    stop();
   };
   const setUserId = (userId: string) => {
     props.setUserId(userId);
@@ -153,13 +152,13 @@ function StepOne(props: any) {
 
   const sendEmail = () => {
     dispatch(axiosSendEmail(auth.email));
-    setOnTimer(onTimer + 1);
+    restart();
     setStatus('sended');
   };
 
   const sendPhoneMessage = () => {
     dispatch(axiosSendPhone(auth.phone));
-    setOnTimer(onTimer + 1);
+    restart();
     setStatus('sended');
   };
 
@@ -176,7 +175,7 @@ function StepOne(props: any) {
     if (action.payload) {
       setStatus('succeeded');
       alert('인증에 성공했습니다.');
-      setOnTimer(0);
+      stop();
     } else {
       alert('인증에 실패했습니다.');
     }
@@ -184,7 +183,6 @@ function StepOne(props: any) {
 
   return (
     <>
-      <Timer setViewTime={setViewTime} onTimer={onTimer} setOnTimer={setOnTimer} duration={5} type='분' />
       <FormControl>
         <RadioGroup
           defaultValue='email'

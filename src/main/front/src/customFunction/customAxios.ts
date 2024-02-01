@@ -2,12 +2,7 @@ import { formHeader, getFormHeader, getJsonHeader, jsonHeader } from 'headers';
 import existAxios, { isAxiosError } from 'axios';
 import { getCookie, setCookie } from 'Cookies';
 
-async function post(url: string, data: string | null) {
-  const res = await authenticationWrapper(() => existAxios.post(url, data, getJsonHeader()));
-  return res;
-}
-
-async function numberArrayPost(url: string, data: number[] | null) {
+async function post(url: string, data?: any) {
   const res = await authenticationWrapper(() => existAxios.post(url, data, getJsonHeader()));
   return res;
 }
@@ -25,7 +20,7 @@ async function authenticationWrapper(func: Function) {
     const res = await func();
     return res;
   } catch (error) {
-    if (isAutehnticationError(error)) {
+    if (isAuthenticationError(error)) {
       throw error;
     }
   }
@@ -41,7 +36,7 @@ async function authenticationWrapper(func: Function) {
   return res;
 }
 
-function isAutehnticationError(error: unknown) {
+function isAuthenticationError(error: unknown) {
   return isAxiosError(error) && error.response?.status !== 401;
 }
 
@@ -55,7 +50,7 @@ async function requestRefreshToken() {
   return res;
 }
 
-async function publicPost(url: string, data: string | null) {
+async function publicPost(url: string, data?: any) {
   const res = await existAxios.post(url, data, jsonHeader);
   return res;
 }
@@ -72,7 +67,6 @@ const axios = {
   post,
   get,
   formData,
-  numberArrayPost,
   public: {
     post: publicPost,
     get: publicGet,

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import LedgerMain from './LedgerComponont/LedgerMain';
 import { CookiesProvider } from 'react-cookie';
 import MapLocation from './MapComponont/MapLocation';
@@ -9,13 +9,14 @@ import SNSLogin from 'UserComponont/snsComponent/SNSLogin';
 import CalenderMain from './CalenderCompoont/CalenderMain';
 import KakaoLogout from 'UserComponont/snsComponent/KakaoLogout';
 import TopBar from './TopBar';
-import { useEffect} from 'react';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectAllCategories } from 'app/slices/categoriesSlice';
-import { dropUserInfo } from 'app/slices/userSlice';
 import './firebase';
-import {connect, useSelector} from "react-redux";
-import {RootState} from "./app/store";
+import { connect, useSelector } from 'react-redux';
+import { RootState } from './app/store';
+import { axiosGetUserNo, selectIsLogin } from 'app/slices/loginUserSlice';
+import { getCookie } from 'Cookies';
+import { useEffect } from 'react';
 
 declare global {
   interface Window {
@@ -25,15 +26,42 @@ declare global {
 }
 
 function App() {
+  const dispatch = useAppDispatch();
   const categoryList = useAppSelector(selectAllCategories);
-  const event = useSelector( (state : RootState) => state.ledger.event);
+  const event = useSelector((state: RootState) => state.ledger.event);
+  const storeLogin = useSelector(selectIsLogin);
+  const cookieLogin = getCookie('accessToken') !== undefined;
+  const isLogin = storeLogin || cookieLogin;
 
-  const mapStateToProps = (state: { categoryList: any; event: any; }) => {
+  useEffect(() => {
+    if (!storeLogin && cookieLogin) dispatch(axiosGetUserNo());
+  }, []);
+
+  const mapStateToProps = (state: { categoryList: any; event: any }) => {
     return {
       categoryList: state.categoryList, // state의 구조에 따라 적절하게 수정하세요.
-      event: state.event // state의 구조에 따라 적절하게 수정하세요.
+      event: state.event, // state의 구조에 따라 적절하게 수정하세요.
     };
   };
+
+  const publicRoutes = (
+    <>
+      <Route path={'/'} element={<Login />} />
+      <Route path={'/findId'} element={<FindUser />} />
+      <Route path={'/snsLogin'} element={<SNSLogin />} />
+    </>
+  );
+
+  const privateRoutes = (
+    <>
+      <Route path={'/userInfo'} element={<UserInfo />} />
+      <Route path={'/kakaoLogout'} element={<KakaoLogout />} />
+
+      <Route path='/Ledger' element={<LedgerMain event={event} categoryList={categoryList} />} />
+      <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
+      <Route path={'/calender'} element={<CalenderMain categoryList={categoryList} event={event} />} />
+    </>
+  );
 
   const ConnectedLedgerMain = connect(mapStateToProps)(LedgerMain);
 
@@ -42,24 +70,11 @@ function App() {
       <header className='App-header'>
         <CookiesProvider>
           <Router>
-            <ViewTopBar />
+            <ViewTopBar isLogin={isLogin} />
             <Routes>
-              {/* 로그인 관련 */}
-              <Route path={'/'} element={<Login />} />
-              <Route path={'/userInfo'} element={<UserInfo />} />
-              <Route path={'/findId'} element={<FindUser />} />
-              <Route path={'/snsLogin'} element={<SNSLogin />} />
-              <Route path={'/kakaoLogout'} element={<KakaoLogout />} />
-              {/* 로그인 관련 */}
-
-              <Route
-                path='/Ledger'
-                element={ <LedgerMain event={event} categoryList={categoryList}/>} />
-              <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
-              <Route
-                path={'/calender'}
-                element={<CalenderMain categoryList={categoryList} event={event}/> }
-              />
+              {publicRoutes}
+              {isLogin && privateRoutes}
+              <Route path='*' element={<Navigate to='/' replace />} />
             </Routes>
           </Router>
         </CookiesProvider>
@@ -68,19 +83,12 @@ function App() {
   );
 }
 
-function ViewTopBar() {
-  const dispatch = useAppDispatch();
-  const isLogin = sessionStorage.getItem('userNo') !== null;
+function ViewTopBar({ isLogin }: { isLogin: boolean }) {
   const { pathname } = useLocation();
-  const showTopBar = isLogin && !notShowTopBar.includes(String(pathname));
-  useEffect(() => {
-    if (!isLogin) {
-      dispatch(dropUserInfo());
-    }
-  }, [isLogin, dispatch]);
+  const isShowTopBar = isLogin && !notShowTopBar.includes(String(pathname));
 
-  return <>{showTopBar && <TopBar />}</>;
+  return <>{isShowTopBar && <TopBar />}</>;
 }
 
 export default App;
-const notShowTopBar = ['/', '/findId', '/snsLogin', '/kakaoInit', '/kakaoLogout'];
+const notShowTopBar = ['/', '/findId', '/snsLogin', '/kakaoLogout'];

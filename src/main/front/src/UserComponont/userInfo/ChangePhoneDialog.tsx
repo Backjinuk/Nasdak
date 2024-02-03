@@ -23,7 +23,8 @@ import { useTimer } from 'customFunction/useTimer';
 export default function ChangePhoneDialog(props: any) {
   const dispatch = useAppDispatch();
   const userNo = useAppSelector(selectUser).userNo;
-  const { restart, stop, viewTime } = useTimer(5, 'min');
+  const timer = useTimer(5, 'min');
+  const viewTime = timer.viewTime;
 
   const open = props.open;
   const handleClose = () => {
@@ -31,7 +32,7 @@ export default function ChangePhoneDialog(props: any) {
     setPhone('');
     setCode('');
     setStatus('');
-    stop();
+    timer.stop();
   };
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
@@ -42,7 +43,7 @@ export default function ChangePhoneDialog(props: any) {
     if (action.payload) {
       alert('사용중인 휴대폰입니다.');
     } else {
-      restart();
+      timer.restart();
       dispatch(axiosSendPhone(phone));
       setStatus('sended');
     }
@@ -53,7 +54,7 @@ export default function ChangePhoneDialog(props: any) {
     if (action.payload) {
       alert('인증에 성공하였습니다.');
       setStatus('succeeded');
-      stop();
+      timer.stop();
     } else {
       alert('인증에 실패하였습니다.');
     }

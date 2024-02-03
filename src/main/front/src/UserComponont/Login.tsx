@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react';
 import { UserType } from 'TypeList';
 import ConnectToExistUserDialog from './ConnectToExistUserDialog';
 import axios from 'customFunction/customAxios';
+import { useAppDispatch } from 'app/hooks';
+import { loginUser } from 'app/slices/loginUserSlice';
 declare global {
   interface Window {
     snsLoginNavigate?: any;
@@ -19,6 +21,8 @@ declare global {
 }
 
 export default function Login() {
+  const dispatch = useAppDispatch();
+
   const [id, setId] = useState(getCookie('userId') === undefined ? '' : getCookie('userId'));
   const [pwd, setPwd] = useState('');
   const [open, setOpen] = useState('');
@@ -68,6 +72,14 @@ export default function Login() {
       sessionStorage.setItem('userDto', JSON.stringify({ userId: id, userNo: res.data.userNo }));
       setCookie('accessToken', res.data.accessToken, { maxAge: Number(res.data.accessTokenExpiresIn) / 1000 });
       setCookie('refreshToken', res.data.refreshToken, { maxAge: Number(res.data.refreshTokenExpiresIn) / 1000 });
+      dispatch(
+        loginUser({
+          userNo: res.data.userNo,
+          userId: id,
+          accessToken: res.data.accessToken,
+          refreshToken: res.data.refreshToken,
+        })
+      );
       // navigate('/userInfo');
       navigate('/ledger');
     } catch (error) {
@@ -89,6 +101,9 @@ export default function Login() {
     sessionStorage.setItem('snsType', snsType);
     sessionStorage.setItem('userDto', JSON.stringify({ userNo: userNo }));
     sessionStorage.removeItem('userId');
+    dispatch(
+      loginUser({ userNo, userId: '', accessToken: getCookie('accessToken'), refreshToken: getCookie('refreshToken') })
+    );
     // navigate('/userInfo');
     navigate('/ledger');
   };

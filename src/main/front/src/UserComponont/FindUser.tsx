@@ -100,7 +100,8 @@ export default function FindUser() {
 }
 
 function StepOne(props: any) {
-  const { restart, stop, viewTime } = useTimer(5, 'min');
+  const timer = useTimer(5, 'min');
+  const viewTime = timer.viewTime;
   const dispatch = useAppDispatch();
   const [status, setStatus] = useState('');
   const [code, setCode] = useState('');
@@ -110,7 +111,7 @@ function StepOne(props: any) {
   const setAuth = (data: any) => {
     setCode('');
     setStatus('');
-    stop();
+    timer.stop();
     props.setAuth(data);
   };
   const setRadio = (e: any) => {
@@ -120,12 +121,12 @@ function StepOne(props: any) {
     });
     setCode('');
     setStatus('');
-    stop();
+    timer.stop();
     props.setRadio(e);
   };
   const handleNext = () => {
     props.handleNext();
-    stop();
+    timer.stop();
   };
   const setUserId = (userId: string) => {
     props.setUserId(userId);
@@ -152,13 +153,13 @@ function StepOne(props: any) {
 
   const sendEmail = () => {
     dispatch(axiosSendEmail(auth.email));
-    restart();
+    timer.restart();
     setStatus('sended');
   };
 
   const sendPhoneMessage = () => {
     dispatch(axiosSendPhone(auth.phone));
-    restart();
+    timer.restart();
     setStatus('sended');
   };
 
@@ -175,7 +176,7 @@ function StepOne(props: any) {
     if (action.payload) {
       setStatus('succeeded');
       alert('인증에 성공했습니다.');
-      stop();
+      timer.stop();
     } else {
       alert('인증에 실패했습니다.');
     }

@@ -53,7 +53,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         SNS find = snsService.login(sns);
 
         log.info("토큰 발행 시작");
-        JwtTokenDto token = jwtTokenProvider.generateToken(authentication);
+        JwtTokenDto token = jwtTokenProvider.generateToken(authentication, "sns");
         log.info("{}", token);
 
         log.info("url 설정");

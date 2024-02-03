@@ -104,7 +104,7 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(userDto.getUserId(), userDto.getPassword());
         Authentication authenticate = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
-        return jwtTokenProvider.generateToken(authenticate);
+        return jwtTokenProvider.generateToken(authenticate, "user");
     }
 
     @PostMapping("public/findId")

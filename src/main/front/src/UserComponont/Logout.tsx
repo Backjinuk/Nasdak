@@ -1,8 +1,9 @@
 import { Button } from '@mui/material';
 import { setCookie } from 'Cookies';
-import logout from 'UserComponont/js/logout';
 import { useAppDispatch } from 'app/hooks';
+import { logoutUser } from 'app/slices/loginUserSlice';
 import { useNavigate } from 'react-router-dom';
+import logout from './js/logout';
 
 export default function Logout() {
   const dispatch = useAppDispatch();
@@ -17,6 +18,7 @@ export default function Logout() {
     logout(dispatch);
     setCookie('accessToken', '', { maxAge: 0 });
     setCookie('refreshToken', '', { maxAge: 0 });
+    dispatch(logoutUser());
     navigate('/');
   }
 

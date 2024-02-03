@@ -23,7 +23,8 @@ import { isAxiosError } from 'axios';
 
 export default function Join(props: any) {
   const dispatch = useAppDispatch();
-  const { restart, stop, viewTime } = useTimer(5, '분');
+  const timer = useTimer(5, '분');
+  const viewTime = timer.viewTime;
 
   const open = props.open;
   const userNo = props.userNo;
@@ -40,7 +41,7 @@ export default function Join(props: any) {
     setCode('');
     setPage(1);
     setRadio('email');
-    stop();
+    timer.stop();
     let data;
     if (email !== '') data = { email };
     if (phone !== '') data = { phone };
@@ -366,7 +367,7 @@ export default function Join(props: any) {
   );
 
   const sendCode = () => {
-    restart();
+    timer.restart();
     if (radio === 'email') {
       sendEmail();
     } else {
@@ -383,7 +384,7 @@ export default function Join(props: any) {
     }
     if (res) {
       alert('인증에 성공하였습니다.');
-      stop();
+      timer.stop();
       setAddMemberBtn(true);
     } else {
       alert('인증에 실패하였습니다.');

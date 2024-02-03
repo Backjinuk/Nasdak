@@ -20,31 +20,31 @@ async function authenticationWrapper(func: Function) {
     const res = await func();
     return res;
   } catch (error) {
-    if (isAuthenticationError(error)) {
+    if (!isAuthenticationError(error)) {
       throw error;
     }
   }
+
   try {
-    console.log('AccessToken 재발급 요청');
-    await requestRefreshToken();
+    const refreshToken = getCookie('refreshToken');
+    if (!refreshToken) throw new Error();
+    await requestRefreshToken(refreshToken);
   } catch (error) {
     alert('다시 로그인해주세요!');
     window.location.href = '/';
     throw new Error('need to login');
   }
+
   const res = await func();
   return res;
 }
 
 function isAuthenticationError(error: unknown) {
-  return isAxiosError(error) && error.response?.status !== 401;
+  return isAxiosError(error) && error.response?.status === 401;
 }
 
-async function requestRefreshToken() {
-  const res = await axios.public.post(
-    '/api/token/refreshToken',
-    JSON.stringify({ refreshToken: getCookie('refreshToken') })
-  );
+async function requestRefreshToken(refreshToken: string) {
+  const res = await axios.public.post('/api/token/refreshToken', JSON.stringify({ refreshToken }));
   setCookie('accessToken', res.data.accessToken, { maxAge: Number(res.data.accessTokenExpiresIn) / 1000 });
   setCookie('refreshToken', res.data.refreshToken, { maxAge: Number(res.data.refreshTokenExpiresIn) / 1000 });
   return res;

@@ -39,7 +39,7 @@ public class JwtTokenProvider {
     }
 
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
-    public JwtTokenDto generateToken(Authentication authentication) {
+    public JwtTokenDto generateToken(Authentication authentication, String type) {
         // 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -52,6 +52,7 @@ public class JwtTokenProvider {
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
+                .claim("type", type)
                 .setExpiration(accessTokenExpiresDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -61,6 +62,7 @@ public class JwtTokenProvider {
                 .claim("auth", authorities)
                 .setExpiration(new Date(now + refreshTokenExpiresIn))
                 .signWith(key, SignatureAlgorithm.HS256)
+                .claim("type", type)
                 .setSubject(authentication.getName())
                 .compact();
 
@@ -92,6 +94,11 @@ public class JwtTokenProvider {
         // UserDetails: interface, User: UserDetails를 구현한 class
         UserDetails principal = new User(claims.getSubject(), "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    }
+
+    public String getType(String token){
+        Claims claims = parseClaims(token);
+        return (String)claims.get("type");
     }
 
     // 토큰 정보를 검증하는 메서드

@@ -210,7 +210,7 @@ export default function LedgerDetail({
       >
         <Box className={'modalBox'}>
           <Typography id='parent-modal-title' variant='h6' component='h2' sx={{ marginBottom: '20px' }}>
-            가계부 상세조회
+            글쓰기
           </Typography>
 
           <form name={'updateLedger'}>

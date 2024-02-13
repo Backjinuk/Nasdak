@@ -134,6 +134,9 @@ export default function TopBar() {
           <Button sx={{ color: '#fff' }} variant='outlined' onClick={() => navigate('/Ledger')}>
             메인페이지
           </Button>
+          <Button sx={{ color: '#fff' }} variant='outlined' onClick={() => navigate('/Ledger2')}>
+            메인페이지2
+          </Button>
           <Button sx={{ color: '#fff' }} variant='outlined' onClick={() => navigate('/calender')}>
             달력으로 보기
           </Button>

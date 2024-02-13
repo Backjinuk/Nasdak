@@ -22,7 +22,11 @@ public class LedgerDto extends FileOwnerDto {
 
     private long price;
 
+    private long price2;
+
     private LedgerType ledgerType;
+
+    private LedgerType ledgerType2;
 
     private Location location;
 

@@ -14,8 +14,7 @@ export default function LedgerMain({categoryList , event} : any){
     const ledgerList = useAppSelector((state : RootState) => state.ledger.ledgerList);
     const ledger = useAppSelector((state : RootState) => state.ledger.ledger) ;
     const [open, setOpen] = useState<boolean>(false);
-    const [selectButton, setSelectButton] = useState<number>(1);
-    const selectButtonList = useAppSelector((state : RootState) => state.ledger.selectButton);
+    const selectButton = useAppSelector((state : RootState) => state.ledger.selectButton);
 
     useEffect(() => {
         dispatch(axiosGetLedgerAllDay({
@@ -25,8 +24,7 @@ export default function LedgerMain({categoryList , event} : any){
     }, [event]);
 
     function ledgerDetail(key  : number){
-        isOpen(true);
-        dispatch(axiosGetLedgerDetail(key));
+      dispatch(axiosGetLedgerDetail(key));
     }
 
     const isOpen = (value : boolean) => {
@@ -36,12 +34,9 @@ export default function LedgerMain({categoryList , event} : any){
 
     function searchLedger(value : number){
 
-        setSelectButton(value);
-
         dispatch(ChangeSelectButton(value));
 
         switch (value) {
-
             case 1:
                 console.log("일자별 보기");
                 dispatch(axiosGetLedgerAllDay({

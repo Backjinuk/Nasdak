@@ -7,6 +7,8 @@ import org.nasdakgo.nasdak.Repository.LedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -60,4 +62,7 @@ public class LedgerService {
     }
 
 
+    public Collection<Object> findByUseDateBetween(LocalDate useDate, long userNo) {
+        return ledgerRepository.findByUseDateBetween(useDate.atStartOfDay(), userNo);
+    }
 }

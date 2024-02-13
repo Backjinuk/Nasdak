@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface LedgerRepository extends JpaRepository<Ledger, Long> {
@@ -51,12 +53,6 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     )
     List<Ledger> findAllUsers2(@Param("userNo") long userNo);
 
-
-//    SELECT DISTINCT DATE_FORMAT(use_date, '%Y-%m-%d') AS REG_DATE
-//    FROM Ledger l
-//    WHERE l.user_no = 1
-//    ORDER BY DATE_FORMAT(use_date, '%Y-%m-%d') DESC;
-
     @Query(
             "SELECT l " +
             "FROM Ledger l " +
@@ -89,4 +85,12 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
             "AND l.useDate >= CAST(CONCAT(DATE_FORMAT(NOW(), '%Y-%m-%d'), ' 00:00:00') AS TIMESTAMP) " +
             "AND l.useDate <= CAST(CONCAT(DATE_FORMAT(NOW(), '%Y-%m-%d'), ' 23:59:59') AS TIMESTAMP)" )
     int  TodayLedger(@Param("userNo") long userNo);
+
+
+    @Query("SELECT l FROM Ledger l " +
+            "WHERE  l.user.userNo= :userNo " +
+            "AND l.useDate >= CAST(CONCAT(DATE_FORMAT(:useDate , '%Y-%m-%d'), ' 00:00:00') AS TIMESTAMP) " +
+            "AND l.useDate <= CAST(CONCAT(DATE_FORMAT(:useDate , '%Y-%m-%d'), ' 23:59:59') AS TIMESTAMP)" )
+    Collection<Object> findByUseDateBetween(@Param("useDate") LocalDateTime useDate, @Param("userNo") long userNo);
+
 }

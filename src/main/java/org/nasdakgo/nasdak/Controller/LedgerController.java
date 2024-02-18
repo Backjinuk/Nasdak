@@ -74,13 +74,48 @@ public class LedgerController {
      */
     @RequestMapping("LedgerAllDayList")
     public Map<String, List<?>> LedgerList(@RequestBody Map<String, Object> map) {
-        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo")))).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
 
-        System.out.println("searchKey = " + String.valueOf(map.get("searchKey")));
+        int startPage = (map.get("startPage") == null) ? 0  : Integer.parseInt(String.valueOf(map.get("startPage")));
+        int endPage   = (map.get("endPage")   == null) ? 5  : Integer.parseInt(String.valueOf(map.get("endPage")));
 
-        return TranformMap(allByUsers2,String.valueOf(map.get("searchKey")));
+
+        System.out.println("startPage = " + startPage);
+        System.out.println("endPage = " + endPage);
+
+
+
+        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo"))), startPage, endPage)
+                                                    .stream()
+                                                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                                    .toList();
+
+        String searchKey =  String.valueOf(map.get("searchKey"));
+
+        if(!searchKey.equals("Day")){
+            allByUsers2 = sumPrice(allByUsers2);
+        }
+
+        System.out.println("allByUsers2 = " + allByUsers2);
+
+        Map<String, List<?>> searchValue = TranformMap(allByUsers2, searchKey);
+       // System.out.println("searchValue = " + searchValue);
+
+        return searchValue;
     }
 
+
+    @RequestMapping("ledgerDateList")
+    public List<LedgerDto> ledgerDateList(@RequestBody Map<String, Object> map){
+
+        String dateWithoutTime = String.valueOf(map.get("date")).substring(0, 10); // 시간 부분 제거
+        LocalDate useDate = LocalDate.parse(dateWithoutTime, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+
+        return ledgerService.findByUseDateBetween(useDate, Long.parseLong(String.valueOf(map.get("userNo"))))
+                .stream()
+                .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                .collect(Collectors.toList());
+    }
 
 
 
@@ -222,7 +257,7 @@ public class LedgerController {
         Set<String> useDateSet = ledgerDtoList.stream()
                 .map(ledger -> ledger.getUseDate().format(formatter))
                 .sorted()
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                .collect(Collectors.toCollection(LinkedHashSet::new)); //ledgerDtoList 의 useDate를 Set으로 변환
 
         Map<String, List<LedgerDto>> sortedMap;
         List<String> collect;
@@ -267,10 +302,14 @@ public class LedgerController {
                 // Map<String, List<LedgerDto>>를 생성하고 값 넣기
                 sortedMap = useDateSet.stream()
                         .collect(Collectors.groupingBy(
-                                date -> LocalDate.parse(date, formatter)
-                                        .with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY))
-                                        .format(formatter),
+                                date -> {
+                                    LocalDate startDate = LocalDate.parse(date, formatter) //파싱
+                                            .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)); // 2024-02-12 + 6
+                                    LocalDate endDate = startDate.plusDays(6); // 일주일 후의 일요일을 끝날로 설정 2024-02-18
+                                    return startDate.format(formatter) + " ~ " + endDate.format(formatter); // 2024-02-12 ~ 2024-02-18
+                                },
                                 Collectors.flatMapping(
+                                        //2024-02-12 ~ 2024-02-18 == (2024-02-15) Date -> ledgerDtoList.stream().filter(ledger -> ledger.getUseDate().format(formatter)=> (2024-02-15) .equals(date))
                                         date -> ledgerDtoList.stream()
                                                 .filter(ledger -> ledger.getUseDate().format(formatter).equals(date))
                                                 .peek(ledger -> {
@@ -288,20 +327,25 @@ public class LedgerController {
 
                 collect = sortedMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
 
-                 ledgerMap = collect.stream()
+                ledgerMap = collect.stream()
                         .collect(Collectors.toMap(
                                 key -> key,
                                 sortedMap::get,
                                 (oldValue, newValue) -> newValue,
                                 LinkedHashMap::new
                         ));
-            break;
+                break;
+
 
             case "Month":
                 // Map<String, List<LedgerDto>>를 생성하고 값 넣기 (개월 단위로 그룹화)
                 sortedMap = useDateSet.stream()
                         .collect(Collectors.groupingBy(
-                                date -> LocalDate.parse(date, formatter).with(TemporalAdjusters.firstDayOfMonth()).format(formatter),
+                                date ->{
+                                    LocalDate startDate = LocalDate.from(LocalDate.parse(LocalDate.parse(date, formatter).with(TemporalAdjusters.firstDayOfMonth()).format(formatter)));
+                                    LocalDate endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+                                    return startDate.format(formatter) + " ~ " +  endDate.format(formatter);
+                                },
                                 Collectors.flatMapping(
                                         date -> ledgerDtoList.stream()
                                                 .filter(ledger -> ledger.getUseDate().format(formatter).equals(date))
@@ -333,10 +377,12 @@ public class LedgerController {
                 // Map<String, List<LedgerDto>>를 생성하고 값 넣기 (3개월 단위로 그룹화)
                 sortedMap = useDateSet.stream()
                         .collect(Collectors.groupingBy(
-                                date -> LocalDate.parse(date, formatter)
-                                        .with(TemporalAdjusters.firstDayOfMonth())
-                                        .plusMonths(2) // 3개월을 더해줌
-                                        .format(formatter),
+                                date -> {
+                                    LocalDate startMonth = LocalDate.from(LocalDate.parse(date, formatter)
+                                            .with(TemporalAdjusters.firstDayOfMonth()));
+
+                                    return startMonth.format(formatter) + "~" + startMonth.plusMonths(2).format(formatter);
+                                },
                                 Collectors.flatMapping(
                                         date -> ledgerDtoList.stream()
                                                 .filter(ledger -> ledger.getUseDate().format(formatter).equals(date))
@@ -367,4 +413,28 @@ public class LedgerController {
 
         return ledgerMap;
     }
+
+    //일자별로 출금, 입금 계산
+    public List<LedgerDto> sumPrice(List<LedgerDto> ledgerDtoList) {
+        Map<String, LedgerDto> resultMap = new HashMap<>();
+
+        for (LedgerDto ledgerDto : ledgerDtoList) {
+            String key = ledgerDto.getUseDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+            LedgerDto existingRecord = resultMap.getOrDefault(key, new LedgerDto());
+            if (ledgerDto.getLedgerType() == LedgerType.SAVE) {
+                existingRecord.setPrice(existingRecord.getPrice() + ledgerDto.getPrice());
+                existingRecord.setLedgerType(LedgerType.SAVE);
+            } else {
+                existingRecord.setPrice2(existingRecord.getPrice2() + ledgerDto.getPrice());
+                existingRecord.setLedgerType2(LedgerType.DEPOSIT);
+            }
+            existingRecord.setUseDate(ledgerDto.getUseDate());
+
+            resultMap.put(key, existingRecord);
+        }
+
+        return new ArrayList<>(resultMap.values());
+    }
+
 }

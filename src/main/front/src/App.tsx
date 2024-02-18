@@ -16,6 +16,7 @@ import { RootState } from './app/store';
 import { getCookie, setCookie } from 'Cookies';
 import axios from 'customFunction/customAxios';
 import { login, selectIsLogin } from 'app/slices/userSlice';
+import LedgerMain2 from './LedgerComponont/LedgerMain2';
 
 declare global {
   interface Window {
@@ -46,13 +47,6 @@ function App() {
     window.location.href = location;
   }
 
-  const mapStateToProps = (state: { categoryList: any; event: any }) => {
-    return {
-      categoryList: state.categoryList, // state의 구조에 따라 적절하게 수정하세요.
-      event: state.event, // state의 구조에 따라 적절하게 수정하세요.
-    };
-  };
-
   const publicRoutes = (
     <>
       <Route path={'/'} element={<Login />} />
@@ -66,12 +60,12 @@ function App() {
       <Route path={'/userInfo'} element={<UserInfo />} />
 
       <Route path='/Ledger' element={<LedgerMain event={event} categoryList={categoryList} />} />
+      <Route path='/Ledger2' element={<LedgerMain2 event={event} categoryList={categoryList} />} />
+
       <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
       <Route path={'/calender'} element={<CalenderMain categoryList={categoryList} event={event} />} />
     </>
   );
-
-  const ConnectedLedgerMain = connect(mapStateToProps)(LedgerMain);
 
   return (
     <div className='App'>

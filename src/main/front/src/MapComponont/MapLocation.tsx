@@ -12,10 +12,10 @@ export default function MapLocation({ event }: any) {
   const dispatch = useAppDispatch();
   const ledger = useAppSelector((state: RootState) => state.ledger.ledger);
   const [locationList, setLocationList] = useState<LedgerType[]>();
-  //const [ledger , setLedger] = useState<LedgerType>()
   const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
   const [changeEvent, setChangeEvent] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
+  const selectButton = useAppSelector((state: RootState) => state.ledger.selectButton);
 
   // @ts-ignore
   const { kakao } = window;
@@ -210,7 +210,7 @@ export default function MapLocation({ event }: any) {
         el.removeChild(el.lastChild);
       }
     }
-  }, [changeEvent]);
+  }, [event]);
 
   const MapLedgerDetailFn = async (fileOwnerNo: any) => {
     try {

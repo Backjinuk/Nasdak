@@ -36,10 +36,13 @@ export interface LedgerType {
     x: number;
     y: number;
     price: number;
+    price2: number;
     ledgerType: string;
+    ledgerType2: string;
     location: location;
     comment: string;
     regDate: string;
+    useDate : string;
     filesDtoList: FilesType[];
 }
 

@@ -4,11 +4,14 @@ import org.apache.ibatis.annotations.Param;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.LedgerType;
 import org.nasdakgo.nasdak.Entity.Location;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface LedgerRepository extends JpaRepository<Ledger, Long> {
@@ -49,13 +52,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
             "WHERE l.user.userNo= :userNo " +
             "ORDER BY DATE_FORMAT(l.useDate, '%Y-%m-%d') DESC "
     )
-    List<Ledger> findAllUsers2(@Param("userNo") long userNo);
-
-
-//    SELECT DISTINCT DATE_FORMAT(use_date, '%Y-%m-%d') AS REG_DATE
-//    FROM Ledger l
-//    WHERE l.user_no = 1
-//    ORDER BY DATE_FORMAT(use_date, '%Y-%m-%d') DESC;
+    List<Ledger> findAllUsers2(@Param("userNo") long userNo, Pageable pageable);
 
     @Query(
             "SELECT l " +
@@ -89,4 +86,12 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
             "AND l.useDate >= CAST(CONCAT(DATE_FORMAT(NOW(), '%Y-%m-%d'), ' 00:00:00') AS TIMESTAMP) " +
             "AND l.useDate <= CAST(CONCAT(DATE_FORMAT(NOW(), '%Y-%m-%d'), ' 23:59:59') AS TIMESTAMP)" )
     int  TodayLedger(@Param("userNo") long userNo);
+
+
+    @Query("SELECT l FROM Ledger l " +
+            "WHERE  l.user.userNo= :userNo " +
+            "AND l.useDate >= CAST(CONCAT(DATE_FORMAT(:useDate , '%Y-%m-%d'), ' 00:00:00') AS TIMESTAMP) " +
+            "AND l.useDate <= CAST(CONCAT(DATE_FORMAT(:useDate , '%Y-%m-%d'), ' 23:59:59') AS TIMESTAMP)" )
+    Collection<Object> findByUseDateBetween(@Param("useDate") LocalDateTime useDate, @Param("userNo") long userNo);
+
 }

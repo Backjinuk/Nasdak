@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: 5050
 
 spring:
   servlet:
@@ -26,12 +26,13 @@ spring:
 #    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
-  #        format_sql: true
-  #        highlight_sql: true
-  #        use_sql_comments: true
+#        format_sql: true
+#        highlight_sql: true
+#        use_sql_comments: true
+
 decorator:
   datasource:
     p6spy:

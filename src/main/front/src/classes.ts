@@ -69,8 +69,11 @@ export class Ledger implements LedgerType {
   x = 0;
   y = 0;
   price = 0;
+  price2 = 0;
   ledgerType = '';
+  ledgerType2 = '';
   location = {...new location()};
+  useDate = '';
   comment = '';
   regDate = '';
   filesDtoList = [] as FilesType[];

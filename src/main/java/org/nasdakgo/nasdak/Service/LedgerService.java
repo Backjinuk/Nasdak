@@ -5,8 +5,12 @@ import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.LedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -36,9 +40,16 @@ public class LedgerService {
         return ledgerRepository.findAllUsers(userNo);
     }
 
-    public List<Ledger> findAllByUsers2(long userNo) {
-        return ledgerRepository.findAllUsers2(userNo);
+    public List<Ledger> findAllByUsers2(long userNo, int startPaging, int endPaging) {
+        int pageNumber = (endPaging != 0) ? startPaging / (endPaging - startPaging) : 0;
+        int pageSize = endPaging - startPaging;
+
+        Pageable pageable = PageRequest.of(startPaging, endPaging);
+
+        return ledgerRepository.findAllUsers2(userNo, pageable);
     }
+
+
 
     public List<Ledger> ledgerItem(String regDate, long userNo) {
         return ledgerRepository.ledgerItem(regDate, userNo);
@@ -60,4 +71,7 @@ public class LedgerService {
     }
 
 
+    public Collection<Object> findByUseDateBetween(LocalDate useDate, long userNo) {
+        return ledgerRepository.findByUseDateBetween(useDate.atStartOfDay(), userNo);
+    }
 }

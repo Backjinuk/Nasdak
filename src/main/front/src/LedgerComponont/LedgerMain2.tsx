@@ -18,12 +18,10 @@ export default function LedgerMain({categoryList , event} : any){
     const selectButtonValue = useAppSelector((state : RootState) => state.ledger.selectButton);
     const startPage = useAppSelector((state : RootState) => state.ledger.startPage);
     const endPage = useAppSelector((state : RootState) => state.ledger.endPage);
-    const [lendering, setLendering] = useState<boolean>(false);
 
     useEffect(() => {
         let value = selectButtonValue === 1 ?  "Day" : selectButtonValue === 2 ?  "Week" : selectButtonValue === 3 ?  "Month" : "Month3";
 
-        alert(11);
         dispatch(axiosGetLedgerAllDay({
             userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
             searchKey: value,
@@ -31,16 +29,10 @@ export default function LedgerMain({categoryList , event} : any){
             endPage: endPage
         }));
 
-        if (lendering) { // lendering 상태가 true이면 항상 실행
-            if(inView) {
-                dispatch(ChangePage({startPage: startPage + 5, endPage: endPage + 5}));
-                console.log(startPage, endPage);
-            }
-            setLendering(false); // 초기 렌더링 이후에는 lendering 상태를 false로 설정
+        if(inView) {
+            dispatch(ChangePage({startPage: startPage + 5, endPage: endPage + 5}));
         }
-
     }, [event, inView]);
-
 
 
     function ledgerDetail(key  : number){

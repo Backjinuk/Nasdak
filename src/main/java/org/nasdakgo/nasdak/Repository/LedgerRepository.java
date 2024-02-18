@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.LedgerType;
 import org.nasdakgo.nasdak.Entity.Location;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -51,7 +52,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
             "WHERE l.user.userNo= :userNo " +
             "ORDER BY DATE_FORMAT(l.useDate, '%Y-%m-%d') DESC "
     )
-    List<Ledger> findAllUsers2(@Param("userNo") long userNo);
+    List<Ledger> findAllUsers2(@Param("userNo") long userNo, Pageable pageable);
 
     @Query(
             "SELECT l " +

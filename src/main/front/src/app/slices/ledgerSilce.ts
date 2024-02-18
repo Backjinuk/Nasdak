@@ -17,6 +17,8 @@ const initialState: {
     selectButton : number;
     status: string;
     error: string;
+    startPage: number;
+    endPage: number;
 } = {
     event: false,
     ledgerList: {},  // 빈 객체로 초기화
@@ -24,7 +26,9 @@ const initialState: {
     ledgerItem: [],
     selectButton : 1,
     status: "idle",
-    error: ""
+    error: "",
+    startPage: 0,
+    endPage: 5
 };
 
 
@@ -37,6 +41,10 @@ const ledgerSlice = createSlice({
         },
         ChangeSelectButton: (state, action) => {
             state.selectButton = action.payload;
+        },
+        ChangePage: (state, action) => {
+            state.startPage = action.payload.startPage;
+            state.endPage = action.payload.endPage;
         }
     },
     extraReducers(builder) {
@@ -46,7 +54,7 @@ const ledgerSlice = createSlice({
             })
             .addCase(axiosGetLedgerAllDay.fulfilled,  (state, action) =>{
                 state.status = "succeeded";
-                state.ledgerList =  action.payload;
+                state.ledgerList =  {...state.ledgerList, ...action.payload}; // 기존 상태와 새로운 상태를 합침
             })
             .addCase(axiosGetLedgerAllDay.rejected, (state, action) => {
                 state.status  = "failed";
@@ -87,8 +95,9 @@ const ledgerSlice = createSlice({
 
 export const axiosGetLedgerAllDay = createAsyncThunk(
     "ledger/axiosGetLedgerAllDay",
-    async ({userNo, searchKey} : { userNo : number , searchKey : string}) => {
-        const res = await axios.post("/api/ledger/LedgerAllDayList", JSON.stringify({"userNo" : userNo, "searchKey" : searchKey}));
+    async ({userNo, searchKey, startPage, endPage} : { userNo : number , searchKey : string, startPage : number, endPage : number}) => {
+        const res = await axios.post("/api/ledger/LedgerAllDayList",
+            JSON.stringify({"userNo" : userNo, "searchKey" : searchKey, "startPage" : startPage, "endPage" : endPage}));
         return res.data;
     }
 )
@@ -135,5 +144,5 @@ export const axiosDeleteFileItem = createAsyncThunk(
 
 
 
-export const {changeEvent, ChangeSelectButton} = ledgerSlice.actions;
+export const {changeEvent, ChangeSelectButton, ChangePage} = ledgerSlice.actions;
 export default ledgerSlice.reducer;

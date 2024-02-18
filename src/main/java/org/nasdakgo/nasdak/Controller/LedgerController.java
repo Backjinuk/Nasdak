@@ -74,7 +74,20 @@ public class LedgerController {
      */
     @RequestMapping("LedgerAllDayList")
     public Map<String, List<?>> LedgerList(@RequestBody Map<String, Object> map) {
-        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo")))).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
+
+        int startPage = (map.get("startPage") == null) ? 0  : Integer.parseInt(String.valueOf(map.get("startPage")));
+        int endPage   = (map.get("endPage")   == null) ? 5  : Integer.parseInt(String.valueOf(map.get("endPage")));
+
+
+        System.out.println("startPage = " + startPage);
+        System.out.println("endPage = " + endPage);
+
+
+
+        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo"))), startPage, endPage)
+                                                    .stream()
+                                                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                                    .toList();
 
         String searchKey =  String.valueOf(map.get("searchKey"));
 

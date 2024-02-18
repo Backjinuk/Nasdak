@@ -7,6 +7,7 @@ import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Service.CategoryService;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,25 +25,25 @@ public class CategoryController {
     private final ModelMapper modelMapper;
 
     @RequestMapping("addCategory")
-    public CategoryDto addCategory(@RequestBody CategoryDto categoryDto){
-        Category category = toCategory(categoryDto);
+    public CategoryDto addCategory(@RequestBody CategoryDto categoryDto, Authentication authentication){
+        Category category = toCategory(categoryDto, authentication);
         categoryService.addCategory(category);
         return toCategoryDto(category);
     }
 
     @RequestMapping("updateCategory")
-    public void updateCategory(@RequestBody CategoryDto categoryDto){
-        categoryService.updateContent(toCategory(categoryDto));
+    public void updateCategory(@RequestBody CategoryDto categoryDto, Authentication authentication){
+        categoryService.updateContent(toCategory(categoryDto, authentication));
     }
 
     @RequestMapping("deleteCategory")
-    public void deleteCategory(@RequestBody CategoryDto categoryDto){
-        categoryService.deleteCategory(toCategory(categoryDto));
+    public void deleteCategory(@RequestBody CategoryDto categoryDto, Authentication authentication){
+        categoryService.deleteCategory(toCategory(categoryDto, authentication));
     }
 
     @RequestMapping("getCategoryList")
-    public List<CategoryDto> getCategoryList(@RequestBody UserDto userDto){
-        List<Category> categoryList = categoryService.getCategoryList(toUser(userDto));
+    public List<CategoryDto> getCategoryList(Authentication authentication){
+        List<Category> categoryList = categoryService.getCategoryList(toUser(authentication));
         return toCategoryDtoList(categoryList);
     }
 
@@ -57,15 +58,29 @@ public class CategoryController {
         categoryService.integrateCategory(before, after);
     }
 
-    private Category toCategory(CategoryDto categoryDto){
+    ///////////////////////////////////////////////////////////////////////////
+
+    private Category toCategory(CategoryDto categoryDto, Authentication authentication){
         Category category = modelMapper.map(categoryDto, Category.class);
-        User user = User.builder().userNo(categoryDto.getUserNo()).build();
+        User user = User.builder().userNo(Long.parseLong(authentication.getName())).build();
         category.setUser(user);
         return category;
     }
 
+    private Category toCategory(CategoryDto categoryDto){
+        return modelMapper.map(categoryDto, Category.class);
+    }
+
     private CategoryDto toCategoryDto(Category category){
         return modelMapper.map(category, CategoryDto.class);
+    }
+
+    private List<Category> toCategoryList(List<CategoryDto> categoryDtoList, Authentication authentication){
+        List<Category> categoryList = new ArrayList<>();
+        for (CategoryDto categoryDto : categoryDtoList) {
+            categoryList.add(toCategory(categoryDto, authentication));
+        }
+        return categoryList;
     }
 
     private List<Category> toCategoryList(List<CategoryDto> categoryDtoList){
@@ -82,6 +97,16 @@ public class CategoryController {
             categoryDtoList.add(toCategoryDto(category));
         }
         return categoryDtoList;
+    }
+
+    private User toUser(UserDto userDto, Authentication authentication){
+        User user = modelMapper.map(userDto, User.class);
+        user.setUserNo(Long.parseLong(authentication.getName()));
+        return user;
+    }
+
+    private User toUser(Authentication authentication){
+        return User.builder().userNo(Long.parseLong(authentication.getName())).build();
     }
 
     private User toUser(UserDto userDto){

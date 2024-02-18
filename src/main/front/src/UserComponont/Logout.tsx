@@ -1,24 +1,20 @@
 import { Button } from '@mui/material';
-import { setCookie } from 'Cookies';
+import { getCookie, setCookie } from 'Cookies';
 import { useAppDispatch } from 'app/hooks';
-import { logoutUser } from 'app/slices/loginUserSlice';
 import { useNavigate } from 'react-router-dom';
-import logout from './js/logout';
+import axios from 'customFunction/customAxios';
+import { axiosLogout, logout } from 'app/slices/userSlice';
+import { dropCategories } from 'app/slices/categoriesSlice';
 
 export default function Logout() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const snsType = sessionStorage.getItem('snsType');
-  function handleClick() {
-    if (snsType === 'KAKAO') {
-      window.Kakao.Auth.setAccessToken(sessionStorage.getItem('accessToken'));
-      window.Kakao.Auth.logout();
-    }
-    logout(dispatch);
-    setCookie('accessToken', '', { maxAge: 0 });
-    setCookie('refreshToken', '', { maxAge: 0 });
-    dispatch(logoutUser());
+  async function handleClick() {
+    const refreshToken = getCookie('refreshToken');
+    await dispatch(axiosLogout(refreshToken));
+    dispatch(dropCategories());
+    dispatch(logout());
     navigate('/');
   }
 

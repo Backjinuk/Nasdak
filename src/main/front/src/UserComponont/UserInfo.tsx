@@ -12,7 +12,6 @@ import { Fragment, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import logout from 'UserComponont/js/logout';
 import Join from './Join';
 import { handleSNSLogin, setSnsState } from 'UserComponont/js/snsLogin';
 import CategoryList from 'categoryComponent/CategortList';
@@ -21,8 +20,10 @@ import {
   axiosDeleteUser,
   axiosDisconnectSns,
   axiosGetUser,
+  axiosLogout,
   axiosUpdateUser,
   disConnectSns,
+  logout,
   selectUser,
 } from 'app/slices/userSlice';
 import ChangeSnsDialog from './userInfo/ChangeSnsDialog';
@@ -32,6 +33,8 @@ import { Sns } from 'classes';
 import ChangePasswordDialog from './userInfo/ChangePasswordDialog';
 import ChangeEmailDialog from './userInfo/ChangeEmailDialog';
 import ChangePhoneDialog from './userInfo/ChangePhoneDialog';
+import { getCookie } from 'Cookies';
+import { dropCategories } from 'app/slices/categoriesSlice';
 
 declare global {
   interface Window {
@@ -45,7 +48,6 @@ export default function UserInfo() {
   const navigate = useNavigate();
   const backup = useAppSelector(selectUser);
   const userStatus = useAppSelector((state) => state.user.status);
-  const userNo = Number(sessionStorage.getItem('userNo'));
 
   const [user, setUser] = useState({ ...backup });
   const [snsSet, setSnsSet] = useState({ ...initialSnsSet });
@@ -71,7 +73,7 @@ export default function UserInfo() {
   useEffect(() => {
     setSnsState('connect');
     if (userStatus === 'idle') {
-      dispatch(axiosGetUser(userNo));
+      dispatch(axiosGetUser());
     }
   }, []);
 
@@ -131,8 +133,10 @@ export default function UserInfo() {
       }
     }
 
-    await dispatch(axiosDeleteUser(userNo));
-    logout(dispatch);
+    await dispatch(axiosDeleteUser());
+    await dispatch(axiosLogout(getCookie('refreshToken')));
+    dispatch(dropCategories());
+    dispatch(logout());
     navigate('/');
   }
 
@@ -144,7 +148,6 @@ export default function UserInfo() {
   async function disconnectSns(snsType: string) {
     const data = {
       userNo: user.userNo,
-      accessToken: sessionStorage.getItem('accessToken'),
       snsType: snsType,
     };
 
@@ -155,7 +158,7 @@ export default function UserInfo() {
       handleClose();
       return true;
     } else {
-      handleSNSLogin('kakao');
+      handleSNSLogin(snsType);
       return false;
     }
   }
@@ -163,7 +166,7 @@ export default function UserInfo() {
   const snsSignUp = (
     <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 3 }}>
       <Typography component='h1' variant='h6' sx={{ mr: 1 }}>
-        {sessionStorage.getItem('snsType')}로 로그인한 계정입니다.
+        소셜 로그인 계정입니다.
       </Typography>
       <Button variant='contained' onClick={handleSignUpOpen}>
         회원 가입

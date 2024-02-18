@@ -3,6 +3,8 @@ package org.nasdakgo.nasdak.Controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.nasdakgo.nasdak.Config.JwtTokenProvider;
+import org.nasdakgo.nasdak.Dto.JwtTokenDto;
 import org.nasdakgo.nasdak.Dto.SNSDto;
 import org.nasdakgo.nasdak.Dto.SNSLoginDto;
 import org.nasdakgo.nasdak.Dto.UserDto;
@@ -13,15 +15,17 @@ import org.nasdakgo.nasdak.Service.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,13 +43,16 @@ public class SNSController {
 
     private final KakaoService kakaoService;
 
+    private final JwtTokenProvider jwtTokenProvider;
+
     @Value("${download.file.profile}")
     private String downloadProfilePath;
 
     ////////////////////////////// 공통 //////////////////////////////
     @RequestMapping("/connect")
-    public ResponseEntity<?> connect(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
+    public ResponseEntity<?> connect(@RequestBody SNSLoginDto snsLoginDto, Authentication authentication) throws Exception {
         SNS sns;
+        snsLoginDto.setUserNo(Long.parseLong(authentication.getName()));
         if(snsLoginDto.isExist()){
             sns = snsService.findById(SNS.builder().snsNo(snsLoginDto.getSnsNo()).build());
             boolean duplicatied = snsService.isDuplicatiedSns(snsLoginDto.getSnsNo(), snsLoginDto.getUserNo());
@@ -60,8 +67,8 @@ public class SNSController {
         return new ResponseEntity<>(toUserDtoWithSNS(user),HttpStatus.OK);
     }
 
-    @RequestMapping("/connectNewSNS/{key}")
-    public SNSDto connectNewSNS(@RequestBody UserDto userDto, @PathVariable String key){
+    @RequestMapping("/public/connectNewSNS/{key}")
+    public ResponseEntity<JwtTokenDto> connectNewSNS(@RequestBody UserDto userDto, @PathVariable String key){
         User user = toUser(userDto);
         SNS sns = snsService.findCachedSns(key);
         if(user.getUserNo()==0){
@@ -71,21 +78,21 @@ public class SNSController {
             snsService.connect(sns);
         }
 
-        return toSNSDto(sns);
+        return ResponseEntity.ok(getTokenByUserNo(sns.getUser().getUserNo()));
     }
 
-    @RequestMapping("/deleteSnsMap/{key}")
+    @RequestMapping("/public/deleteSnsMap/{key}")
     public void deleteSnsMap(@PathVariable String key){
         snsService.deleteCachedSns(key);
     }
 
-    @RequestMapping("/snsLogin")
-    public ResponseEntity<?> snsLogin(@RequestBody SNSDto snsDto) throws Exception {
+    @RequestMapping("/public/snsLogin")
+    public ResponseEntity<JwtTokenDto> snsLogin(@RequestBody SNSDto snsDto) throws Exception {
         SNS find = snsService.findById(toSNS(snsDto));
-        return new ResponseEntity<>(toSNSDto(find), HttpStatus.OK);
+        return ResponseEntity.ok(getTokenByUserNo(find.getUser().getUserNo()));
     }
 
-    @RequestMapping("/isDuplicatedUserInfo")
+    @RequestMapping("/public/isDuplicatedUserInfo")
     public ResponseEntity<SNSLoginDto> isDuplicatedUserInfo(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
         SNS sns = snsService.findCachedSns(snsLoginDto.getKey());
         List<User> list = snsService.findExistedUser(sns);
@@ -93,7 +100,6 @@ public class SNSController {
             snsLoginDto.setResult(false);
             return ResponseEntity.ok(snsLoginDto);
         }else{
-            Map<String, Object> responseMap = new HashMap<>();
             List<UserDto> dtoList = new ArrayList<>();
             list.forEach(user -> dtoList.add(toUserDtoWithSNS(user)));
             snsLoginDto.setExistUsers(dtoList);
@@ -102,20 +108,20 @@ public class SNSController {
         }
     }
 
-    @RequestMapping("/signUp")
-    public ResponseEntity<SNSDto> signUp(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
+    @RequestMapping("/public/signUp")
+    public ResponseEntity<JwtTokenDto> signUp(@RequestBody SNSLoginDto snsLoginDto) throws Exception {
         SNS sns = snsService.findCachedSns(snsLoginDto.getKey());
         snsService.signUp(sns);
-        return ResponseEntity.ok(toSNSDto(sns));
+        return ResponseEntity.ok(getTokenByUserNo(sns.getUser().getUserNo()));
     }
 
     @RequestMapping("/disconnect")
-    public boolean disconnect(@RequestBody SNSDto snsDto) throws Exception {
+    public boolean disconnect(@RequestBody SNSDto snsDto, Authentication authentication) throws Exception {
         // Api 지정
         ApiService apiService = getApiService(snsDto.getSnsType());
 
         // 해당 sns 계정 정보 가져오기
-        SNS sns = snsService.findByUserAndSnsType(toSNSWithUser(snsDto));
+        SNS sns = snsService.findByUserAndSnsType(toSNS(snsDto, authentication));
 
         // 토큰 유효성 검사
         if(snsDto.getAccessToken()==null||apiService.refreshCheck(snsDto.getAccessToken())){
@@ -141,8 +147,8 @@ public class SNSController {
     }
 
     @RequestMapping("/changeConnection")
-    public void changeConnection(@RequestBody SNSDto snsDto){
-        SNS sns = toSNSWithUser(snsDto);
+    public void changeConnection(@RequestBody SNSDto snsDto, Authentication authentication){
+        SNS sns = toSNS(snsDto, authentication);
         User find = snsService.findUserBySns(sns);
         snsService.changeConnection(sns);
         if(find.getUserId()==null&&snsService.findByUser(find).isEmpty()){
@@ -161,15 +167,22 @@ public class SNSController {
         }
         throw new Exception();
     }
+
+    private JwtTokenDto getTokenByUserNo(long userNo){
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+        UsernamePasswordAuthenticationToken authenticate =
+                new UsernamePasswordAuthenticationToken(userNo, "", Collections.singletonList(authority));
+        return jwtTokenProvider.generateToken(authenticate);
+    }
     ////////////////////////////// 공통 //////////////////////////////
 
     // Entity <-> Dto 변환
     private SNS toSNS(SNSDto snsDto){
         return modelMapper.map(snsDto, SNS.class);
     }
-    private SNS toSNSWithUser(SNSDto snsDto){
+    private SNS toSNS(SNSDto snsDto, Authentication authentication){
         SNS sns = modelMapper.map(snsDto, SNS.class);
-        sns.setUser(User.builder().userNo(snsDto.getUserNo()).build());
+        sns.setUser(User.builder().userNo(Long.parseLong(authentication.getName())).build());
         return sns;
     }
     private SNSDto toSNSDto(SNS sns){
@@ -179,6 +192,11 @@ public class SNSController {
     }
     private User toUser(UserDto userDto){
         return modelMapper.map(userDto, User.class);
+    }
+    private User toUser(UserDto userDto, Authentication authentication){
+        User user = modelMapper.map(userDto, User.class);
+        user.setUserNo(Long.parseLong(authentication.getName()));
+        return user;
     }
     private UserDto toUserDto(User user){
         if(user.getProfile()!=null){

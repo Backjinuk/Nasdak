@@ -1,11 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { getCookie, setCookie } from 'Cookies';
 import { SnsType, UserType } from 'TypeList';
 import { RootState } from 'app/store';
 import { Sns, User } from 'classes';
 import axios from 'customFunction/customAxios';
 
-const initialState: { user: UserType; status: string; error: string } = {
+const initialState: { user: UserType; isLogin: boolean; status: string; error: string } = {
   user: { ...new User() },
+  isLogin: getCookie('accessToken') !== undefined,
   status: 'idle',
   error: '',
 };
@@ -14,9 +16,19 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    dropUserInfo: (state) => {
+    login: (state, action) => {
+      state.isLogin = true;
+      setCookie('accessToken', action.payload.accessToken, {
+        maxAge: Number(action.payload.accessTokenExpiresIn) / 1000,
+      });
+      setCookie('refreshToken', action.payload.refreshToken, {
+        maxAge: Number(action.payload.refreshTokenExpiresIn) / 1000,
+      });
+    },
+    logout: (state) => {
       state.status = 'idle';
       state.user = { ...new User() };
+      state.isLogin = false;
     },
     connectSns: (state, action) => {
       const snsType: string = action.payload;
@@ -71,8 +83,8 @@ export const userSlice = createSlice({
   },
 });
 
-export const axiosGetUser = createAsyncThunk('user/axiosGetUser', async (userNo: number) => {
-  const res = await axios.post('/api/user/getUserInfo', JSON.stringify({ userNo }));
+export const axiosGetUser = createAsyncThunk('user/axiosGetUser', async () => {
+  const res = await axios.post('/api/user/getUserInfo');
   return res.data;
 });
 
@@ -91,18 +103,17 @@ export const axiosUpdateUser = createAsyncThunk(
   }
 );
 
-export const axiosDeleteUser = createAsyncThunk('user/axiosDeleteUser', async (userNo: number) => {
-  await axios.post('/api/user/deleteUser', JSON.stringify({ userNo }));
+export const axiosDeleteUser = createAsyncThunk('user/axiosDeleteUser', async () => {
+  await axios.post('/api/user/deleteUser');
 });
 
 export const axiosConnectSns = createAsyncThunk(
   'user/axiosConnectSns',
-  async (map: { exist: boolean; snsNo: string; key: string; userNo: number }) => {
+  async (map: { exist: boolean; snsNo: string; key: string }) => {
     const input = {
       exist: map.exist,
       snsNo: map.snsNo,
       key: map.key,
-      userNo: map.userNo,
     };
     const res = await axios.post('/api/sns/connect', JSON.stringify(input));
     return res.data;
@@ -185,7 +196,7 @@ export const axiosChangePassword = createAsyncThunk(
 export const axiosConnectNewSns = createAsyncThunk(
   'user/axiosConnectNewSns',
   async (data: { key: string; userNo: number }) => {
-    const res = await axios.post(`/api/sns/connectNewSNS/${data.key}`, JSON.stringify({ userNo: data.userNo }));
+    const res = await axios.post(`/api/sns/public/connectNewSNS/${data.key}`, JSON.stringify({ userNo: data.userNo }));
     return res.data;
   }
 );
@@ -201,7 +212,18 @@ export const axiosCancelSignUp = createAsyncThunk(
   }
 );
 
-export const { dropUserInfo, connectSns, disConnectSns } = userSlice.actions;
+export const axiosLogin = createAsyncThunk('user/axiosLogin', async (data: { userId: string; password: string }) => {
+  const res = await axios.public.post(`/api/user/public/login`, JSON.stringify(data));
+  return res.data;
+});
+
+export const axiosLogout = createAsyncThunk('user/axiosLogout', async (refreshToken: string) => {
+  await axios.post('/api/user/logout', JSON.stringify({ refreshToken }));
+  setCookie('accessToken', '', { maxAge: 0 });
+  setCookie('refreshToken', '', { maxAge: 0 });
+});
+
+export const { login, logout, connectSns, disConnectSns } = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -223,3 +245,5 @@ const deleteUserProfile = (user: UserType, existingFile: string) => {
   };
   axios.post('/api/user/deleteProfile', JSON.stringify(data));
 };
+
+export const selectIsLogin = (state: RootState) => state.user.isLogin;

@@ -12,6 +12,18 @@ public class Delay {
 
     private Instant instant;
 
+    public static Delay ofDays(long delay){
+        Delay d = new Delay();
+        d.instant = Instant.now().plus(Duration.ofDays(delay));
+        return d;
+    }
+
+    public static Delay ofHours(long delay){
+        Delay d = new Delay();
+        d.instant = Instant.now().plus(Duration.ofHours(delay));
+        return d;
+    }
+
     public static Delay ofMinutes(long delay){
         Delay d = new Delay();
         d.instant = Instant.now().plus(Duration.ofMinutes(delay));

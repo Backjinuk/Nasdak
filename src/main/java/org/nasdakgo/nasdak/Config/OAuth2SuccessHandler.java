@@ -4,11 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.nasdakgo.nasdak.Dto.JwtTokenDto;
 import org.nasdakgo.nasdak.Entity.SNS;
 import org.nasdakgo.nasdak.Service.SNSService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -40,6 +41,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         log.info("Principal에서 꺼낸 OAuth2User = {}", oAuth2User);
 
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
         String refreshToken = getRefreshToken(oAuth2User, authentication, request);
         log.info("refreshToken = " + refreshToken);
 
@@ -52,12 +57,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build();
         SNS find = snsService.login(sns);
 
-        log.info("토큰 발행 시작");
-        JwtTokenDto token = jwtTokenProvider.generateToken(authentication, "sns");
-        log.info("{}", token);
-
         log.info("url 설정");
-        String targetUrl = getTargetUrl(token, find, sns);
+        String targetUrl = getTargetUrl(find, sns, authorities);
         log.info("url = {}", targetUrl);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
@@ -69,12 +70,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         return refreshToken.getTokenValue();
     }
 
-    private String getTargetUrl(JwtTokenDto token, SNS find, SNS sns){
+    private String getTargetUrl(SNS find, SNS sns, String authorities){
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(frontBaseUrl + "/snsLogin")
-                .queryParam("accessToken", token.getAccessToken())
-                .queryParam("refreshToken", token.getRefreshToken())
-                .queryParam("accessTokenExpiresIn", token.getAccessTokenExpiresIn())
-                .queryParam("refreshTokenExpiresIn", token.getRefreshTokenExpiresIn());
+                .queryParam("authorities", authorities);
         if(find==null){
             builder.queryParam("result", "new");
             String key = snsService.cacheSns(sns);

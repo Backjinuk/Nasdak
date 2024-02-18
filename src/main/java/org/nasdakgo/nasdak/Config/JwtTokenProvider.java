@@ -5,24 +5,24 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 import org.nasdakgo.nasdak.Dto.JwtTokenDto;
+import org.nasdakgo.nasdak.Entity.RefreshTokenMap;
+import org.nasdakgo.nasdak.Service.RefreshTokenMapService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
 @Component
 public class JwtTokenProvider {
+
+    private final RefreshTokenMapService refreshTokenMapService;
 
     private final Key key;
     private final long sec = 1000L;
@@ -30,20 +30,24 @@ public class JwtTokenProvider {
     private final long hour = 60*min;
     private final long day = 24*hour;
     private final Long accessTokenExpiresIn = 10*min;
-    private final Long refreshTokenExpiresIn = 30*day;
+    private final Long refreshTokenExpiresIn = 10*day;
 
     // application.yml에서 secret 값 가져와서 key에 저장
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+    @Autowired
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenMapService refreshTokenMapService) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.refreshTokenMapService = refreshTokenMapService;
     }
 
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
-    public JwtTokenDto generateToken(Authentication authentication, String type) {
+    public JwtTokenDto generateToken(Authentication authentication) {
         // 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
+
+        log.info("authorities = " + authorities);
 
         long now = (new Date()).getTime();
 
@@ -52,19 +56,27 @@ public class JwtTokenProvider {
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
-                .claim("type", type)
                 .setExpiration(accessTokenExpiresDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
+        String refreshTokenMapKey = UUID.randomUUID().toString();
+
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .claim("auth", authorities)
                 .setExpiration(new Date(now + refreshTokenExpiresIn))
                 .signWith(key, SignatureAlgorithm.HS256)
-                .claim("type", type)
-                .setSubject(authentication.getName())
+                .claim("key", refreshTokenMapKey)
                 .compact();
+
+        RefreshTokenMap refreshTokenMap = RefreshTokenMap.builder()
+                .authorities(authorities)
+                .refreshTokenMapKey(refreshTokenMapKey)
+                .expiredTime(new Date(now + refreshTokenExpiresIn).getTime())
+                .name(authentication.getName())
+                .build();
+
+        refreshTokenMapService.saveRefreshTokenMap(refreshTokenMap);
 
         return JwtTokenDto.builder()
                 .grantType("Bearer")
@@ -76,29 +88,50 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(String accessToken) {
-        // Jwt 토큰 복호화
-        Claims claims = parseClaims(accessToken);
+    // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
+    public JwtTokenDto refreshToken(String oldRefreshToken) {
+        Claims claims = parseClaims(oldRefreshToken);
+        RefreshTokenMap refreshTokenMap = refreshTokenMapService.getRefreshTokenMap((String)claims.get("key"));
 
-        if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
-        }
+        long now = (new Date()).getTime();
 
-        // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        // Access Token 생성
+        Date accessTokenExpiresDate = new Date(now + accessTokenExpiresIn);
+        String accessToken = Jwts.builder()
+                .setSubject(refreshTokenMap.getName())
+                .claim("auth", refreshTokenMap.getAuthorities())
+                .setExpiration(accessTokenExpiresDate)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
 
-        // UserDetails 객체를 만들어서 Authentication return
-        // UserDetails: interface, User: UserDetails를 구현한 class
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-    }
+        String refreshTokenMapKey = UUID.randomUUID().toString();
 
-    public String getType(String token){
-        Claims claims = parseClaims(token);
-        return (String)claims.get("type");
+        // Refresh Token 생성
+        String refreshToken = Jwts.builder()
+                .setExpiration(new Date(now + refreshTokenExpiresIn))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .claim("key", refreshTokenMapKey)
+                .compact();
+
+        refreshTokenMapService.deleteRefreshTokenMap(refreshTokenMap.getRefreshTokenMapKey());
+
+        refreshTokenMap = RefreshTokenMap.builder()
+                .authorities(refreshTokenMap.getAuthorities())
+                .refreshTokenMapKey(refreshTokenMapKey)
+                .expiredTime(new Date(now + refreshTokenExpiresIn).getTime())
+                .name(refreshTokenMap.getName())
+                .build();
+
+        refreshTokenMapService.saveRefreshTokenMap(refreshTokenMap);
+
+        return JwtTokenDto.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .refreshTokenExpiresIn(refreshTokenExpiresIn)
+                .accessTokenExpiresIn(accessTokenExpiresIn)
+                .userNo(refreshTokenMap.getName())
+                .build();
     }
 
     // 토큰 정보를 검증하는 메서드

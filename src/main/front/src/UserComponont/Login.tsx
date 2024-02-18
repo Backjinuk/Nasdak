@@ -10,10 +10,10 @@ import { UserType } from 'TypeList';
 import ConnectToExistUserDialog from './ConnectToExistUserDialog';
 import axios from 'customFunction/customAxios';
 import { useAppDispatch } from 'app/hooks';
-import { loginUser } from 'app/slices/loginUserSlice';
+import { axiosLogin, login } from 'app/slices/userSlice';
 declare global {
   interface Window {
-    snsLoginNavigate?: any;
+    loginNavigate?: any;
     setExistUsers?: any;
     handleOpenExistUsers?: any;
     setSnsKey?: any;
@@ -55,7 +55,7 @@ export default function Login() {
 
   const LoginMember = async () => {
     try {
-      const res = await axios.public.post('/api/user/public/login', JSON.stringify({ userId: id, password: pwd }));
+      const action = await dispatch(axiosLogin({ userId: id, password: pwd }));
       Swal.fire({
         icon: 'success',
         title: '로그인 되었습니다.',
@@ -67,21 +67,8 @@ export default function Login() {
       } else {
         setCookie('userId', '', { maxAge: 0 });
       }
-      sessionStorage.setItem('userId', id);
-      sessionStorage.setItem('userNo', res.data.userNo);
-      sessionStorage.setItem('userDto', JSON.stringify({ userId: id, userNo: res.data.userNo }));
-      setCookie('accessToken', res.data.accessToken, { maxAge: Number(res.data.accessTokenExpiresIn) / 1000 });
-      setCookie('refreshToken', res.data.refreshToken, { maxAge: Number(res.data.refreshTokenExpiresIn) / 1000 });
-      dispatch(
-        loginUser({
-          userNo: res.data.userNo,
-          userId: id,
-          accessToken: res.data.accessToken,
-          refreshToken: res.data.refreshToken,
-        })
-      );
-      // navigate('/userInfo');
-      navigate('/ledger');
+      const data = action.payload;
+      loginNavigate(data.accessToken, data.refreshToken, data.accessTokenExpiresIn, data.refreshTokenExpiresIn);
     } catch (error) {
       Swal.fire({
         icon: 'error',
@@ -96,20 +83,18 @@ export default function Login() {
     setCookie('remember', e.target.checked, { maxAge: 60 * 60 * 24 * 30 });
   }
 
-  const snsLoginNavigate = (userNo: any, snsType: any) => {
-    sessionStorage.setItem('userNo', userNo);
-    sessionStorage.setItem('snsType', snsType);
-    sessionStorage.setItem('userDto', JSON.stringify({ userNo: userNo }));
-    sessionStorage.removeItem('userId');
-    dispatch(
-      loginUser({ userNo, userId: '', accessToken: getCookie('accessToken'), refreshToken: getCookie('refreshToken') })
-    );
-    // navigate('/userInfo');
+  const loginNavigate = (
+    accessToken: string,
+    refreshToken: string,
+    accessTokenExpiresIn: string,
+    refreshTokenExpiresIn: string
+  ) => {
+    dispatch(login({ accessToken, refreshToken, accessTokenExpiresIn, refreshTokenExpiresIn }));
     navigate('/ledger');
   };
 
   // sns 로그인 후 세션 저장
-  window.snsLoginNavigate = snsLoginNavigate;
+  window.loginNavigate = loginNavigate;
 
   return (
     <>
@@ -186,8 +171,23 @@ export default function Login() {
         handleClose={handleClose}
         existUsers={existUsers}
         snsKey={snsKey}
-        snsLoginNavigate={snsLoginNavigate}
+        loginNavigate={loginNavigate}
       />
+      <Button
+        onClick={async () => {
+          const res = await axios.post('/api/token/test', JSON.stringify({ userNo: 1 }));
+          console.table(res.data);
+        }}
+      >
+        test
+      </Button>
+      <Button
+        onClick={() => {
+          setCookie('accessToken', '', { maxAge: 0 });
+        }}
+      >
+        remove AccessToken
+      </Button>
     </>
   );
 }

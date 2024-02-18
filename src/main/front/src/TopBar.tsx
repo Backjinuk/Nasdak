@@ -22,9 +22,8 @@ export default function TopBar() {
   const categoryStatus = useAppSelector((state) => state.categories.status);
 
   useEffect(() => {
-    const userNo = Number(sessionStorage.getItem('userNo'));
     if (categoryStatus === 'idle') {
-      dispatch(axiosGetCategoryList(userNo));
+      dispatch(axiosGetCategoryList());
     }
 
     //startEventTimer();

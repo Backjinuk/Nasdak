@@ -63,8 +63,8 @@ public class UserController {
     }
 
     @RequestMapping("updateSNSUser")
-    public UserDto updateSNSUser(@RequestBody UserDto userDto){
-        userService.updateSNSUser(toUser(userDto));
+    public UserDto updateSNSUser(@RequestBody UserDto userDto, Authentication authentication){
+        userService.updateSNSUser(toUser(userDto, authentication));
         return userDto;
     }
 
@@ -104,7 +104,7 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(userDto.getUserId(), userDto.getPassword());
         Authentication authenticate = authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authenticate);
-        return jwtTokenProvider.generateToken(authenticate, "user");
+        return jwtTokenProvider.generateToken(authenticate);
     }
 
     @PostMapping("public/findId")
@@ -123,24 +123,24 @@ public class UserController {
     }
 
     @RequestMapping("getUserInfo")
-    public UserDto getUserInfo(@RequestBody UserDto userDto){
-        User user = userService.getUserInfo(toUser(userDto));
+    public UserDto getUserInfo(Authentication authentication){
+        User user = userService.getUserInfo(toUser(authentication));
         return toUserDtoWithSNS(user);
     }
 
     @RequestMapping("updateUserInfo")
-    public void updateUserInfo(@RequestBody UserDto userDto){
-        userService.updateUserInfo(toUser(userDto));
+    public void updateUserInfo(@RequestBody UserDto userDto, Authentication authentication){
+        userService.updateUserInfo(toUser(userDto, authentication));
     }
 
     @RequestMapping("updateEmail")
-    public void updateEmail(@RequestBody UserDto userDto){
-        userService.updateEmail(toUser(userDto));
+    public void updateEmail(@RequestBody UserDto userDto, Authentication authentication){
+        userService.updateEmail(toUser(userDto, authentication));
     }
 
     @RequestMapping("updatePhone")
-    public void updatePhone(@RequestBody UserDto userDto){
-        userService.updatePhone(toUser(userDto));
+    public void updatePhone(@RequestBody UserDto userDto, Authentication authentication){
+        userService.updatePhone(toUser(userDto, authentication));
     }
 
     @GetMapping("public/isDuplicatedEmail/{email}")
@@ -154,14 +154,15 @@ public class UserController {
     }
 
     @RequestMapping("deleteUser")
-    public void deleteUser(@RequestBody UserDto userDto){
-        User user = toUser(userDto);
+    public void deleteUser(Authentication authentication){
+        User user = toUser(authentication);
         userService.deleteUser(user);
     }
 
     @RequestMapping("logout")
-    public void logout(){
-
+    public void logout(@RequestBody JwtTokenDto jwtTokenDto){
+        String refreshToken = jwtTokenDto.getRefreshToken();
+        userService.logout(refreshToken);
     }
     
     @RequestMapping("public/uploadProfile")
@@ -177,17 +178,17 @@ public class UserController {
     }
 
     @RequestMapping("updateProfile")
-    public String updateProfile(@RequestParam(name = "userNo") Long userNo,
-                              @RequestParam(name = "before") String before,
-                              @ModelAttribute(name = "mf")MultipartFile mf) throws Exception {
+    public String updateProfile(@RequestParam(name = "before") String before,
+                              @ModelAttribute(name = "mf")MultipartFile mf,
+                                Authentication authentication) throws Exception {
         boolean b = this.removeProfile(before);
         log.info("파일삭제 : "+b);
-        return this.uploadProfile(userNo, mf);
+        return this.uploadProfile(Long.parseLong(authentication.getName()), mf);
     }
 
     @RequestMapping("deleteProfile")
-    public void deleteProfile(@RequestBody UserDto userDto) {
-        User user = toUser(userDto);
+    public void deleteProfile(@RequestBody UserDto userDto, Authentication authentication) {
+        User user = toUser(userDto, authentication);
         boolean b = this.removeProfile(user.getProfile());
         log.info("파일삭제 : "+b);
         user.setProfile(null);
@@ -195,8 +196,8 @@ public class UserController {
     }
 
     @RequestMapping("notification")
-    public String notification(@RequestBody UserDto userDto){
-        User user = userService.findById(userDto.getUserNo());
+    public String notification(@RequestBody UserDto userDto, Authentication authentication){
+        User user = userService.findById(Long.parseLong(authentication.getName()));
         return user.isSendWebPush() ?   "on" : "off";
     }
 
@@ -209,8 +210,20 @@ public class UserController {
         return false;
     }
 
+    ///////////////////////////////////////////////////////
+
     private User toUser(UserDto userDto){
         return modelMapper.map(userDto, User.class);
+    }
+
+    private User toUser(UserDto userDto, Authentication authentication){
+        User user = modelMapper.map(userDto, User.class);
+        user.setUserNo(Long.parseLong(authentication.getName()));
+        return user;
+    }
+
+    private User toUser(Authentication authentication){
+        return User.builder().userNo(Long.parseLong(authentication.getName())).build();
     }
 
     private UserDto toUserDto(User user){
@@ -228,10 +241,15 @@ public class UserController {
         userDto.setSnsDtoList(user.getSnsList().stream().map(this::toSNSDto).toList());
         return userDto;
     }
-    
 
     private SNS toSNS(SNSDto snsDto){
         return modelMapper.map(snsDto, SNS.class);
+    }
+
+    private SNS toSNS(SNSDto snsDto, Authentication authentication){
+        SNS sns = modelMapper.map(snsDto, SNS.class);
+        sns.setUser(User.builder().userNo(Long.parseLong(authentication.getName())).build());
+        return sns;
     }
 
     private SNSDto toSNSDto(SNS sns){

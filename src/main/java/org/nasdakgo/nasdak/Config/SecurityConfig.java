@@ -35,6 +35,8 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final JwtTokenParser jwtTokenParser;
+
     private final ClientRegistrationRepository clientRegistrationRepository;
 
     private final NasdakOAuth2UserService nasdakOAuth2UserService;
@@ -53,6 +55,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/user/public/**").permitAll()
+                        .requestMatchers("/api/sns/public/**").permitAll()
                         .requestMatchers("/api/token/refreshToken").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -61,7 +64,7 @@ public class SecurityConfig {
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
                 )
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, jwtTokenParser), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Client(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository)
                 )

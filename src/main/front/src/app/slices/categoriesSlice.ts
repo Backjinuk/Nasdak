@@ -47,12 +47,11 @@ export const categoriesSlice = createSlice({
       .addCase(axiosIntegrateCategory.fulfilled, (state, action) => {
         categoriesAdapter.removeMany(state, action.payload);
       });
-
   },
 });
 
-export const axiosGetCategoryList = createAsyncThunk('categories/axiosGetCategoryList', async (userNo: number) => {
-  const res = await axios.post('/api/category/getCategoryList', JSON.stringify({ userNo }));
+export const axiosGetCategoryList = createAsyncThunk('categories/axiosGetCategoryList', async () => {
+  const res = await axios.post('/api/category/getCategoryList');
   return res.data;
 });
 

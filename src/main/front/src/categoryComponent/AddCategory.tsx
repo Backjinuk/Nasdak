@@ -16,11 +16,10 @@ export default function AddCategory() {
     setOpen(false);
   };
 
-  const userNo = Number(sessionStorage.getItem('userNo'));
   const canAddCategory = content === '';
 
   async function addCategory() {
-    const data = Category.getByData({ userNo, content });
+    const data = Category.getByData({ content });
     await dispatch(axiosAddCategory(data));
     handleClose();
   }

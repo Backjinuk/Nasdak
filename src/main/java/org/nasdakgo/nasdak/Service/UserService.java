@@ -6,6 +6,7 @@ import Utils.ValidationToken;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.nasdakgo.nasdak.Config.JwtTokenParser;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,8 @@ public class UserService {
     private final SchedulerService schedulerService;
     private final MailUtil mailUtil;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenMapService refreshTokenMapService;
+    private final JwtTokenParser jwtTokenParser;
 
     private final Map<String, ValidationToken> tokenMap = new HashMap<>();
     private final Map<String, String> signUpIdsMap = new HashMap<>();
@@ -137,8 +140,9 @@ public class UserService {
         userRepository.deleteUser(user.getUserNo());
     }
 
-    public void logout(){
-
+    public void logout(String refreshToken){
+        String refreshTokenMapKey = jwtTokenParser.getRefreshTokenMapKey(refreshToken);
+        refreshTokenMapService.deleteRefreshTokenMap(refreshTokenMapKey);
     }
 
     public void uploadProfile(User user){

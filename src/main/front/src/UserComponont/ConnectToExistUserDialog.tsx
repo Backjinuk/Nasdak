@@ -24,16 +24,15 @@ export default function ConnectToExistUserDialog(props: any) {
     dispatch(axiosDeleteSnsMap(snsKey));
     props.handleClose();
   };
-  const snsLoginNavigate = (userNo: any, snsType: any, token: any) => {
-    props.snsLoginNavigate(userNo, snsType, token);
+  const loginNavigate = (data: any) => {
+    props.loginNavigate(data.accessToken, data.refreshToken, data.accessTokenExpiresIn, data.refreshTokenExpiresIn);
   };
 
   const [selectUser, setSelectUser] = useState<number>(0);
 
   const handleSnsSignUp = async () => {
     const action = await dispatch(axiosConnectNewSns({ key: snsKey, userNo: selectUser }));
-    const sns = action.payload;
-    snsLoginNavigate(sns.userNo, sns.snsType, sns.accessToken);
+    loginNavigate(action.payload);
   };
 
   return (

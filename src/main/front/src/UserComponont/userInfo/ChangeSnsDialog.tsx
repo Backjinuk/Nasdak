@@ -15,7 +15,6 @@ export default function ChangeSnsDialog(props: any) {
 
   async function changeSnsUser() {
     const data = {
-      userNo: sessionStorage.getItem('userNo'),
       snsNo: sessionStorage.getItem('dbSnsNo'),
     };
     await axios.post('/api/sns/changeConnection', JSON.stringify(data));

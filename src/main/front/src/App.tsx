@@ -7,16 +7,15 @@ import UserInfo from 'UserComponont/UserInfo';
 import FindUser from 'UserComponont/FindUser';
 import SNSLogin from 'UserComponont/snsComponent/SNSLogin';
 import CalenderMain from './CalenderCompoont/CalenderMain';
-import KakaoLogout from 'UserComponont/snsComponent/KakaoLogout';
 import TopBar from './TopBar';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectAllCategories } from 'app/slices/categoriesSlice';
 import './firebase';
 import { connect, useSelector } from 'react-redux';
 import { RootState } from './app/store';
-import { axiosGetUserNo, selectIsLogin } from 'app/slices/loginUserSlice';
-import { getCookie } from 'Cookies';
-import { useEffect } from 'react';
+import { getCookie, setCookie } from 'Cookies';
+import axios from 'customFunction/customAxios';
+import { login, selectIsLogin } from 'app/slices/userSlice';
 
 declare global {
   interface Window {
@@ -29,13 +28,23 @@ function App() {
   const dispatch = useAppDispatch();
   const categoryList = useAppSelector(selectAllCategories);
   const event = useSelector((state: RootState) => state.ledger.event);
-  const storeLogin = useSelector(selectIsLogin);
-  const cookieLogin = getCookie('accessToken') !== undefined;
-  const isLogin = storeLogin || cookieLogin;
+  const isLogin = useAppSelector(selectIsLogin);
+  if (!isLogin && getCookie('refreshToken')) {
+    try {
+      requestRefreshToken(getCookie('refreshToken'));
+    } catch (error) {
+      setCookie('accessToken', '', { maxAge: 0 });
+      setCookie('refreshToken', '', { maxAge: 0 });
+      window.location.href = '/';
+    }
+  }
 
-  useEffect(() => {
-    if (!storeLogin && cookieLogin) dispatch(axiosGetUserNo());
-  }, []);
+  async function requestRefreshToken(refreshToken: string) {
+    const location = window.location.href;
+    const res = await axios.public.post('/api/token/refreshToken', JSON.stringify({ refreshToken }));
+    dispatch(login(res.data));
+    window.location.href = location;
+  }
 
   const mapStateToProps = (state: { categoryList: any; event: any }) => {
     return {
@@ -55,7 +64,6 @@ function App() {
   const privateRoutes = (
     <>
       <Route path={'/userInfo'} element={<UserInfo />} />
-      <Route path={'/kakaoLogout'} element={<KakaoLogout />} />
 
       <Route path='/Ledger' element={<LedgerMain event={event} categoryList={categoryList} />} />
       <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
@@ -74,7 +82,7 @@ function App() {
             <Routes>
               {publicRoutes}
               {isLogin && privateRoutes}
-              <Route path='*' element={<Navigate to='/' replace />} />
+              <Route path='*' element={<Navigate to={isLogin ? '/ledger' : '/'} replace />} />
             </Routes>
           </Router>
         </CookiesProvider>
@@ -91,4 +99,4 @@ function ViewTopBar({ isLogin }: { isLogin: boolean }) {
 }
 
 export default App;
-const notShowTopBar = ['/', '/findId', '/snsLogin', '/kakaoLogout'];
+const notShowTopBar = ['/', '/findId', '/snsLogin'];

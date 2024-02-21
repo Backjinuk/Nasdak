@@ -28,7 +28,7 @@ const initialState: {
     status: "idle",
     error: "",
     startPage: 0,
-    endPage: 5
+    endPage: 0
 };
 
 
@@ -41,6 +41,9 @@ const ledgerSlice = createSlice({
         },
         ChangeSelectButton: (state, action) => {
             state.selectButton = action.payload;
+            state.ledgerList = {};
+            state.startPage = 0;
+            state.endPage = 0;
         },
         ChangePage: (state, action) => {
             state.startPage = action.payload.startPage;
@@ -54,6 +57,7 @@ const ledgerSlice = createSlice({
             })
             .addCase(axiosGetLedgerAllDay.fulfilled,  (state, action) =>{
                 state.status = "succeeded";
+                if(state.selectButton)
                 state.ledgerList =  {...state.ledgerList, ...action.payload}; // 기존 상태와 새로운 상태를 합침
             })
             .addCase(axiosGetLedgerAllDay.rejected, (state, action) => {

@@ -77,17 +77,27 @@ public class LedgerController {
 
         int startPage = (map.get("startPage") == null) ? 0  : Integer.parseInt(String.valueOf(map.get("startPage")));
         int endPage   = (map.get("endPage")   == null) ? 5  : Integer.parseInt(String.valueOf(map.get("endPage")));
-
+        long userNo   = Long.parseLong(String.valueOf(map.get("userNo")));
 
         System.out.println("startPage = " + startPage);
         System.out.println("endPage = " + endPage);
 
 
+//        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo"))), startPage, endPage)
+//                                                    .stream()
+//                                                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+//                                                    .toList();
+        List<String> allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
 
-        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo"))), startPage, endPage)
+        if(allByUsers.isEmpty()){
+
+            return new HashMap<>();
+        }
+
+        List<LedgerDto> allByUsers2 = ledgerService.ledgerItem(allByUsers.get(allByUsers.size() - 1), allByUsers.get(0), userNo)
                                                     .stream()
                                                     .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                                                    .toList();
+                                                    .collect(Collectors.toList());
 
         String searchKey =  String.valueOf(map.get("searchKey"));
 
@@ -95,12 +105,7 @@ public class LedgerController {
             allByUsers2 = sumPrice(allByUsers2);
         }
 
-        System.out.println("allByUsers2 = " + allByUsers2);
-
-        Map<String, List<?>> searchValue = TranformMap(allByUsers2, searchKey);
-       // System.out.println("searchValue = " + searchValue);
-
-        return searchValue;
+        return TranformMap(allByUsers2, searchKey);
     }
 
 
@@ -411,6 +416,8 @@ public class LedgerController {
             break;
         }
 
+        System.out.println("ledgerMap = " + ledgerMap);
+
         return ledgerMap;
     }
 
@@ -433,7 +440,7 @@ public class LedgerController {
 
             resultMap.put(key, existingRecord);
         }
-
+        System.out.println("resultMap  = " + resultMap );
         return new ArrayList<>(resultMap.values());
     }
 

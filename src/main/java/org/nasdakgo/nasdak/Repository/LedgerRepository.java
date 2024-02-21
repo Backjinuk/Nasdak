@@ -4,7 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.LedgerType;
 import org.nasdakgo.nasdak.Entity.Location;
-import org.springframework.data.domain.Pageable;
+import org.nasdakgo.nasdak.Repository.QueryDsl.LedgerRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-public interface LedgerRepository extends JpaRepository<Ledger, Long> {
+public interface LedgerRepository extends JpaRepository<Ledger, Long>, LedgerRepositoryCustom {
 
 
     @Transactional
@@ -38,30 +38,34 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     );
 
     @Query(
-            "SELECT DISTINCT DATE_FORMAT(l.useDate, '%Y-%m-%d') AS REG_DATE " +
+            value = "SELECT DISTINCT DATE_FORMAT(l.use_date, '%Y-%m-%d') AS REG_DATE " +
                     "FROM Ledger l " +
-                    "WHERE l.user.userNo= :userNo " +
-                    "ORDER BY DATE_FORMAT(l.useDate, '%Y-%m-%d') DESC "
+                    "WHERE l.user_no= :userNo " +
+                    "ORDER BY DATE_FORMAT(l.use_date, '%Y-%m-%d') DESC " +
+                    "LIMIT :startPaging, :endPaging",
+            nativeQuery = true
     )
-    List<?> findAllUsers(@Param("userNo") long userNo);
+    List<String> findAllUsers(@Param("userNo") long userNo, @Param("startPaging") int startPaging, @Param("endPaging") int endPaging);
 
 
     @Query(
-            "SELECT  l " +
-            "FROM Ledger l " +
-            "WHERE l.user.userNo= :userNo " +
-            "ORDER BY DATE_FORMAT(l.useDate, '%Y-%m-%d') DESC "
-    )
-    List<Ledger> findAllUsers2(@Param("userNo") long userNo, Pageable pageable);
+            value = "SELECT l.* FROM ledger l " +
+                    "WHERE l.user_no = :userNo " +
+                    "ORDER BY DATE_FORMAT(l.use_date, '%Y-%m-%d') DESC " +
+                    "LIMIT :startPaging, :endPaging",
+            nativeQuery = true)
+    List<Ledger> findAllUsers2(@Param("userNo") long userNo, @Param("startPaging") int startPaging, @Param("endPaging") int endPaging);
+
 
     @Query(
             "SELECT l " +
-            "FROM Ledger l " +
-            "WHERE l.user.userNo = :userNo " +
-            "AND l.useDate >= CAST(CONCAT(:regDate, ' 00:00:00') AS TIMESTAMP) " +
-            "AND l.useDate <= CAST(CONCAT(:regDate, ' 23:59:59') AS TIMESTAMP)"
-            )
-    List<Ledger> ledgerItem(@Param("refDate") String regDate, @Param("userNo") long userNo);
+                    "FROM Ledger l " +
+                    "WHERE l.user.userNo = :userNo " +
+                    "AND l.useDate >= CAST(CONCAT(:regDate, ' 00:00:00') AS TIMESTAMP) " +
+                    "AND l.useDate <= CAST(CONCAT(:regDate2, ' 23:59:59') AS TIMESTAMP)"
+    )
+    List<Ledger> ledgerItem(@Param("refDate") String regDate, @Param("refDate2") String regDate2, @Param("userNo") long userNo);
+
 
     List<Ledger> findAllByOrderByUseDateAsc();
 

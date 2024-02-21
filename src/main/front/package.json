@@ -34,7 +34,6 @@
     "jquery": "^3.7.1",
     "js-cookie": "^3.0.5",
     "ngrok": "^5.0.0-beta.2",
-    "nodemon": "^3.0.2",
     "react": "^18.2.0",
     "react-cookie": "^6.1.1",
     "react-dom": "^18.2.0",
@@ -64,7 +63,7 @@
     ]
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.3"
   },
   "browserslist": {
     "production": [

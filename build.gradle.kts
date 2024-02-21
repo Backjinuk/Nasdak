@@ -3,10 +3,14 @@ plugins {
     war
     id("org.springframework.boot") version "3.2.0"
     id("io.spring.dependency-management") version "1.1.4"
+    id("org.asciidoctor.jvm.convert") version "3.3.2"
+
 }
 
 group = "org.nasdakgo"
 version = "0.0.1-SNAPSHOT "
+
+val queryDslVersion = "5.0.0" // QueryDSL Version Setting
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -21,6 +25,9 @@ configurations {
 repositories {
     mavenCentral()
 }
+
+extra["snippetsDir"] = file("build/generated-snippets")
+
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -54,9 +61,17 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 
+
+    // QueryDSL Implementation
+    implementation ("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta") // QueryDSL JPA 의존성 추가
+    annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta") // QueryDSL Annotation Processor 추가
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")   // QueryDSL Annotation Processor 추가
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api") // QueryDSL Annotation Processor 추가
+
+
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.mysql:mysql-connector-j")
-    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok") // lombok
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3")
@@ -65,3 +80,25 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+/**
+ * QueryDSL Build Options
+ */
+val querydslDir = "src/main/generated" // QueryDSL(QClass) 생성 경로 설정
+
+sourceSets {
+    getByName("main").java.srcDirs(querydslDir)
+}
+
+tasks.withType<JavaCompile> { // JavaCompile 설정 추가 compile시 QueryDSL(QClass) 코드를 생성하도록 설정
+    options.generatedSourceOutputDirectory = file(querydslDir)
+}
+
+tasks.named("clean") {// clean 시 QueryDSL(QClass) 코드를 삭제하도록 설정
+    doLast {
+        file(querydslDir).deleteRecursively()
+    }
+}
+
+
+

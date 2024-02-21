@@ -5,8 +5,6 @@ import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.User;
 import org.nasdakgo.nasdak.Repository.LedgerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -36,23 +34,25 @@ public class LedgerService {
         return ledgerRepository.findAllByOrderByUseDateAsc();
     }
 
-    public List<?> findAllByUsers(long userNo) {
-        return ledgerRepository.findAllUsers(userNo);
+    public List<String> findAllByUsers(long userNo , int startPaging, int endPaging) {
+        return ledgerRepository.findAllUsers(userNo, startPaging, endPaging);
     }
 
     public List<Ledger> findAllByUsers2(long userNo, int startPaging, int endPaging) {
-        int pageNumber = (endPaging != 0) ? startPaging / (endPaging - startPaging) : 0;
-        int pageSize = endPaging - startPaging;
+        int pageNumber = (startPaging != 0) ? startPaging - 1 : 0;
 
-        Pageable pageable = PageRequest.of(startPaging, endPaging);
 
-        return ledgerRepository.findAllUsers2(userNo, pageable);
+//        Pageable pageable = PageRequest.ofSize(endPaging);
+//
+//        System.out.println("pageable = " + pageable);
+
+        return ledgerRepository.findAllUsers2(userNo, startPaging, endPaging);
     }
 
 
 
-    public List<Ledger> ledgerItem(String regDate, long userNo) {
-        return ledgerRepository.ledgerItem(regDate, userNo);
+    public List<Ledger> ledgerItem(String regDate, String regDate2, long userNo) {
+        return ledgerRepository.ledgerItem(regDate, regDate2, userNo);
     }
 
     public Ledger ledgerDetail(Ledger ledger) {
@@ -73,5 +73,14 @@ public class LedgerService {
 
     public Collection<Object> findByUseDateBetween(LocalDate useDate, long userNo) {
         return ledgerRepository.findByUseDateBetween(useDate.atStartOfDay(), userNo);
+    }
+
+
+    public List<Ledger> getLedgerList(String startDate, String endDate, long userNo) {
+        return ledgerRepository.getLedgerList(startDate, endDate , userNo);
+    }
+
+    public List<String> getLedgerDateList(long userNo, int startPaging, int endPaging) {
+        return ledgerRepository.getLedgerDateList(userNo, startPaging, endPaging);
     }
 }

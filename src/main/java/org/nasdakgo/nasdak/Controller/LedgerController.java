@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -76,37 +77,79 @@ public class LedgerController {
     @RequestMapping("LedgerAllDayList")
     public Map<String, List<?>> LedgerList(Authentication authentication, @RequestBody Map<String, Object> map) {
 
-        int startPage = (map.get("startPage") == null) ? 0  : Integer.parseInt(String.valueOf(map.get("startPage")));
-        int endPage   = (map.get("endPage")   == null) ? 5  : Integer.parseInt(String.valueOf(map.get("endPage")));
-        long userNo   = Long.parseLong(String.valueOf(toUser(authentication).getUserNo()));
+        List<LedgerDto> allByUsers2 = new ArrayList<>();
 
-        System.out.println("startPage = " + startPage);
-        System.out.println("endPage = " + endPage);
+        String searchKey = String.valueOf(map.get("searchKey"));
 
+        System.out.println("searchKey = " + searchKey);
 
-//        List<LedgerDto> allByUsers2 = ledgerService.findAllByUsers2(Long.parseLong(String.valueOf(map.get("userNo"))), startPage, endPage)
-//                                                    .stream()
-//                                                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-//                                                    .toList();
-        List<String> allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
+        if(searchKey.equals("Day")) {
 
-        if(allByUsers.isEmpty()){
+            int startPage = (map.get("startPage") == null) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
+            int endPage = (map.get("endPage") == null) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
+            long userNo = Long.parseLong(String.valueOf(toUser(authentication).getUserNo()));
 
-            return new HashMap<>();
-        }
+            System.out.println("startPage = " + startPage);
+            System.out.println("endPage = " + endPage);
 
-        List<LedgerDto> allByUsers2 = ledgerService.ledgerItem(allByUsers.get(allByUsers.size() - 1), allByUsers.get(0), userNo)
-                                                    .stream()
-                                                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                                                    .collect(Collectors.toList());
+            List<String> allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
 
-        String searchKey =  String.valueOf(map.get("searchKey"));
+            if (allByUsers.isEmpty()) {
+                return new HashMap<>();
+            }
 
-        if(!searchKey.equals("Day")){
+            allByUsers2 = ledgerService.ledgerItem(allByUsers.get(allByUsers.size() - 1), allByUsers.get(0), userNo)
+                    .stream()
+                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                    .collect(Collectors.toList());
+        } else  {
+
+                LocalDateTime startDate2 = LocalDateTime.now();
+
+                if (map.get("startDate") != null) {
+                    startDate2 = LocalDateTime.parse(String.valueOf(map.get("startDate")));
+                }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                String format = startDate2.format(formatter);
+
+                LocalDate startDate = null;
+                LocalDate endDate = null;
+
+                switch (String.valueOf(map.get("searchKey"))) {
+                    case "Week":
+                        startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                        endDate = startDate.plusDays(6);
+                        break;
+
+                    case "Month":
+                        startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth());
+                        endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+                        break;
+
+                    case "Month3":
+                        startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2);
+                        endDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.lastDayOfMonth());
+                        break;
+
+                    default:
+                        break;
+                }
+
+                allByUsers2 = ledgerService.getLedgerList(startDate, endDate, toUser(authentication).getUserNo())
+                                            .stream()
+                                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                            .collect(Collectors.toList());
+
             allByUsers2 = sumPrice(allByUsers2);
         }
 
         return TranformMap(allByUsers2, searchKey);
+    }
+
+    @RequestMapping("ledgerWeekMonthList")
+    public Map<String, List<?> > ledgerWeekMonthList(){
+        return null;
     }
 
 

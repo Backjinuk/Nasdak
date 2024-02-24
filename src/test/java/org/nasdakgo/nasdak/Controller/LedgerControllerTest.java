@@ -2,6 +2,7 @@ package org.nasdakgo.nasdak.Controller;
 
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
+import org.nasdakgo.nasdak.Dto.FilesDto;
 import org.nasdakgo.nasdak.Dto.LedgerDto;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.Ledger;
@@ -115,10 +116,9 @@ class LedgerControllerTest {
 
         for (LedgerDto ledger : ledgers) {
             System.out.println("ledger = " + ledger);
-
         }
     }
-
+/*
     @Test
     public void testLedgerDateList(){
         int startPaging = 0;
@@ -135,7 +135,7 @@ class LedgerControllerTest {
         for (LedgerDto ledgerDto : list) {
             System.out.println("ledgerDto = " + ledgerDto);
         }
-    }
+    }*/
     
     
     @Test
@@ -154,6 +154,27 @@ class LedgerControllerTest {
 
         System.out.println("format = " + startDate);
         System.out.println("format2 = " + endDate);
+
+        List<LedgerDto> list = new ArrayList<>();
+                list = ledgerService.getLedgerList(startDate, endDate, usersDto.getUserNo()).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
+
+        int count = 0;
+        while (list.isEmpty()) {
+            list = ledgerService.getLedgerList(startDate.minusDays(7), endDate, usersDto.getUserNo()).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
+            System.out.println("비어있음");
+
+            if (count > 10) {
+                break;
+            }
+
+            count++;
+        }
+
+        for (LedgerDto ledgerDto : list) {
+            System.out.println("ledgerDto = " + ledgerDto);
+
+        }
+
 
     }
     

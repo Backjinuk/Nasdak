@@ -76,7 +76,7 @@ public class LedgerService {
     }
 
 
-    public List<Ledger> getLedgerList(String startDate, String endDate, long userNo) {
+    public List<Ledger> getLedgerList(LocalDate startDate, LocalDate endDate, long userNo) {
         return ledgerRepository.getLedgerList(startDate, endDate , userNo);
     }
 

@@ -1,6 +1,7 @@
 package org.nasdakgo.nasdak.Repository.QueryDsl.Impl;
 
 import com.querydsl.core.types.ConstantImpl;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
@@ -11,8 +12,12 @@ import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.QLedger;
 import org.nasdakgo.nasdak.Repository.QueryDsl.LedgerRepositoryCustom;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,14 +50,24 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
     }
 
     @Override
-    public List<Ledger> getLedgerList(String startDate, String endDate, long userNo) {
-        LocalDateTime nStartDate =  LocalDateTime.parse(startDate + "T00:00:00");
-        LocalDateTime nEndDate =  LocalDateTime.parse(endDate + "T23:59:59");
+    public List<Ledger> getLedgerList(LocalDate startDate, LocalDate endDate, long userNo) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-        return jpaQueryFactory.select(qLedger)
+        String start = startDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String end = endDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        DateTemplate<String> formattedDate = Expressions.dateTemplate(
+                String.class
+                , "DATE_FORMAT({0}, {1})"
+                , qLedger.useDate
+                , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
+
+        return jpaQueryFactory
+                .select(qLedger)
                 .from(qLedger)
                 .where(qLedger.user.userNo.eq(userNo)
-                        .and(qLedger.useDate.between(nStartDate, nEndDate)))
+                        .and(formattedDate.between(start, end))) //String 끼리 비교 (Date는 안됨 겁나 오래 걸림)
                 .fetch();
     }
 

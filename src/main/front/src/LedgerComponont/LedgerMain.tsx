@@ -10,20 +10,6 @@ import Button from "@mui/material/Button";
 import { useInView } from 'react-intersection-observer';
 export default function LedgerMain({categoryList , event} : any){
 
-    const [ref, inView] = useInView({
-        onChange: (inView) => {
-            if(inView){
-                nextPage();
-                switch (selectButtonValue) {
-                    case 1 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 5})); break;
-                    case 2 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 7})); break;
-                    case 3 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 30})); break;
-                    case 4 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 90})); break;
-                }
-            }
-
-        }
-    });
     const dispatch= useAppDispatch();
     const ledgerList = useAppSelector((state : RootState) => state.ledger.ledgerList);
     const ledger = useAppSelector((state : RootState) => state.ledger.ledger) ;
@@ -33,8 +19,20 @@ export default function LedgerMain({categoryList , event} : any){
     const endPage = useAppSelector((state : RootState) => state.ledger.endPage);
     const [lendering, setLendering] = useState<boolean>(false);
 
+    const [ref, inView] = useInView({
+        onChange: (inView) => {
+            if(inView){
+                nextPage();
+                ChangePageType();
+            }
+
+        }
+    }); // 무한 스크롤링을 위한 라이브러리
+
+
     useEffect(() => {
         nextPage();
+        ChangePageType();
     }, [event, selectButtonValue]);
 
     function nextPage() {
@@ -46,6 +44,15 @@ export default function LedgerMain({categoryList , event} : any){
             endPage: endPage
         }));
 
+    }
+
+    function ChangePageType(){
+        switch (selectButtonValue) {
+            case 1 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 5})); break;
+            case 2 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 7})); break;
+            case 3 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 30})); break;
+            case 4 : dispatch(ChangePage({startPage: startPage + endPage, endPage: endPage + 90})); break;
+        }
     }
 
     function nextView(){
@@ -130,6 +137,7 @@ export default function LedgerMain({categoryList , event} : any){
                                 selectButton={selectButtonValue}/>
                     </div>
                 ))}
+
                 {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} isOpen={isOpen} open={open}/>}
 
                 <input type="button" value="next" onClick={() => nextView()}/>

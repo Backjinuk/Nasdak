@@ -10,6 +10,7 @@ import org.nasdakgo.nasdak.Service.FilesService;
 import org.nasdakgo.nasdak.Service.LedgerService;
 import org.nasdakgo.nasdak.Service.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,11 +74,11 @@ public class LedgerController {
      * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
      */
     @RequestMapping("LedgerAllDayList")
-    public Map<String, List<?>> LedgerList(@RequestBody Map<String, Object> map) {
+    public Map<String, List<?>> LedgerList(Authentication authentication, @RequestBody Map<String, Object> map) {
 
         int startPage = (map.get("startPage") == null) ? 0  : Integer.parseInt(String.valueOf(map.get("startPage")));
         int endPage   = (map.get("endPage")   == null) ? 5  : Integer.parseInt(String.valueOf(map.get("endPage")));
-        long userNo   = Long.parseLong(String.valueOf(map.get("userNo")));
+        long userNo   = Long.parseLong(String.valueOf(toUser(authentication).getUserNo()));
 
         System.out.println("startPage = " + startPage);
         System.out.println("endPage = " + endPage);
@@ -278,7 +279,6 @@ public class LedgerController {
                                 s -> ledgerDtoList.stream()
                                         .filter(ledger -> ledger.getUseDate().format(formatter).equals(s))
                                         .peek(ledger -> {
-
                                             // 파일찾기 List => DtoList
                                             ledger.setFilesDtoList(
                                                     filesService.findByFileOwner(ledger.getFileOwnerNo())
@@ -442,6 +442,25 @@ public class LedgerController {
         }
         System.out.println("resultMap  = " + resultMap );
         return new ArrayList<>(resultMap.values());
+    }
+
+
+    private User toUser(UserDto userDto, Authentication authentication){
+        User user = modelMapper.map(userDto, User.class);
+        user.setUserNo(Long.parseLong(authentication.getName()));
+        return user;
+    }
+
+    private User toUser(Authentication authentication){
+        return User.builder().userNo(Long.parseLong(authentication.getName())).build();
+    }
+
+    private User toUser(UserDto userDto){
+        return modelMapper.map(userDto, User.class);
+    }
+
+    private UserDto toUserDto(User user){
+        return modelMapper.map(user, UserDto.class);
     }
 
 }

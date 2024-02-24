@@ -26,7 +26,7 @@ spring:
 #    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
 #        format_sql: true

@@ -8,16 +8,20 @@ import {RootState} from "../app/store";
 import LedgerDetail from "./LedgerDetail";
 import Button from "@mui/material/Button";
 import { useInView } from 'react-intersection-observer';
+import {AnimatePresence, motion, useAnimation} from "framer-motion";
+import {SlideWrap, Wrapper, Box} from "./StyleComponent";
 export default function LedgerMain({categoryList , event} : any){
 
     const dispatch= useAppDispatch();
+    const controls = useAnimation();
     const ledgerList = useAppSelector((state : RootState) => state.ledger.ledgerList);
     const ledger = useAppSelector((state : RootState) => state.ledger.ledger) ;
     const [open, setOpen] = useState<boolean>(false);
     const selectButtonValue = useAppSelector((state : RootState) => state.ledger.selectButton);
     const startPage = useAppSelector((state : RootState) => state.ledger.startPage);
     const endPage = useAppSelector((state : RootState) => state.ledger.endPage);
-    const [lendering, setLendering] = useState<boolean>(false);
+    const [visible, setVisible] = useState(0);
+    const [back, setBack] = useState(false);
 
     const [ref, inView] = useInView({
         onChange: (inView) => {
@@ -41,9 +45,10 @@ export default function LedgerMain({categoryList , event} : any){
             userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
             searchKey: value,
             startPage: startPage,
-            endPage: endPage
+            endPage: endPage,
+            startDate : "",
+            type : ""
         }));
-
     }
 
     function ChangePageType(){
@@ -63,7 +68,6 @@ export default function LedgerMain({categoryList , event} : any){
          },1000);
     }
 
-
     function ledgerDetail(key  : number){
         isOpen(true);
         dispatch(axiosGetLedgerDetail(key));
@@ -75,46 +79,58 @@ export default function LedgerMain({categoryList , event} : any){
     }
 
     function searchLedger(value : number){
-
         dispatch(ChangeSelectButton(value));
-
-        switch (value) {
-            case 1:
-                dispatch(axiosGetLedgerAllDay({
-                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
-                    searchKey: "Day",
-                    startPage: startPage,
-                    endPage: endPage
-                }));
-                break;
-            case 2:
-                dispatch(axiosGetLedgerAllDay({
-                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
-                    searchKey: "Week",
-                    startPage: startPage,
-                    endPage: endPage
-                }));
-                break;
-            case 3:
-                dispatch(axiosGetLedgerAllDay({
-                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
-                    searchKey: "Month",
-                    startPage: startPage,
-                    endPage: endPage
-                }));
-                break;
-            case 4:
-                dispatch(axiosGetLedgerAllDay({
-                    userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
-                    searchKey: "Month3",
-                    startPage: startPage,
-                    endPage: endPage
-                }));
-                break;
-            default:
-                break;
-        }
+        let value2 = value === 1 ?  "Day" : value === 2 ?  "Week" : value === 3 ?  "Month" : "Month3";
+        dispatch(axiosGetLedgerAllDay({
+            userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+            searchKey: value2,
+            startPage: startPage,
+            endPage: endPage,
+            startDate : "",
+            type : ""
+        }));
     }
+
+    const boxVariants = {
+        entry: (back: boolean) => ({
+            x: back ? -500 : 500,
+            opacity: 0,
+            scale: 0
+        }),
+        center: {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            transition: { duration: 0.5 }
+        },
+        exit: (back: boolean) => ({
+            x: back ? 500 : -500,
+            opacity: 0,
+            scale: 0,
+            transition: { duration: 0.5 }
+        })
+    };
+
+    const gridAnimation = {
+        show: {
+            transition: { staggerChildren: 0.1 }
+        },
+        hide: {
+            transition: { staggerChildren: 0.1, staggerDirection: -1 }
+        },
+    }
+
+    const nextPlease = () => {
+        setBack(false);
+        setVisible((prev) =>
+            prev === Object.entries(ledgerList).length - 1 ? Object.entries(ledgerList).length - 1 : prev + 1
+        );
+    };
+    const prevPlease = () => {
+        setBack(true);
+        setVisible((prev) => (prev === 0 ? 0 : prev - 1));
+    };
+
 
 
     return(
@@ -130,19 +146,62 @@ export default function LedgerMain({categoryList , event} : any){
                     <Button variant={selectButtonValue == 4 ? "outlined" : "contained"} sx={{marginRight: 2}}
                             onClick={() => searchLedger(4)}>3개월별 보기</Button>
                 </div>
+                {selectButtonValue === 1 &&
+                    <>
+                    {Object.entries(ledgerList).map(([date, ledgerData], index) => (
+                            <div className={ "card shadow-lg"  } key={index}>
+                                <Ledger date={date}
+                                        isOpen={isOpen}
+                                        ledgerData={ledgerData}
+                                        ledgerDetail={ledgerDetail}
+                                        nextPlease={nextPlease}
+                                        prevPlease={prevPlease}
+                                        selectButton={selectButtonValue}
+                                />
+                            </div>
+                        ))}
+                    </>
+                }
 
-                {Object.entries(ledgerList).map(([date, ledgerData], index) => (
-                    <div className="card shadow-lg" key={index}>
-                        <Ledger date={date} isOpen={isOpen} ledgerData={ledgerData} ledgerDetail={ledgerDetail}
-                                selectButton={selectButtonValue}/>
-                    </div>
-                ))}
-
+                {selectButtonValue != 1 &&
+                    <Wrapper>
+                        <SlideWrap>
+                            <AnimatePresence custom={back}>
+                                <Box
+                                    custom={back}
+                                    variants={gridAnimation}
+                                    initial={{ opacity: 0, x: -50 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 50 }}
+                                    key={visible}
+                                >
+                                    {Object.entries(ledgerList).map(([date, ledgerData], index) => (
+                                            <div className={"card2 shadow-lg"} key={index}>
+                                                <Ledger
+                                                    date={date}
+                                                    isOpen={isOpen}
+                                                    ledgerData={ledgerData}
+                                                    ledgerDetail={ledgerDetail}
+                                                    selectButton={selectButtonValue}
+                                                    nextPlease={nextPlease}
+                                                    prevPlease={prevPlease}
+                                                />
+                                            </div>
+                                    ))}
+                                </Box>
+                            </AnimatePresence>
+                        </SlideWrap>
+                    </Wrapper>
+                }
                 {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} isOpen={isOpen} open={open}/>}
 
-                <input type="button" value="next" onClick={() => nextView()}/>
-                <div className={"nextView"} ref={ref} >ref</div>
-            </div>
+                {selectButtonValue === 1 &&
+                    <>
+                        <input type="button" value="next" onClick={() => nextView()}/>
+                        <div className={"nextView"} ref={ref}>ref</div>
+                    </>
+                }
+             </div>
         </div>
     )
 }

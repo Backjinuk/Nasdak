@@ -57,8 +57,15 @@ const ledgerSlice = createSlice({
             })
             .addCase(axiosGetLedgerAllDay.fulfilled,  (state, action) =>{
                 state.status = "succeeded";
-                if(state.selectButton)
-                state.ledgerList =  {...state.ledgerList, ...action.payload}; // 기존 상태와 새로운 상태를 합침
+                if(!action.payload["empty"]){
+                    state.ledgerList =  {...state.ledgerList, ...action.payload}; // 기존 상태와 새로운 상태를 합침
+                }else if(action.payload["empty"]){
+                    Swal.fire({
+                        icon : "info",
+                        title : "데이터가 없습니다.",
+                        timer : 1000
+                    })
+                }
             })
             .addCase(axiosGetLedgerAllDay.rejected, (state, action) => {
                 state.status  = "failed";
@@ -99,9 +106,9 @@ const ledgerSlice = createSlice({
 
 export const axiosGetLedgerAllDay = createAsyncThunk(
     "ledger/axiosGetLedgerAllDay",
-    async ({userNo, searchKey, startPage, endPage} : { userNo : number , searchKey : string, startPage : number, endPage : number}) => {
+    async ({userNo, searchKey, startPage, endPage, startDate, type} : { userNo : number , searchKey : string, startPage : number, endPage : number, startDate : string, type : string}) => {
         const res = await axios.post("/api/ledger/LedgerAllDayList",
-            JSON.stringify({"userNo" : userNo, "searchKey" : searchKey, "startPage" : startPage, "endPage" : endPage}));
+            JSON.stringify({"userNo" : userNo, "searchKey" : searchKey, "startPage" : startPage, "endPage" : endPage, "startDate" : startDate, "type" : type}));
         return res.data;
     }
 )

@@ -16,7 +16,6 @@ import { RootState } from './app/store';
 import { getCookie, setCookie } from 'Cookies';
 import axios from 'customFunction/customAxios';
 import { login, selectIsLogin } from 'app/slices/userSlice';
-import LedgerMain2 from './LedgerComponont/LedgerMain2';
 
 declare global {
   interface Window {
@@ -58,10 +57,7 @@ function App() {
   const privateRoutes = (
     <>
       <Route path={'/userInfo'} element={<UserInfo />} />
-
       <Route path='/Ledger' element={<LedgerMain event={event} categoryList={categoryList} />} />
-      <Route path='/Ledger2' element={<LedgerMain2 event={event} categoryList={categoryList} />} />
-
       <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
       <Route path={'/calender'} element={<CalenderMain categoryList={categoryList} event={event} />} />
     </>

@@ -81,7 +81,7 @@ public class LedgerController {
 
         String searchKey = String.valueOf(map.get("searchKey"));
 
-        if(searchKey.equals("Day")) {
+        if(searchKey.equals("Day")) { // 일별 조회
 
             int startPage = (map.get("startPage") == null) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
             int endPage = (map.get("endPage") == null) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
@@ -100,7 +100,8 @@ public class LedgerController {
                     .stream()
                     .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
                     .collect(Collectors.toList());
-        } else  {
+
+        } else  { // 주, 월, 3개월 조회
 
                 LocalDateTime startDate2 = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -111,119 +112,65 @@ public class LedgerController {
 
                 String format = startDate2.format(formatter);
 
-                LocalDate startDate = null;
+                LocalDate startDate = (Objects.equals(String.valueOf(map.get("startDate")), "")) ? null : LocalDate.parse(String.valueOf(map.get("startDate")), formatter);
                 LocalDate endDate = null;
 
-                switch (String.valueOf(map.get("searchKey"))) {
-                    case "Week":
-                        startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-                        endDate = startDate.plusDays(6);
-                        break;
-
-                    case "Month":
-                        startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth());
-                        endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
-                        break;
-
-                    case "Month3":
-                        startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2);
-                        endDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.lastDayOfMonth());
-                        break;
-
-                    default:
-                        break;
+                if(startDate == null){ // 처음 조회
+                    switch (String.valueOf(map.get("searchKey"))) {
+                        case "Week":
+                            startDate =  LocalDate.parse(format, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(7);
+                            endDate   =  LocalDate.parse(format, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(13);
+                            break;
+                        case "Month":
+                            startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth());
+                            endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+                            break;
+                        case "Month3":
+                            startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2);
+                            endDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.lastDayOfMonth());
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
                 String prevNext = String.valueOf(map.get("type"));
-                System.out.println("prevNext = " + prevNext);
 
-                if(prevNext.equals("PREV")){
-                    endDate = switch (searchKey) {
+                if(prevNext.equals("NEXT")){ // 페이징 조회
+                    endDate = switch (searchKey) { // 날짜 재구성
                         case "Week" -> {
-                            startDate = Objects.requireNonNull(startDate).minusDays(7);
-                            yield endDate.minusDays(7);
-                        }
-                        case "Month" -> {
-                            startDate = Objects.requireNonNull(startDate).minusMonths(1);
-                            yield endDate.minusMonths(1);
-                        }
-                        case "Month3" -> {
-                            startDate = Objects.requireNonNull(startDate).minusMonths(3);
-                            yield endDate.minusMonths(3);
-                        }
-                        default -> endDate;
-                    };
-
-                } else if(prevNext.equals("NEXT")){
-                    endDate = switch (searchKey) {
-                        case "Week" -> {
-                            startDate = Objects.requireNonNull(startDate).plusDays(7);
-                            yield endDate.plusDays(7);
+                            startDate = Objects.requireNonNull(startDate).minusDays(14);
+                            yield startDate.plusDays(7);
                         }
                         case "Month" -> {
                             startDate = Objects.requireNonNull(startDate).plusMonths(1);
-                            yield endDate.plusMonths(1);
+                            yield startDate.plusMonths(1);
                         }
                         case "Month3" -> {
                             startDate = Objects.requireNonNull(startDate).plusMonths(3);
-                            yield endDate.plusMonths(3);
+                            yield startDate.plusMonths(3);
                         }
                         default -> endDate;
                     };
                 }
 
-
+                System.out.println("prevNext = " + prevNext);
                 System.out.println("startDate = " + startDate);
-
-
-
+                System.out.println("endDate = " + endDate);
 
                 allByUsers2 = ledgerService.getLedgerList(startDate, endDate, toUser(authentication).getUserNo())
                                             .stream()
                                             .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
                                             .collect(Collectors.toList());
 
-                int count = 0;
-                while(allByUsers2.isEmpty()){
-                    switch(searchKey){
-                        case "Week":
-                            startDate = Objects.requireNonNull(startDate).minusDays(7);
-                            endDate = endDate.minusDays(7);
-                            break;
-                        case "Month":
-                            startDate = Objects.requireNonNull(startDate).minusMonths(1);
-                            endDate = endDate.minusMonths(1);
-                            break;
-                        case "Month3":
-                            startDate = Objects.requireNonNull(startDate).minusMonths(3);
-                            endDate = endDate.minusMonths(3);
-                            break;
-                    }
-
-                    allByUsers2 = ledgerService.getLedgerList(startDate, endDate, toUser(authentication).getUserNo())
-                            .stream()
-                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                            .collect(Collectors.toList());
-                    if(count > 10){
-                        break;
-                    }
-                    count++;
-                }
-            if(!allByUsers2.isEmpty()){
-                allByUsers2 = sumPrice(allByUsers2);
-            }else{
-                Map<String, List<?>> ledgerMap = new HashMap<>();
-                ledgerMap.put("empty", new ArrayList<>());
-                return ledgerMap;
-            }
+                System.out.println("allByUsers2 = " + allByUsers2);
         }
 
-        return TranformMap(allByUsers2, searchKey);
-    }
+        Map<String, List<?>> stringListMap = TranformMap(allByUsers2, searchKey);
 
-    @RequestMapping("ledgerWeekMonthList")
-    public Map<String, List<?> > ledgerWeekMonthList(){
-        return null;
+        System.out.println("stringListMap = " + stringListMap);
+
+        return stringListMap;
     }
 
 

@@ -57,15 +57,17 @@ const ledgerSlice = createSlice({
             })
             .addCase(axiosGetLedgerAllDay.fulfilled,  (state, action) =>{
                 state.status = "succeeded";
+                state.ledgerList =  {...state.ledgerList, ...action.payload};
                 if(!action.payload["empty"]){
-                    state.ledgerList =  {...state.ledgerList, ...action.payload}; // 기존 상태와 새로운 상태를 합침
-                }else if(action.payload["empty"]){
-                    Swal.fire({
-                        icon : "info",
-                        title : "데이터가 없습니다.",
-                        timer : 1000
-                    })
+                   // 기존 상태와 새로운 상태를 합침
                 }
+                // else if(action.payload["empty"]){
+                //     Swal.fire({
+                //         icon : "info",
+                //         title : "데이터가 없습니다.",
+                //         timer : 1000
+                //     })
+                // }
             })
             .addCase(axiosGetLedgerAllDay.rejected, (state, action) => {
                 state.status  = "failed";

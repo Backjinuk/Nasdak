@@ -8,22 +8,23 @@ import {RootState} from "../app/store";
 import LedgerDetail from "./LedgerDetail";
 import Button from "@mui/material/Button";
 import { useInView } from 'react-intersection-observer';
-import {AnimatePresence, motion, useAnimation} from "framer-motion";
+import {AnimatePresence, motion, useAnimation, useMotionValue, useTransform} from "framer-motion";
 import {SlideWrap, Wrapper, Box} from "./StyleComponent";
 export default function LedgerMain({categoryList , event} : any){
 
     const dispatch= useAppDispatch();
-    const controls = useAnimation();
     const ledgerList = useAppSelector((state : RootState) => state.ledger.ledgerList);
     const ledger = useAppSelector((state : RootState) => state.ledger.ledger) ;
     const [open, setOpen] = useState<boolean>(false);
     const selectButtonValue = useAppSelector((state : RootState) => state.ledger.selectButton);
     const startPage = useAppSelector((state : RootState) => state.ledger.startPage);
     const endPage = useAppSelector((state : RootState) => state.ledger.endPage);
-    const [visible, setVisible] = useState(0);
+    const [visible, setVisible] = useState<number>(0);
     const [back, setBack] = useState(false);
 
     const [ref, inView] = useInView({
+        triggerOnce :false,
+        threshold: 0.1,
         onChange: (inView) => {
             if(inView){
                 nextPage();
@@ -93,9 +94,9 @@ export default function LedgerMain({categoryList , event} : any){
 
     const boxVariants = {
         entry: (back: boolean) => ({
-            x: back ? -500 : 500,
+            x: back ? -800 : 800,
             opacity: 0,
-            scale: 0
+            scale: 0,
         }),
         center: {
             opacity: 1,
@@ -104,21 +105,12 @@ export default function LedgerMain({categoryList , event} : any){
             transition: { duration: 0.5 }
         },
         exit: (back: boolean) => ({
-            x: back ? 500 : -500,
+            x: back ? 800 : -800,
             opacity: 0,
             scale: 0,
-            transition: { duration: 0.5 }
+            transition: { type: "bounce", duration: 0.4, mass: 0.5},
         })
     };
-
-    const gridAnimation = {
-        show: {
-            transition: { staggerChildren: 0.1 }
-        },
-        hide: {
-            transition: { staggerChildren: 0.1, staggerDirection: -1 }
-        },
-    }
 
     const nextPlease = () => {
         setBack(false);
@@ -126,12 +118,11 @@ export default function LedgerMain({categoryList , event} : any){
             prev === Object.entries(ledgerList).length - 1 ? Object.entries(ledgerList).length - 1 : prev + 1
         );
     };
+
     const prevPlease = () => {
         setBack(true);
         setVisible((prev) => (prev === 0 ? 0 : prev - 1));
     };
-
-
 
     return(
         <div>
@@ -148,17 +139,24 @@ export default function LedgerMain({categoryList , event} : any){
                 </div>
                 {selectButtonValue === 1 &&
                     <>
-                    {Object.entries(ledgerList).map(([date, ledgerData], index) => (
-                            <div className={ "card shadow-lg"  } key={index}>
-                                <Ledger date={date}
-                                        isOpen={isOpen}
-                                        ledgerData={ledgerData}
-                                        ledgerDetail={ledgerDetail}
-                                        nextPlease={nextPlease}
-                                        prevPlease={prevPlease}
-                                        selectButton={selectButtonValue}
+                        {Object.entries(ledgerList).map(([date, ledgerData], index) => (
+                            <motion.div
+                                className={"card shadow-lg"}
+                                key={index}
+                                initial={{ opacity: 0, y: -500 }} // 컴포넌트가 처음 렌더링될 때의 상태
+                                animate={{ opacity: 1, y: 0 }} // 애니메이션의 최종 상태
+                                transition={{ duration: 0.5, delay: 0 }} // 애니메이션 동작 시간
+                            >
+                                <Ledger
+                                    date={date}
+                                    isOpen={isOpen}
+                                    ledgerData={ledgerData}
+                                    ledgerDetail={ledgerDetail}
+                                    nextPlease={nextPlease}
+                                    prevPlease={prevPlease}
+                                    selectButton={selectButtonValue}
                                 />
-                            </div>
+                            </motion.div>
                         ))}
                     </>
                 }
@@ -167,16 +165,17 @@ export default function LedgerMain({categoryList , event} : any){
                     <Wrapper>
                         <SlideWrap>
                             <AnimatePresence custom={back}>
-                                <Box
-                                    custom={back}
-                                    variants={gridAnimation}
-                                    initial={{ opacity: 0, x: -50 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 50 }}
-                                    key={visible}
-                                >
                                     {Object.entries(ledgerList).map(([date, ledgerData], index) => (
-                                            <div className={"card2 shadow-lg"} key={index}>
+                                        visible === index && (
+                                        <Box
+                                            custom={back}
+                                            variants={boxVariants}
+                                            initial={"entry"}
+                                            animate={"center"}
+                                            exit={"exit"}
+                                            key={index}
+                                        >
+                                            <div className={"card2 shadow-lg"}>
                                                 <Ledger
                                                     date={date}
                                                     isOpen={isOpen}
@@ -187,8 +186,9 @@ export default function LedgerMain({categoryList , event} : any){
                                                     prevPlease={prevPlease}
                                                 />
                                             </div>
+                                    </Box> )
                                     ))}
-                                </Box>
+
                             </AnimatePresence>
                         </SlideWrap>
                     </Wrapper>
@@ -197,8 +197,8 @@ export default function LedgerMain({categoryList , event} : any){
 
                 {selectButtonValue === 1 &&
                     <>
-                        <input type="button" value="next" onClick={() => nextView()}/>
-                        <div className={"nextView"} ref={ref}>ref</div>
+                       {/* <input type="button" value="next" onClick={() => nextView()}/> */}
+                        <div className={"nextView"} ref={ref}></div>
                     </>
                 }
              </div>

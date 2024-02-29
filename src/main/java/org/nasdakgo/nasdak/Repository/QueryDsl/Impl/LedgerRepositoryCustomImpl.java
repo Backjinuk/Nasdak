@@ -33,11 +33,17 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
     @Transactional
     public List<String> getLedgerDateList(long userNo, int startPaging, int endPaging) {
 
+//        DateTemplate<String> formattedDate = Expressions.dateTemplate(
+//                String.class
+//                , "DATE_FORMAT({0}, {1})"
+//                , qLedger.useDate
+//                , ConstantImpl.create("%Y-%m-%d"));
+
         DateTemplate<String> formattedDate = Expressions.dateTemplate(
                 String.class
-                , "DATE_FORMAT({0}, {1})"
+                , "TO_CHAR({0}, {1})"
                 , qLedger.useDate
-                , ConstantImpl.create("%Y-%m-%d"));
+                , ConstantImpl.create("yyyy-MM-dd"));
 
 
         return jpaQueryFactory.select(formattedDate)
@@ -59,9 +65,9 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
 
         DateTemplate<String> formattedDate = Expressions.dateTemplate(
                 String.class
-                , "DATE_FORMAT({0}, {1})"
+                , "TO_CHAR({0}, {1})"
                 , qLedger.useDate
-                , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
+                , ConstantImpl.create("yyyy-MM-dd HH:mm:ss")); // useDate 스트링으로 변환
 
         return jpaQueryFactory
                 .select(qLedger)

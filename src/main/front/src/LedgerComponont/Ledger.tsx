@@ -4,7 +4,9 @@ import LedgerDetailModal from "./LedgerDetailModal";
 import axios from "../customFunction/customAxios";
 import Button from "@mui/material/Button";
 import {axiosGetLedgerAllDay} from "../app/slices/ledgerSilce";
-import {useAppDispatch} from "../app/hooks";
+import {useAppDispatch, useAppSelector} from "../app/hooks";
+import {RootState} from "../app/store";
+import Swal from "sweetalert2";
 
 
 interface LedgerProps {
@@ -23,6 +25,7 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
     const dispatch = useAppDispatch();
     const [open2, setOpen2] = useState(false);
     const [ledgerList, setLedgerList] = useState<LedgerType[]>(ledgerData);
+    const ledgerAllList = useAppSelector((state: RootState) => state.ledger.ledgerList)
 
     function isOpen2(value: boolean) {
         setOpen2(value);
@@ -43,26 +46,49 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
     }
 
     const searchDate = (date : string, type : string) => {
-        const startDate = date.split("~")[0].trim();
+
+        const keys = Object.entries(ledgerAllList);
+        const index = Object.keys(ledgerAllList).indexOf(date) + 1;
+
+        if(type === "NEXT"){
 
         let value = selectButton === 1 ?  "Day" : selectButton === 2 ?  "Week" : selectButton === 3 ?  "Month" : "Month3";
-        dispatch(axiosGetLedgerAllDay({
-            userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
-            searchKey: value,
-            startPage: 0,
-            endPage: 0,
-            startDate : startDate,
-            type : type
-        }));
+            if (index >= 0 && index < keys.length) {
+                const startDate = Object.keys(ledgerAllList)[index].split("~")[0].trim();
+                if(!(keys.length >= (index + 3)) ){
 
+                    dispatch(axiosGetLedgerAllDay({
+                        userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+                        searchKey: value,
+                        startPage: 0,
+                        endPage: 0,
+                        startDate: startDate,
+                        type: type
+                    }));
 
-        setTimeout(() => {
-            if(type === "PREV"){
-                prevPlease();
+                    nextPlease();
+                }
             }else{
-                nextPlease();
+
+                Swal.fire({
+                    icon : "info",
+                    title : "데이터가 존재하지 않습니다.",
+                    timer : 1000
+                })
             }
-        }, 1000);
+        }else{
+
+            if(index === 1){
+                Swal.fire({
+                    icon : "info",
+                    title : "데이터가 존재하지 않습니다.",
+                    timer : 1000
+                })
+            }else{
+                prevPlease();
+            }
+        }
+
 
     }
 

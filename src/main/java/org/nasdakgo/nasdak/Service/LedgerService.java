@@ -35,7 +35,7 @@ public class LedgerService {
     }
 
     public List<String> findAllByUsers(long userNo , int startPaging, int endPaging) {
-        return ledgerRepository.findAllUsers(userNo, startPaging, endPaging);
+        return ledgerRepository.getLedgerDateList(userNo, startPaging, endPaging);
     }
 
     public List<Ledger> findAllByUsers2(long userNo, int startPaging, int endPaging) {

@@ -12,4 +12,6 @@ public interface LedgerRepositoryCustom {
 
     List<Ledger> getLedgerList(LocalDate startDate, LocalDate endDate, long userNo);
 
+
+
 }

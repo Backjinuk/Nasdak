@@ -29,6 +29,7 @@ function App() {
   const categoryList = useAppSelector(selectAllCategories);
   const event = useSelector((state: RootState) => state.ledger.event);
   const isLogin = useAppSelector(selectIsLogin);
+
   if (!isLogin && getCookie('refreshToken')) {
     try {
       requestRefreshToken(getCookie('refreshToken'));

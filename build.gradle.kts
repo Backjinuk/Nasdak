@@ -40,17 +40,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
-    // H2 데이터베이스
-    testImplementation("com.h2database:h2:1.4.200") // 더 최신 버전 사용 권장
-
-    // Jackson 데이터바인드
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 
 
     // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
@@ -68,10 +61,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 
-    // Hibernate
-    implementation("org.hibernate:hibernate-core:6.0.0.Final") // 최신 버전 사용
-
-
 
     // QueryDSL Implementation
     implementation ("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta") // QueryDSL JPA 의존성 추가
@@ -82,8 +71,6 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.mysql:mysql-connector-j")
-    // https://mvnrepository.com/artifact/com.h2database/h2
-    runtimeOnly("com.h2database:h2")
     annotationProcessor("org.projectlombok:lombok") // lombok
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

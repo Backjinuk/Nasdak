@@ -78,8 +78,9 @@ public class LedgerController {
     public Map<String, List<?>> LedgerList(Authentication authentication, @RequestBody Map<String, Object> map) {
 
         List<LedgerDto> allByUsers2 = new ArrayList<>();
-
         String searchKey = String.valueOf(map.get("searchKey"));
+        String prevNext = String.valueOf(map.get("type"));
+
 
         if(searchKey.equals("Day")) { // 일별 조회
 
@@ -89,8 +90,11 @@ public class LedgerController {
 
             System.out.println("startPage = " + startPage);
             System.out.println("endPage = " + endPage);
+            List<String> allByUsers = new ArrayList<>();
 
-            List<String> allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
+            if(Integer.parseInt(String.valueOf(map.get("endPage"))) > 0 ){
+                allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
+            }
 
             if (allByUsers.isEmpty()) {
                 return new HashMap<>();
@@ -102,68 +106,35 @@ public class LedgerController {
                     .collect(Collectors.toList());
 
         } else  { // 주, 월, 3개월 조회
-
-                LocalDateTime startDate2 = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-                if (map.get("startDate") != "" && map.get("startDate") != "null") {
-                    startDate2 = LocalDate.parse(String.valueOf(map.get("startDate")), formatter).atStartOfDay();
-                }
-
-                String format = startDate2.format(formatter);
-
-                LocalDate startDate = (Objects.equals(String.valueOf(map.get("startDate")), "")) ? null : LocalDate.parse(String.valueOf(map.get("startDate")), formatter);
+                LocalDate startDate = (Objects.equals(String.valueOf(map.get("startDate")), "")) ? LocalDate.now() : LocalDate.parse(String.valueOf(map.get("startDate")), formatter).atStartOfDay().toLocalDate();
                 LocalDate endDate = null;
 
-                if(startDate == null){ // 처음 조회
-                    switch (String.valueOf(map.get("searchKey"))) {
-                        case "Week":
-                            startDate =  LocalDate.parse(format, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(7);
-                            endDate   =  LocalDate.parse(format, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(13);
-                            break;
-                        case "Month":
-                            startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth());
-                            endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
-                            break;
-                        case "Month3":
-                            startDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2);
-                            endDate = LocalDate.parse(format, formatter).with(TemporalAdjusters.lastDayOfMonth());
-                            break;
-                        default:
-                            break;
-                    }
-                }
 
-                String prevNext = String.valueOf(map.get("type"));
+                Map<String, Object> dateMap = searchDate(prevNext, searchKey, startDate, endDate);
 
-                if(prevNext.equals("NEXT")){ // 페이징 조회
-                    endDate = switch (searchKey) { // 날짜 재구성
-                        case "Week" -> {
-                            startDate = Objects.requireNonNull(startDate).minusDays(14);
-                            yield startDate.plusDays(7);
-                        }
-                        case "Month" -> {
-                            startDate = Objects.requireNonNull(startDate).plusMonths(1);
-                            yield startDate.plusMonths(1);
-                        }
-                        case "Month3" -> {
-                            startDate = Objects.requireNonNull(startDate).plusMonths(3);
-                            yield startDate.plusMonths(3);
-                        }
-                        default -> endDate;
-                    };
-                }
-
-                System.out.println("prevNext = " + prevNext);
-                System.out.println("startDate = " + startDate);
-                System.out.println("endDate = " + endDate);
-
-                allByUsers2 = ledgerService.getLedgerList(startDate, endDate, toUser(authentication).getUserNo())
+                allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), toUser(authentication).getUserNo())
                                             .stream()
                                             .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
                                             .collect(Collectors.toList());
 
-                System.out.println("allByUsers2 = " + allByUsers2);
+                int count = 0;
+                while(allByUsers2.isEmpty()){
+                    prevNext = "ROOF";
+
+                    dateMap = searchDate(prevNext, searchKey, LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")));
+
+                    allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), toUser(authentication).getUserNo())
+                                                .stream()
+                                                .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                                .collect(Collectors.toList());
+
+                    count++;
+                    if(count > 10){
+                        break;
+                    }
+                }
         }
 
         Map<String, List<?>> stringListMap = TranformMap(allByUsers2, searchKey);
@@ -503,6 +474,76 @@ public class LedgerController {
         }
         System.out.println("resultMap  = " + resultMap );
         return new ArrayList<>(resultMap.values());
+    }
+
+    public Map<String, Object> searchDate(String prevNext,String searchKey, LocalDate startDate, LocalDate endDate) {
+        Map<String, Object> map = new HashMap<>();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if(Objects.equals(startDate, LocalDate.now())){ // 처음 조회
+
+            System.out.println("startDate = " + startDate);
+
+            switch (searchKey) {
+                case "Week":
+                    startDate =  startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(7);
+                    endDate   =  startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(13);
+                    break;
+                case "Month":
+                    startDate = startDate.with(TemporalAdjusters.firstDayOfMonth());
+                    endDate   = startDate.with(TemporalAdjusters.lastDayOfMonth());
+                    break;
+                case "Month3":
+                    startDate = startDate.with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2);
+                    endDate   = startDate.with(TemporalAdjusters.lastDayOfMonth());
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if(prevNext.equals("NEXT")){ // 페이징 조회
+            endDate = switch (searchKey) { // 날짜 재구성
+                case "Week" -> {
+                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(13);
+                    yield startDate.plusDays(7);
+                }
+                case "Month" -> {
+                    startDate = Objects.requireNonNull(startDate).plusMonths(1);
+                    yield startDate.plusMonths(1);
+                }
+                case "Month3" -> {
+                    startDate = Objects.requireNonNull(startDate).plusMonths(3);
+                    yield startDate.plusMonths(3);
+                }
+                default -> endDate;
+            };
+        }
+
+        if(prevNext.equals("ROOF")){ // 페이징 조회
+            endDate = switch (searchKey) { // 날짜 재구성
+                case "Week" -> {
+                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(13);
+                    yield startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(14);
+                }
+                case "Month" -> {
+                    startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(1);
+                    yield startDate.plusMonths(1);
+                }
+                case "Month3" -> {
+                    startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(3);
+                    yield startDate.plusMonths(3);
+                }
+                default -> endDate;
+            };
+        }
+
+
+        map.put("startDate", startDate.format(formatter));
+        map.put("endDate", endDate.format(formatter));
+
+        return map;
     }
 
 

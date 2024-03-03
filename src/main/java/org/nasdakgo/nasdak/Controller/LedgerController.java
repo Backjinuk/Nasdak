@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @RestController
@@ -114,27 +115,35 @@ public class LedgerController {
 
                 Map<String, Object> dateMap = searchDate(prevNext, searchKey, startDate, endDate);
 
-                allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), toUser(authentication).getUserNo())
+                AtomicReference<Ledger> previousLedger = new AtomicReference<>();
+
+                long userNo = Long.parseLong(String.valueOf(toUser(authentication).getUserNo()));
+
+
+                allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), userNo)
                                             .stream()
-                                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                                            .collect(Collectors.toList());
+                                            .peek(previousLedger::set)  // 이전 Ledger를 저장
+                                            .map(ledger -> {
+                                                LedgerDto ledgerDto = modelMapper.map(ledger, LedgerDto.class);
 
-                int count = 0;
-                while(allByUsers2.isEmpty()){
-                    prevNext = "ROOF";
+                                                if(ledgerDto == null){
 
-                    dateMap = searchDate(prevNext, searchKey, LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")));
+                                                    LocalDateTime ledgerSearchDate = ledgerService.getLedgerSearchDate(LocalDate.from(previousLedger.get().getUseDate()), userNo); // 재조정된 날짜를 기반으로 가장 최근의 데이터가 있는 날짜를 조회
 
-                    allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), toUser(authentication).getUserNo())
-                                                .stream()
-                                                .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                                                .collect(Collectors.toList());
+                                                    Map<String, Object> searchMap = searchDate(prevNext, "OneDay", LocalDate.from(ledgerSearchDate), endDate);// 재조정된 날짜로 검색조건 재설정
 
-                    count++;
-                    if(count > 10){
-                        break;
-                    }
-                }
+                                                    List<Ledger> ledgerList = ledgerService.getLedgerList(LocalDate.parse(String.valueOf(searchMap.get("startDate"))),
+                                                                                                                    LocalDate.parse(String.valueOf(searchMap.get("endDate"))),
+                                                                                                                    userNo); //재설정된 날짜로 조회
+                                                    ledgerDto = modelMapper.map(ledgerList, LedgerDto.class);
+                                                }
+
+                                                return ledgerDto;
+
+                                            })
+                                            .collect(Collectors.toList());  // LedgerDtoList를 조회
+
+
         }
 
         Map<String, List<?>> stringListMap = TranformMap(allByUsers2, searchKey);

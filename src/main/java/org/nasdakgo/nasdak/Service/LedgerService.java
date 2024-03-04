@@ -53,7 +53,7 @@ public class LedgerService {
 
 
     public List<Ledger> ledgerItem(String regDate, String regDate2, long userNo) {
-        return ledgerRepository.ledgerItem(regDate, regDate2, userNo);
+        return ledgerRepository.getLedgerItem(regDate, regDate2, userNo);
     }
 
     public Ledger ledgerDetail(Ledger ledger) {

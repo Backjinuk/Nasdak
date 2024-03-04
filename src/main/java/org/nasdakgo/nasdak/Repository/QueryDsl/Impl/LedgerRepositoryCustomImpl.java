@@ -31,10 +31,10 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
     public List<String> getLedgerDateList(long userNo, int startPaging, int endPaging) {
 
         DateTemplate<String> formattedDate = Expressions.dateTemplate(
-                String.class
-                , "DATE_FORMAT({0}, {1})"
-                , qLedger.useDate
-                , ConstantImpl.create("%Y-%m-%d"));
+                String.class,
+                "TO_CHAR({0}, 'yyyy-MM-dd')",
+                qLedger.useDate
+        ); // useDate 스트링으로 변환
 
 //        DateTemplate<String> formattedDate = Expressions.dateTemplate(
 //                String.class
@@ -58,10 +58,20 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
         Map<String, Object> map = transDate(startDate, endDate);
 
         DateTemplate<String> formattedDate = Expressions.dateTemplate(
-                String.class
-                , "DATE_FORMAT({0}, {1})"
-                , qLedger.useDate
-                , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
+                String.class,
+                "TO_CHAR({0}, 'yyyy-MM-dd HH:mm:ss')",
+                qLedger.useDate
+        );// useDate 스트링으로 변환
+
+
+//            DateTemplate<String> formattedDate = Expressions.dateTemplate(
+//                String.class
+//                , "DATE_FORMAT({0}, {1})"
+//                , qLedger.useDate
+//                , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
+
+
+
 
         return jpaQueryFactory
                 .select(qLedger)
@@ -77,10 +87,16 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
         Map<String, Object> map = transDate(startDate, LocalDate.now());
 
         DateTemplate<String> formattedDate = Expressions.dateTemplate(
-                String.class
-                , "DATE_FORMAT({0}, {1})"
-                , qLedger.useDate
-                , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
+                String.class,
+                "TO_CHAR({0}, 'yyyy-MM-dd HH:mm:ss')",
+                qLedger.useDate
+        ); // useDate 스트링으로 변환
+
+//        DateTemplate<String> formattedDate = Expressions.dateTemplate(
+//                String.class
+//                , "DATE_FORMAT({0}, {1})"
+//                , qLedger.useDate
+//                , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
 
         return jpaQueryFactory
                 .select(qLedger.useDate)
@@ -89,6 +105,30 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
                         .and(formattedDate.loe(String.valueOf(map.get("start"))))
                 )
                 .fetchFirst();
+    }
+
+    @Override
+    public List<Ledger> getLedgerItem(String regDate, String regDate2, long userNo) {
+
+        Map<String, Object> map = transDate(LocalDate.parse(regDate), LocalDate.parse(regDate2));
+
+        DateTemplate<String> formattedDate = Expressions.dateTemplate(
+                String.class,
+                "TO_CHAR({0}, 'yyyy-MM-dd HH:mm:ss')",
+                qLedger.useDate
+        );
+
+        return jpaQueryFactory
+                .select(qLedger)
+                .from(qLedger)
+                .where(qLedger.user.userNo.eq(userNo)
+                        .and(formattedDate.between(
+                                String.valueOf(map.get("start")),
+                                String.valueOf(map.get("end")))
+                        )
+                )
+                .orderBy(qLedger.useDate.desc())
+                .fetch();
     }
 
 

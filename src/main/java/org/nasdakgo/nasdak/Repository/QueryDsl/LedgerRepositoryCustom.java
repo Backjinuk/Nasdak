@@ -18,5 +18,8 @@ public interface LedgerRepositoryCustom {
     List<Ledger> getLedgerItem(String regDate, String regDate2, long userNo);
 
 
+    List<Ledger> getLedgerDayList(List<String> regDates, long userNo);
+
+
 
 }

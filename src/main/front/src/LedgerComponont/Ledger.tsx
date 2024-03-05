@@ -49,13 +49,15 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
 
         const keys = Object.entries(ledgerAllList);
         const index = Object.keys(ledgerAllList).indexOf(date) + 1;
-
-        if(type === "NEXT"){
-
         let value = selectButton === 1 ?  "Day" : selectButton === 2 ?  "Week" : selectButton === 3 ?  "Month" : "Month3";
-            if (index >= 0 && index < keys.length) {
+
+        if(type === "PREV"){
+            if (index > 0 && index < keys.length) {
+                console.log("keys.length1 : " , keys.length);
+                console.log("index.length1 : " , index);
+
                 const startDate = Object.keys(ledgerAllList)[index].split("~")[0].trim();
-                if(!(keys.length >= (index + 3)) ){
+                if(!(keys.length >= (index + 3))){
 
                     dispatch(axiosGetLedgerAllDay({
                         userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
@@ -65,8 +67,6 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                         startDate: startDate,
                         type: type
                     }));
-
-
                 }
                 nextPlease();
             }else{
@@ -132,12 +132,12 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
 
             {selectButton != 1 &&
                 <div className={"flex-box"}>
-                    <Button variant={"contained"} onClick={() => searchDate(date, "PREV")}>
-                        PREV
+                    <Button variant={"contained"} onClick={() => searchDate(date, "NEXT")}>
+                        NEXT
                     </Button>
 
-                    <Button variant={"contained"} onClick={() => searchDate(date, "NEXT")}>
-                            NEXT
+                    <Button variant={"contained"} onClick={() => searchDate(date, "PREV")}>
+                            PREV
                         </Button>
                 </div>
             }

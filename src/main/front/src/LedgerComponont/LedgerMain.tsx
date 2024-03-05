@@ -198,7 +198,7 @@ export default function LedgerMain({categoryList , event} : any){
                 {selectButtonValue === 1 &&
                     <>
                        {/* <input type="button" value="next" onClick={() => nextView()}/> */}
-                        <div className={"nextView"} ref={ref}></div>
+                        <div className={"nextView"} ref={ref}>-</div>
                     </>
                 }
              </div>

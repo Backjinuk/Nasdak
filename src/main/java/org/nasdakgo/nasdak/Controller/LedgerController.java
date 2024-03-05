@@ -81,33 +81,27 @@ public class LedgerController {
     @RequestMapping("LedgerAllDayList")
     public Map<String, List<?>> LedgerList(Authentication authentication, @RequestBody Map<String, Object> map) {
 
-        List<LedgerDto> allByUsers2 = new ArrayList<>();
-        String searchKey = String.valueOf(map.get("searchKey"));
+        List<LedgerDto> allByUsers2;
+        String searchKey = (Objects.equals(String.valueOf(map.get("searchKey")), "")) ? "Day" : String.valueOf(map.get("searchKey"));
         String prevNext = (Objects.equals(String.valueOf(map.get("type")), "")) ? "first" : String.valueOf(map.get("type"));
         long userNo = Long.parseLong(String.valueOf(toUser(authentication).getUserNo()));
-        Map<String, List<?>> stringListMap = new HashMap<>();
-
-
+        Map<String, List<?>> stringListMap;
 
         if(searchKey.equals("Day")) { // 일별 조회
 
-            int startPage = (map.get("startPage") == null) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
-            int endPage = (map.get("endPage") == null) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
+            int startPage = (Integer.parseInt(String.valueOf(map.get("startPage"))) == 0) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
+            int endPage   = (Integer.parseInt(String.valueOf(map.get("endPage")))   == 0) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
 
-            List<String> allByUsers = new ArrayList<>();
-
-            if(Integer.parseInt(String.valueOf(map.get("endPage"))) > 0 ){
-                allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
-            }
+            List<String> allByUsers = ledgerService.getLedgerList(userNo, startPage, endPage);
 
             if (allByUsers.isEmpty()) {
                 return new HashMap<>();
             }
 
-            allByUsers2 = ledgerService.ledgerItem(allByUsers.get(allByUsers.size() - 1), allByUsers.get(0), userNo)
-                    .stream()
-                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                    .collect(Collectors.toList());
+            allByUsers2 = ledgerService.getLedgerDayList(allByUsers, userNo)
+                                        .stream()
+                                        .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                        .collect(Collectors.toList());
 
             stringListMap = TranformMap(allByUsers2, searchKey); // 3개의 날짜 그룹 생성
 
@@ -548,7 +542,7 @@ public class LedgerController {
             }
         }
 
-        if(prevNext.equals("NEXT")){ // 페이징 조회
+        if(prevNext.equals("PREV")){ // 페이징 조회
             endDate = switch (searchKey) { // 날짜 재구성
                 case "Week" -> {
                     startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(13);

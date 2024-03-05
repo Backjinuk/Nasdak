@@ -84,7 +84,6 @@ public class JwtTokenProvider {
                 .refreshToken(refreshToken)
                 .refreshTokenExpiresIn(refreshTokenExpiresIn)
                 .accessTokenExpiresIn(accessTokenExpiresIn)
-                .userNo(authentication.getName())
                 .build();
     }
 
@@ -104,33 +103,10 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        String refreshTokenMapKey = UUID.randomUUID().toString();
-
-        // Refresh Token 생성
-        String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + refreshTokenExpiresIn))
-                .signWith(key, SignatureAlgorithm.HS256)
-                .claim("key", refreshTokenMapKey)
-                .compact();
-
-        refreshTokenMapService.deleteRefreshTokenMap(refreshTokenMap.getRefreshTokenMapKey());
-
-        refreshTokenMap = RefreshTokenMap.builder()
-                .authorities(refreshTokenMap.getAuthorities())
-                .refreshTokenMapKey(refreshTokenMapKey)
-                .expiredTime(new Date(now + refreshTokenExpiresIn).getTime())
-                .name(refreshTokenMap.getName())
-                .build();
-
-        refreshTokenMapService.saveRefreshTokenMap(refreshTokenMap);
-
         return JwtTokenDto.builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .refreshTokenExpiresIn(refreshTokenExpiresIn)
                 .accessTokenExpiresIn(accessTokenExpiresIn)
-                .userNo(refreshTokenMap.getName())
                 .build();
     }
 

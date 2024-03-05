@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -82,5 +83,9 @@ public class LedgerService {
 
     public List<String> getLedgerDateList(long userNo, int startPaging, int endPaging) {
         return ledgerRepository.getLedgerDateList(userNo, startPaging, endPaging);
+    }
+
+    public LocalDateTime getLedgerSearchDate(LocalDate startDate, long userNo) {
+        return ledgerRepository.getLedgerSearchDate(startDate, userNo);
     }
 }

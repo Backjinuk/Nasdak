@@ -66,8 +66,9 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                         type: type
                     }));
 
-                    nextPlease();
+
                 }
+                nextPlease();
             }else{
 
                 Swal.fire({
@@ -118,7 +119,7 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                         }}>
                             <div> 날짜 : {ledger.useDate} </div>
                             <div> {ledger.ledgerType === "SAVE" ? "입금" : "출금"} : {ledger.price} </div>
-                            <div> {ledger.ledgerType2 === "SAVE" ? "입금" : "출금"} : {ledger.price2} </div>
+                            <div> {ledger.ledgerType2 === "DEPOSIT" ? "입금" : "출금"} : {ledger.price2} </div>
                         </div>
                         ))}
                     </div>

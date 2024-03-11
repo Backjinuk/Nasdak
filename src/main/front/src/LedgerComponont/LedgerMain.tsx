@@ -97,17 +97,20 @@ export default function LedgerMain({categoryList , event} : any){
             x: back ? -800 : 800,
             opacity: 0,
             scale: 0,
+            height: 0
         }),
         center: {
             opacity: 1,
             x: 0,
             scale: 1,
-            transition: { duration: 0.5 }
+            transition: { duration: 0.5 },
+            height: "auto",
         },
         exit: (back: boolean) => ({
             x: back ? 800 : -800,
             opacity: 0,
             scale: 0,
+            height: 0,
             transition: { type: "bounce", duration: 0.4, mass: 0.5},
         })
     };
@@ -175,17 +178,17 @@ export default function LedgerMain({categoryList , event} : any){
                                             exit={"exit"}
                                             key={index}
                                         >
-                                            <div className={"card2 shadow-lg"}>
-                                                <Ledger
-                                                    date={date}
-                                                    isOpen={isOpen}
-                                                    ledgerData={ledgerData}
-                                                    ledgerDetail={ledgerDetail}
-                                                    selectButton={selectButtonValue}
-                                                    nextPlease={nextPlease}
-                                                    prevPlease={prevPlease}
-                                                />
-                                            </div>
+                                                <div className={"card2 shadow-lg"}>
+                                                    <Ledger
+                                                        date={date}
+                                                        isOpen={isOpen}
+                                                        ledgerData={ledgerData}
+                                                        ledgerDetail={ledgerDetail}
+                                                        selectButton={selectButtonValue}
+                                                        nextPlease={nextPlease}
+                                                        prevPlease={prevPlease}
+                                                    />
+                                                </div>
                                     </Box> )
                                     ))}
 

@@ -169,13 +169,13 @@ public class LedgerController {
 
 
     @RequestMapping("ledgerDateList")
-    public List<LedgerDto> ledgerDateList(@RequestBody Map<String, Object> map){
+    public List<LedgerDto> ledgerDateList(@RequestBody Map<String, Object> map, Authentication authentication){
 
         String dateWithoutTime = String.valueOf(map.get("date")).substring(0, 10); // 시간 부분 제거
         LocalDate useDate = LocalDate.parse(dateWithoutTime, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
 
-        return ledgerService.findByUseDateBetween(useDate, Long.parseLong(String.valueOf(map.get("userNo"))))
+        return ledgerService.findByUseDateBetween(useDate, toUser(authentication).getUserNo())
                 .stream()
                 .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
                 .collect(Collectors.toList());
@@ -184,7 +184,13 @@ public class LedgerController {
 
 
     @RequestMapping("locationList")
-    public List<LedgerDto> locationList(@RequestBody UserDto usersDto) {
+    public List<LedgerDto> locationList(Authentication authentication) {
+        UserDto usersDto = new UserDto();
+
+        usersDto.setUserNo(toUser(authentication).getUserNo());
+
+        System.out.println("usersDto = " + usersDto);
+
         return ledgerService.findAllBylocation(modelMapper.map(usersDto, User.class))
                 .stream()
                 .map(ledger -> modelMapper.map(ledger, LedgerDto.class))

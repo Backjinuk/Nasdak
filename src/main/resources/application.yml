@@ -17,14 +17,13 @@ spring:
       fail-on-empty-beans: false
 
   datasource:
-    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    url: jdbc:p6spy:h2:tcp://localhost/~/nasdak;NON_KEYWORDS=USER
-    username: nasdak
-    password: nasdak12@
-#    url: jdbc:mysql://localhost:3306/nasdak
-#    username: Nasdak
-#    password: Nasdak12@
 #    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    url: jdbc:p6spy:h2:tcp://localhost/~/nasdak;NON_KEYWORDS=USER
+#    username: nasdak
+#    password: nasdak12@
+    url: jdbc:mysql://localhost:3306/nasdak
+    username: Nasdak
+    password: Nasdak12@
   jpa:
     hibernate:
       ddl-auto: update

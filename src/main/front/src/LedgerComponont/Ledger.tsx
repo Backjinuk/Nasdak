@@ -7,6 +7,10 @@ import {axiosGetLedgerAllDay} from "../app/slices/ledgerSilce";
 import {useAppDispatch, useAppSelector} from "../app/hooks";
 import {RootState} from "../app/store";
 import Swal from "sweetalert2";
+import {ChangeMaxPage} from "../app/slices/ledgerSilce";
+import StatsView from "./StatsView";
+import {AnimatePresence, motion} from "framer-motion";
+
 
 
 interface LedgerProps {
@@ -26,6 +30,8 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
     const [open2, setOpen2] = useState(false);
     const [ledgerList, setLedgerList] = useState<LedgerType[]>(ledgerData);
     const ledgerAllList = useAppSelector((state: RootState) => state.ledger.ledgerList)
+    const maxPage = useAppSelector((state : RootState) => state.ledger.maxPage);
+    const [statsView, setStatsView] = useState(false);
 
     function isOpen2(value: boolean) {
         setOpen2(value);
@@ -52,12 +58,10 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
         let value = selectButton === 1 ?  "Day" : selectButton === 2 ?  "Week" : selectButton === 3 ?  "Month" : "Month3";
 
         if(type === "PREV"){
-            if (index > 0 && index < keys.length) {
-                console.log("keys.length1 : " , keys.length);
-                console.log("index.length1 : " , index);
-
+            if (index > 0 && index < keys.length ) {
                 const startDate = Object.keys(ledgerAllList)[index].split("~")[0].trim();
-                if(!(keys.length >= (index + 3))){
+
+                if(!(keys.length >= (index + 3)) &&  keys.length > maxPage){
 
                     dispatch(axiosGetLedgerAllDay({
                         userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
@@ -67,10 +71,11 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                         startDate: startDate,
                         type: type
                     }));
+
+                    dispatch(ChangeMaxPage(keys.length));
                 }
                 nextPlease();
             }else{
-
                 Swal.fire({
                     icon : "info",
                     title : "데이터가 존재하지 않습니다.",
@@ -78,7 +83,6 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                 })
             }
         }else{
-
             if(index === 1){
                 Swal.fire({
                     icon : "info",
@@ -89,8 +93,6 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                 prevPlease();
             }
         }
-
-
     }
 
     return (
@@ -112,17 +114,36 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
 
 
                 {selectButton != 1 &&
-                    <div className={"ledgerBoxBody2"}>
-                        {ledgerData.map((ledger, index) => (
-                        <div className={"ledgerItem2"} key={index} onClick={() => {
-                            ledgerDate(ledger.useDate).then();
-                        }}>
-                            <div> 날짜 : {ledger.useDate} </div>
-                            <div> {ledger.ledgerType === "SAVE" ? "입금" : "출금"} : {ledger.price} </div>
-                            <div> {ledger.ledgerType2 === "DEPOSIT" ? "입금" : "출금"} : {ledger.price2} </div>
+                    <>
+                        <div style={{display: "flex", flexDirection: "row-reverse"}}>
+                            <Button variant={"contained"} onClick={() => { setStatsView(!statsView)}}
+                            sx={{height: "32px" , position: "absolute", top: "5px"}}
+                            >통계보기</Button>
                         </div>
-                        ))}
-                    </div>
+                        <AnimatePresence>
+                            {statsView && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -500 }} // 컴포넌트가 처음 렌더링될 때의 상태
+                                    animate={{ opacity: 1, x: 0 }} // 애니메이션의 최종 상태
+                                    exit={{ opacity: 0, x: 500 }} // 컴포넌트가 사라질 때의 상태
+                                    transition={{ duration: 0.5, delay: 0 }} // 애니메이션 동작 시간
+                                >
+                                    <StatsView/>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        <div className={"ledgerBoxBody2"}>
+                            {ledgerData.map((ledger, index) => (
+                                <div className={"ledgerItem2"} key={index} onClick={() => {
+                                    ledgerDate(ledger.useDate).then();
+                                }}>
+                                    <div> 날짜 : {ledger.useDate} </div>
+                                    <div> {ledger.ledgerType === "SAVE" ? "입금" : "출금"} : {ledger.price} </div>
+                                    <div> {ledger.ledgerType2 === "DEPOSIT" ? "입금" : "출금"} : {ledger.price2} </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 }
 
 

@@ -19,6 +19,7 @@ const initialState: {
     error: string;
     startPage: number;
     endPage: number;
+    maxPage: number;
 } = {
     event: false,
     ledgerList: {},  // 빈 객체로 초기화
@@ -28,7 +29,8 @@ const initialState: {
     status: "idle",
     error: "",
     startPage: 0,
-    endPage: 0
+    endPage: 0,
+    maxPage : 0
 };
 
 
@@ -48,6 +50,9 @@ const ledgerSlice = createSlice({
         ChangePage: (state, action) => {
             state.startPage = action.payload.startPage;
             state.endPage = action.payload.endPage;
+        },
+        ChangeMaxPage: (state, action) => {
+            state.maxPage = action.payload;
         }
     },
     extraReducers(builder) {
@@ -157,5 +162,5 @@ export const axiosDeleteFileItem = createAsyncThunk(
 
 
 
-export const {changeEvent, ChangeSelectButton, ChangePage} = ledgerSlice.actions;
+export const {changeEvent, ChangeSelectButton, ChangePage,ChangeMaxPage} = ledgerSlice.actions;
 export default ledgerSlice.reducer;

@@ -170,15 +170,16 @@ export default function LedgerMain({categoryList , event} : any){
                             <AnimatePresence custom={back}>
                                     {Object.entries(ledgerList).map(([date, ledgerData], index) => (
                                         visible === index && (
-                                        <Box
-                                            custom={back}
-                                            variants={boxVariants}
-                                            initial={"entry"}
-                                            animate={"center"}
-                                            exit={"exit"}
-                                            key={index}
-                                        >
-                                                <div className={"card2 shadow-lg"}>
+                                    <Box
+                                        layout
+                                        custom={back}
+                                        variants={boxVariants}
+                                        initial={"entry"}
+                                        animate={"center"}
+                                        exit={"exit"}
+                                        key={index}
+                                    >
+                                                <motion.div layout className={"card2 shadow-lg"}>
                                                     <Ledger
                                                         date={date}
                                                         isOpen={isOpen}
@@ -187,8 +188,8 @@ export default function LedgerMain({categoryList , event} : any){
                                                         selectButton={selectButtonValue}
                                                         nextPlease={nextPlease}
                                                         prevPlease={prevPlease}
-                                                    />
-                                                </div>
+                                                    /> 
+                                                </motion.div>
                                     </Box> )
                                     ))}
 

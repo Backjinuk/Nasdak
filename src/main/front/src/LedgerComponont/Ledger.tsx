@@ -1,5 +1,5 @@
 import {LedgerType} from "../TypeList";
-import {useState} from "react";
+import {ReactNode, useState} from "react";
 import LedgerDetailModal from "./LedgerDetailModal";
 import axios from "../customFunction/customAxios";
 import Button from "@mui/material/Button";
@@ -17,6 +17,7 @@ interface LedgerProps {
     ledgerData: LedgerType[];
 }
 
+
 export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectButton, nextPlease , prevPlease}: {
     ledgerData: LedgerType[],
     ledgerDetail: any,
@@ -32,6 +33,8 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
     const ledgerAllList = useAppSelector((state: RootState) => state.ledger.ledgerList)
     const maxPage = useAppSelector((state : RootState) => state.ledger.maxPage);
     const [statsView, setStatsView] = useState(false);
+
+
 
     function isOpen2(value: boolean) {
         setOpen2(value);
@@ -111,8 +114,6 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                         ))}
                     </div>
                 }
-
-
                 {selectButton != 1 &&
                     <>
                         <div style={{display: "flex", flexDirection: "row-reverse"}}>
@@ -123,12 +124,15 @@ export default function Ledger({ledgerData, ledgerDetail, date, isOpen, selectBu
                         <AnimatePresence>
                             {statsView && (
                                 <motion.div
+                                    layout // layout 속성 추가
                                     initial={{ opacity: 0, x: -500 }} // 컴포넌트가 처음 렌더링될 때의 상태
                                     animate={{ opacity: 1, x: 0 }} // 애니메이션의 최종 상태
                                     exit={{ opacity: 0, x: 500 }} // 컴포넌트가 사라질 때의 상태
                                     transition={{ duration: 0.5, delay: 0 }} // 애니메이션 동작 시간
                                 >
-                                    <StatsView/>
+                                    <motion.div layout>
+                                        <StatsView ledgerAllList={ledgerAllList} date={date}/>
+                                    </motion.div>
                                 </motion.div>
                             )}
                         </AnimatePresence>

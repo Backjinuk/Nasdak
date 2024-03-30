@@ -46,7 +46,6 @@ function isAuthenticationError(error: unknown) {
 async function requestRefreshToken(refreshToken: string) {
   const res = await axios.public.post('/api/token/refreshToken', JSON.stringify({ refreshToken }));
   setCookie('accessToken', res.data.accessToken, { maxAge: Number(res.data.accessTokenExpiresIn) / 1000 });
-  setCookie('refreshToken', res.data.refreshToken, { maxAge: Number(res.data.refreshTokenExpiresIn) / 1000 });
   return res;
 }
 

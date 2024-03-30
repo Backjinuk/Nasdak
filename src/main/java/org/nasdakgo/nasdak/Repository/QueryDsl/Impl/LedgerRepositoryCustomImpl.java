@@ -71,6 +71,7 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
                 .where(qLedger.user.userNo.eq(userNo)
                         .and(formattedDate.loe(String.valueOf(map.get("start"))))
                 )
+                .orderBy(qLedger.useDate.desc())
                 .fetchFirst();
     }
 

@@ -22,8 +22,8 @@ spring:
 #    username: nasdak
 #    password: nasdak12@
     url: jdbc:mysql://localhost:3306/nasdak
-    username: Nasdak
-    password: Nasdak12@
+    username: nasdak
+    password: nasdak12@
   jpa:
     hibernate:
       ddl-auto: update

@@ -26,9 +26,6 @@ public class RefreshTokenMapService {
             refreshTokenMapRepository.deleteExpiredToken(new Date().getTime());
         } catch (Exception e) {
             log.error("Failed to initialize RefreshTokenMapService", e);
-            // 예외를 적절히 처리하거나 로깅할 수 있습니다.
-            // 예외를 더 높은 수준으로 던지거나 초기화를 계속할 수도 있습니다.
-            // 여기서는 로깅만 수행합니다.
         }
     }
 

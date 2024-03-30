@@ -2,7 +2,6 @@ package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.*;
@@ -25,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @RestController
@@ -126,7 +124,7 @@ public class LedgerController {
 
                     List<String> keys = new ArrayList<>(); // 키값을 담을 리스트
                     String lastKey = ""; // 마지막 키값
-                    LocalDate keyDate = LocalDate.now(); // stringListMap이 비어있을때 기본값
+                    LocalDate keyDate = startDate; // stringListMap이 비어있을때 기본값
 
                     if(!stringListMap.keySet().isEmpty()){ // stringListMap이 비어있지 않다면 마지막 키값을 parsing
                         keys = new ArrayList<>(stringListMap.keySet());
@@ -551,7 +549,7 @@ public class LedgerController {
         if(prevNext.equals("PREV")){ // 페이징 조회
             endDate = switch (searchKey) { // 날짜 재구성
                 case "Week" -> {
-                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(13);
+                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(14);
                     yield startDate.plusDays(7);
                 }
                 case "Month" -> {

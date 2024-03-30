@@ -6,7 +6,10 @@ import Swal from 'sweetalert2';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { RootState } from '../app/store';
 import { axiosGetLedgerDetail } from '../app/slices/ledgerSilce';
-import axios from 'customFunction/customAxios';
+import axios from "axios";
+import {getJsonHeader} from "../headers";
+import {getCookie} from "../Cookies";
+
 
 export default function MapLocation({ event }: any) {
   const dispatch = useAppDispatch();
@@ -23,7 +26,11 @@ export default function MapLocation({ event }: any) {
   useEffect(() => {
     var markers: any[] = [];
 
-    axios.post('/api/ledger/locationList', sessionStorage.getItem('userDto')).then((res) => {
+    axios.get('/api/ledger/locationList',  {
+              headers : {
+                Authorization: `Bearer ${getCookie('accessToken')}`,
+                'Content-Type': 'application/json',
+              }}).then((res) => {
       setLocationList(res.data);
       displayPlaces(res.data);
     });

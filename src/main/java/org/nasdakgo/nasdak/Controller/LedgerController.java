@@ -2,6 +2,7 @@ package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.*;
 import org.nasdakgo.nasdak.Entity.*;
@@ -23,12 +24,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ledger/")
 @RequiredArgsConstructor
+@Slf4j
 public class LedgerController {
 
     private final LedgerService ledgerService;
@@ -78,92 +79,85 @@ public class LedgerController {
     @RequestMapping("LedgerAllDayList")
     public Map<String, List<?>> LedgerList(Authentication authentication, @RequestBody Map<String, Object> map) {
 
-        List<LedgerDto> allByUsers2 = new ArrayList<>();
-        String searchKey = String.valueOf(map.get("searchKey"));
-        String prevNext = String.valueOf(map.get("type"));
+        List<LedgerDto> allByUsers2;
+        String searchKey = (Objects.equals(String.valueOf(map.get("searchKey")), "")) ? "Day" : String.valueOf(map.get("searchKey"));
+        String prevNext = (Objects.equals(String.valueOf(map.get("type")), "")) ? "first" : String.valueOf(map.get("type"));
         long userNo = Long.parseLong(String.valueOf(toUser(authentication).getUserNo()));
-
-
+        Map<String, List<?>> stringListMap;
 
         if(searchKey.equals("Day")) { // 일별 조회
 
-            int startPage = (map.get("startPage") == null) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
-            int endPage = (map.get("endPage") == null) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
+            int startPage = (Integer.parseInt(String.valueOf(map.get("startPage"))) == 0) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
+            int endPage   = (Integer.parseInt(String.valueOf(map.get("endPage")))   == 0) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
 
-            List<String> allByUsers = new ArrayList<>();
-
-            if(Integer.parseInt(String.valueOf(map.get("endPage"))) > 0 ){
-                allByUsers = ledgerService.findAllByUsers(userNo, startPage, endPage);
-            }
+            List<String> allByUsers = ledgerService.getLedgerList(userNo, startPage, endPage);
 
             if (allByUsers.isEmpty()) {
                 return new HashMap<>();
             }
 
-            allByUsers2 = ledgerService.ledgerItem(allByUsers.get(allByUsers.size() - 1), allByUsers.get(0), userNo)
-                    .stream()
-                    .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                    .collect(Collectors.toList());
+            allByUsers2 = ledgerService.getLedgerDayList(allByUsers, userNo)
+                                        .stream()
+                                        .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                        .collect(Collectors.toList());
+
+            stringListMap = TranformMap(allByUsers2, searchKey); // 3개의 날짜 그룹 생성
 
         } else  { // 주, 월, 3개월 조회
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-                LocalDate startDate = (Objects.equals(String.valueOf(map.get("startDate")), "")) ? LocalDate.now() : LocalDate.parse(String.valueOf(map.get("startDate")), formatter).atStartOfDay().toLocalDate();
-                LocalDate endDate = null;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+            LocalDate startDate = (Objects.equals(String.valueOf(map.get("startDate")), "")) ? LocalDate.now() : LocalDate.parse(String.valueOf(map.get("startDate")), formatter).atStartOfDay().toLocalDate();
+            LocalDate endDate = null;
 
-                Map<String, Object> dateMap = searchDate("first", searchKey, startDate, endDate);
+            Map<String, Object> dateMap = searchDate(prevNext, searchKey, startDate, endDate);
 
-                allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), userNo)
-                                            .stream()
-                                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))  // Ledger를 LedgerDto로 변환
-                                            .collect(Collectors.toList());  // LedgerDtoList를 조회
+            allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), userNo)
+                                        .stream()
+                                        .map(ledger -> modelMapper.map(ledger, LedgerDto.class))  // Ledger를 LedgerDto로 변환
+                                        .collect(Collectors.toList());  // LedgerDtoList를 조회
 
-        }
+            stringListMap = TranformMap(allByUsers2, searchKey); // 3개의 날짜 그룹 생성
 
-        Map<String, List<?>> stringListMap = TranformMap(allByUsers2, searchKey); // 3개의 날짜 그룹 생성
+            if(stringListMap.keySet().size() <= 3){ // 3개의 날짜 그룹이 안되면 추가 조회
+                while (stringListMap.keySet().size() < 3) { // 그룹이 3개가 될때까지 조회
 
-        int breakCount = 0; // 무한루프 방지
+                    List<String> keys = new ArrayList<>(); // 키값을 담을 리스트
+                    String lastKey = ""; // 마지막 키값
+                    LocalDate keyDate = startDate; // stringListMap이 비어있을때 기본값
 
-        if(stringListMap.keySet().size() <= 3){ // 3개의 날짜 그룹이 안되면 추가 조회
-            while (stringListMap.keySet().size() < 3) { // 그룹이 3개가 될때까지 조회
-
-                List<String> keys = new ArrayList<>(); // 키값을 담을 리스트
-                String lastKey = ""; // 마지막 키값
-                LocalDate keyDate = LocalDate.now(); // stringListMap이 비어있을때 기본값
-
-                if(!stringListMap.keySet().isEmpty()){ // stringListMap이 비어있지 않다면 마지막 키값을 parsing
-                    keys = new ArrayList<>(stringListMap.keySet());
-                    lastKey = keys.get(keys.size() - 1);
-                    keyDate = LocalDate.parse(lastKey.split("~")[0].trim());
-                }
+                    if(!stringListMap.keySet().isEmpty()){ // stringListMap이 비어있지 않다면 마지막 키값을 parsing
+                        keys = new ArrayList<>(stringListMap.keySet());
+                        lastKey = keys.get(keys.size() - 1);
+                        keyDate = LocalDate.parse(lastKey.split("~")[0].trim());
+                    }
 
 
-                LocalDateTime ledgerSearchDate = ledgerService.getLedgerSearchDate(keyDate, userNo); // 재조정된 날짜를 기반으로 가장 최근의 데이터가 있는 날짜를 조회
+                    LocalDateTime ledgerSearchDate = ledgerService.getLedgerSearchDate(keyDate, userNo); // 재조정된 날짜를 기반으로 가장 최근의 데이터가 있는 날짜를 조회
 
-                Map<String, Object> searchMap = searchDate("OneDay", searchKey, LocalDate.from(ledgerSearchDate), LocalDate.from(ledgerSearchDate));// 재조정된 날짜로 검색조건 재설정
-
-                List<LedgerDto> collect = ledgerService.getLedgerList(LocalDate.parse(String.valueOf(searchMap.get("startDate"))), // 재조정된 값으로 데이터 조회
-                                                                        LocalDate.parse(String.valueOf(searchMap.get("endDate"))),
-                                                                        userNo)
-                                                        .stream()
-                                                        .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
-                                                        .collect(Collectors.toList());
-
-                Map<String, List<?>> tempStringListMap = TranformMap(collect, searchKey); // 재조정된 데이터로 새로운 temp 그룹 생성
-
-                for (String key : tempStringListMap.keySet()) { // temp 그룹을 기존 그룹에 추가
-                    if (!stringListMap.containsKey(key)) {
-                        stringListMap.putAll(tempStringListMap);
+                    if (ledgerSearchDate == null || String.valueOf(ledgerSearchDate).isEmpty()) {
+                        log.info("더이상 조회할 데이터가 없습니다.");
                         break;
                     }
-                }
 
-                breakCount++;
 
-                if (breakCount > 4) {   // 무한루프 방지
-                    System.out.println("데이터가 더이상 없다.");
-                    break;
+                    Map<String, Object> searchMap = searchDate("OneDay", searchKey, LocalDate.from(ledgerSearchDate), LocalDate.from(ledgerSearchDate));// 재조정된 날짜로 검색조건 재설정
+
+                    List<LedgerDto> collect = ledgerService.getLedgerList(LocalDate.parse(String.valueOf(searchMap.get("startDate"))), // 재조정된 값으로 데이터 조회
+                                                                            LocalDate.parse(String.valueOf(searchMap.get("endDate"))),
+                                                                            userNo)
+                                                            .stream()
+                                                            .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                                            .collect(Collectors.toList());
+
+                    Map<String, List<?>> tempStringListMap = TranformMap(collect, searchKey); // 재조정된 데이터로 새로운 temp 그룹 생성
+
+                    for (String key : tempStringListMap.keySet()) { // temp 그룹을 기존 그룹에 추가
+                        if (!stringListMap.containsKey(key)) {
+                            stringListMap.putAll(tempStringListMap);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -173,13 +167,13 @@ public class LedgerController {
 
 
     @RequestMapping("ledgerDateList")
-    public List<LedgerDto> ledgerDateList(@RequestBody Map<String, Object> map){
+    public List<LedgerDto> ledgerDateList(@RequestBody Map<String, Object> map, Authentication authentication){
 
         String dateWithoutTime = String.valueOf(map.get("date")).substring(0, 10); // 시간 부분 제거
         LocalDate useDate = LocalDate.parse(dateWithoutTime, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
 
-        return ledgerService.findByUseDateBetween(useDate, Long.parseLong(String.valueOf(map.get("userNo"))))
+        return ledgerService.findByUseDateBetween(useDate, toUser(authentication).getUserNo())
                 .stream()
                 .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
                 .collect(Collectors.toList());
@@ -188,7 +182,13 @@ public class LedgerController {
 
 
     @RequestMapping("locationList")
-    public List<LedgerDto> locationList(@RequestBody UserDto usersDto) {
+    public List<LedgerDto> locationList(Authentication authentication) {
+        UserDto usersDto = new UserDto();
+
+        usersDto.setUserNo(toUser(authentication).getUserNo());
+
+        System.out.println("usersDto = " + usersDto);
+
         return ledgerService.findAllBylocation(modelMapper.map(usersDto, User.class))
                 .stream()
                 .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
@@ -546,10 +546,10 @@ public class LedgerController {
             }
         }
 
-        if(prevNext.equals("NEXT")){ // 페이징 조회
+        if(prevNext.equals("PREV")){ // 페이징 조회
             endDate = switch (searchKey) { // 날짜 재구성
                 case "Week" -> {
-                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(13);
+                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(14);
                     yield startDate.plusDays(7);
                 }
                 case "Month" -> {

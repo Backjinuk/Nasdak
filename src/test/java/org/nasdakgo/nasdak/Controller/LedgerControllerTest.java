@@ -45,84 +45,7 @@ class LedgerControllerTest {
         this.ledgerController = ledgerController;
     }
 
-    @Test
-    void ledgerList() {
 
-//        UserDto usersDto = new UserDto();
-//
-//        usersDto.setUserNo(1L);
-//
-//        List<LedgerDto> ledgerDtoList = ledgerService.findAllByUsers2(usersDto.getUserNo()).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
-//
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//
-//        // List<LocalDateTime>을 Set<String>으로 변환합니다.
-//        Set<String> useDateSet = ledgerDtoList.stream()
-//                .map(ledger -> ledger.getUseDate().format(formatter))
-//                .sorted()
-//                .collect(Collectors.toCollection(LinkedHashSet::new));
-//
-//        // Map<String, List<LedgerDto>>를 생성하고 값 넣기
-//        Map<String, List<LedgerDto>> sortedMap = useDateSet.stream()
-//                .collect(Collectors.groupingBy(
-//                        date -> LocalDate.parse(date, formatter).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).format(formatter),
-//                        Collectors.flatMapping(
-//                                date -> ledgerDtoList.stream()
-//                                        .filter(ledger -> ledger.getUseDate().format(formatter).equals(date))
-//                                        .peek(ledger -> {
-//                                            // 파일찾기 List => DtoList
-//                                            ledger.setFilesDtoList(
-//                                                    filesService.findByFileOwner(ledger.getFileOwnerNo())
-//                                                            .stream()
-//                                                            .map(files -> modelMapper.map(files, FilesDto.class))
-//                                                            .toList()
-//                                            );
-//                                        }),
-//                                Collectors.toList()
-//                        )
-//                ));
-//
-//        List<String> collect = sortedMap.keySet().stream().sorted(Comparator.reverseOrder()).toList();
-//
-//        Map<String, List<LedgerDto>> ledgerMap = collect.stream()
-//                .collect(Collectors.toMap(
-//                        key -> key,
-//                        sortedMap::get,
-//                        (oldValue, newValue) -> newValue,
-//                        LinkedHashMap::new
-//                ));
-//
-//
-//
-//        for (String s : ledgerMap.keySet()) {
-//            System.out.println(s);
-//            System.out.println(ledgerMap.get(s));
-//        }
-
-
-    }
-
-    @Test
-    public void ledgerItem(){
-        int startPaging = 0;
-        int endPaging = 10;
-
-
-        UserDto usersDto = new UserDto();
-        usersDto.setUserNo(1L);
-
-        List<String> allByUsers = ledgerService.findAllByUsers(usersDto.getUserNo(), startPaging, endPaging);
-
-        System.out.println("allByUsers = " + allByUsers.get(0));
-        System.out.println("allByUsers = " + allByUsers.get(allByUsers.size()-1));
-
-        List<LedgerDto> ledgers = ledgerService.ledgerItem(allByUsers.get(allByUsers.size() - 1), allByUsers.get(0), modelMapper.map(usersDto, UserDto.class).getUserNo())
-                .stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
-
-        for (LedgerDto ledger : ledgers) {
-            System.out.println("ledger = " + ledger);
-        }
-    }
 /*
     @Test
     public void testLedgerDateList(){
@@ -260,8 +183,36 @@ class LedgerControllerTest {
             }
         }
 
+    }
 
+    @Test
+    public void testLedgerAllList3() {
+        UserDto usersDto = new UserDto();
+        usersDto.setUserNo(1L);
 
+        int startPage = 5;
+        int endPage = 10;
+        String searchKey = "Day";
+
+        List<String>  allByUsers = new ArrayList<>();
+
+        allByUsers = ledgerService.getLedgerList(usersDto.getUserNo(), startPage, endPage);
+
+        for (String allByUser : allByUsers) {
+            System.out.println("allByUser = " + allByUser);
+        }
+
+        List<LedgerDto> ledgerDayList = ledgerService.getLedgerDayList(allByUsers, usersDto.getUserNo())
+                                                        .stream()
+                                                        .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                                                        .toList();
+
+        Map<String, List<?>> stringListMap = ledgerController.TranformMap(ledgerDayList, searchKey);
+
+        for (String key : stringListMap.keySet()) {
+            System.out.println("Key: " + key);
+            System.out.println("Value: " + stringListMap.get(key));
+        }
     }
     
 }

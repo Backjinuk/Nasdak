@@ -14,7 +14,7 @@
 
 .card2{
     width: 100%;
-    height: 700px;
+    height: auto;
     margin-bottom: 110px;
 }
 
@@ -171,4 +171,10 @@
     margin-top: 30px;
     flex-flow: row wrap;
     justify-content: space-between;
+}
+.statsView{
+    height: 800px;
+    border: 1px solid;
+    margin-top: 10px;
+    margin-bottom: 15px;
 }

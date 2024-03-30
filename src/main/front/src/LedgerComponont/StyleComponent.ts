@@ -18,11 +18,10 @@ export const SlideWrap = styled.div`
 export const Box = styled(motion.div)`
   position: absolute;
   width: 90%;
-  height: 700px;
+  height: auto;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
 `;
-
 

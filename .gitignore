@@ -38,3 +38,6 @@ out/
 
 ### API KEY ###
 **/resources/local/
+
+### properties ###
+**/resources/application.yml

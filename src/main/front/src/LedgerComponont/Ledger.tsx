@@ -8,8 +8,9 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { RootState } from '../app/store';
 import Swal from 'sweetalert2';
 import { ChangeMaxPage } from '../app/slices/ledgerSilce';
-import StatsView from './StatsView';
+import StatsViewBar from './StatsViewBar';
 import { AnimatePresence, motion } from 'framer-motion';
+import StatesViewPie from "./StatesViewPie";
 
 interface LedgerProps {
   ledgerData: LedgerType[];
@@ -37,7 +38,9 @@ export default function Ledger({
   const [ledgerList, setLedgerList] = useState<LedgerType[]>(ledgerData);
   const ledgerAllList = useAppSelector((state: RootState) => state.ledger.ledgerList);
   const maxPage = useAppSelector((state: RootState) => state.ledger.maxPage);
-  const [statsView, setStatsView] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
+  const [statsView, setStatsView] = useState("Bar");
+
 
   function isOpen2(value: boolean) {
     setOpen2(value);
@@ -59,18 +62,13 @@ export default function Ledger({
   const searchDate = (date: string, type: string) => {
     const keys = Object.entries(ledgerAllList);
     const index = Object.keys(ledgerAllList).indexOf(date) + 1;
-    console.log('date : ' + date);
-    console.log('l : ' + keys.length);
     let value = selectButton === 1 ? 'Day' : selectButton === 2 ? 'Week' : selectButton === 3 ? 'Month' : 'Month3';
 
     if (type === 'PREV') {
       if (index > 0 && index < keys.length) {
         const startDate = Object.keys(ledgerAllList)[index].split('~')[0].trim();
-        console.log('startDate : ' + startDate);
-        console.log('index : ' + index);
 
         if (keys.length <= index + 2) {
-          console.log(123123);
           dispatch(
             axiosGetLedgerAllDay({
               userNo: parseInt(sessionStorage.getItem('userNo') as string) as number,
@@ -104,6 +102,12 @@ export default function Ledger({
     }
   };
 
+
+  const changeStateView = (value : string) => {
+    alert(value)
+    setStatsView(value);
+  }
+
   return (
     <>
       <div className={'itemWarp'}>
@@ -133,7 +137,7 @@ export default function Ledger({
               <Button
                 variant={'contained'}
                 onClick={() => {
-                  setStatsView(!statsView);
+                  setStateOpen(!stateOpen);
                 }}
                 sx={{ height: '32px', position: 'absolute', top: '5px' }}
               >
@@ -141,7 +145,7 @@ export default function Ledger({
               </Button>
             </div>
             <AnimatePresence>
-              {statsView && (
+              {stateOpen && (
                 <motion.div
                   layout // layout 속성 추가
                   initial={{ opacity: 0, x: -500 }} // 컴포넌트가 처음 렌더링될 때의 상태
@@ -150,7 +154,8 @@ export default function Ledger({
                   transition={{ duration: 0.5, delay: 0 }} // 애니메이션 동작 시간
                 >
                   <motion.div layout>
-                    <StatsView ledgerAllList={ledgerAllList} date={date} />
+                    {statsView === 'Bar' && <StatsViewBar ledgerAllList={ledgerAllList} date={date} setStatsView={setStatsView} />}
+                    {statsView === 'Pie' && <StatesViewPie ledgerAllList={ledgerAllList} date={date} setStatsView ={setStatsView }/>}
                   </motion.div>
                 </motion.div>
               )}
@@ -166,11 +171,9 @@ export default function Ledger({
                 >
                   <div> 날짜 : {ledger.useDate} </div>
                   <div>
-                    {' '}
                     {ledger.ledgerType === 'SAVE' ? '입금' : '출금'} : {ledger.price}{' '}
                   </div>
                   <div>
-                    {' '}
                     {ledger.ledgerType2 === 'DEPOSIT' ? '입금' : '출금'} : {ledger.price2}{' '}
                   </div>
                 </div>

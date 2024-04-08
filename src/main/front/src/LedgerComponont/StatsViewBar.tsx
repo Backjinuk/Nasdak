@@ -5,7 +5,7 @@ import { LedgerType } from '../TypeList';
 import Button from '@mui/material/Button';
 import Swal from 'sweetalert2';
 
-export default function StatsView(ledgerAllList: any) {
+export default function StatsViewBar({ ledgerAllList, setStatsView , date}: { ledgerAllList: any, setStatsView: (pie: string) => void, date : any }) {
   const [depositsDate, setDepositsDate] = useState<string[]>([]);
   const [saveDate, setSaveDate] = useState<string[]>([]);
   const [depositsDate2, setDepositsDate2] = useState<string[]>([]);
@@ -91,8 +91,8 @@ export default function StatsView(ledgerAllList: any) {
   };
 
   const sortedLedgerArray = (searchType: string) => {
-    const ledgerList = ledgerAllList.ledgerAllList;
-    let index = ledgerAllList.date != '' ? Object.keys(ledgerList).indexOf(ledgerAllList.date) : 0;
+    const ledgerList = ledgerAllList;
+    let index = date != '' ? Object.keys(ledgerList).indexOf(date) : 0;
 
     if (searchType != 'currentWeek') {
       index++;
@@ -147,32 +147,7 @@ export default function StatsView(ledgerAllList: any) {
     datasets,
   };
 
-  const data = {
-    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-    datasets: [
-      {
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)',
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+
 
   const options = {
     responsive: true,
@@ -189,9 +164,10 @@ export default function StatsView(ledgerAllList: any) {
 
   return (
     <div className={'statsView'}>
-      {/*<Pie data={data} />*/}
+
       <Button onClick={comparedWeek}>저번주랑 비교하기</Button>
       <Button onClick={WeekSum}>이번주 보기</Button>
+      <Button onClick={() => setStatsView("Pie")}>항목별 보기</Button>
       <Bar data={data2} options={options} />
     </div>
   );

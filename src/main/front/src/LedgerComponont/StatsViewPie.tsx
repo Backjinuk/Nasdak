@@ -1,9 +1,40 @@
 import {dividerClasses} from "@mui/material";
 import {Pie} from "react-chartjs-2";
 import Button from "@mui/material/Button";
-import React from "react";
+import React, {useEffect, useState} from "react";
+import {useAppDispatch, useAppSelector} from "../app/hooks";
+import {LedgerType} from "../TypeList";
+import axios from "../customFunction/customAxios";
+import {selectAllCategories} from "../app/slices/categoriesSlice";
 
-export default function StatesViewPie({ ledgerAllList, setStatsView , date}: { ledgerAllList: any, setStatsView: (pie: string) => void, date : any }) {
+export default function StatsViewPie({ ledgerAllList, setStatsView , date}: { ledgerAllList: any, setStatsView: (pie: string) => void, date : any }) {
+
+    const [ledgerList , setLedgerList] = useState<[]>([]);
+    const categoryList = useAppSelector(selectAllCategories);
+
+    useEffect(() => {
+        LedgerPieDate();
+    }, []);
+
+    const LedgerPieDate = () => {
+        axios.post(
+            '/api/ledger/ledgerStatesPieList',
+            JSON.stringify({
+                date : date
+            })
+        ).then((res) => {
+           setLedgerList(res.date);
+        })
+    }
+
+    function dataSetFormat(){
+        ledgerList.map(item => console.log(item));
+    }
+
+
+
+
+
     const data = {
         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
         datasets: [

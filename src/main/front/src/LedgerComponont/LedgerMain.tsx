@@ -61,13 +61,7 @@ export default function LedgerMain({categoryList , event} : any){
         }
     }
 
-    function nextView(){
-        $(".nextView").css("display", "none");
 
-         setTimeout(() => {
-             $(".nextView").css("display", "block");
-         },1000);
-    }
 
     function ledgerDetail(key  : number){
         isOpen(true);
@@ -168,30 +162,30 @@ export default function LedgerMain({categoryList , event} : any){
                     <Wrapper>
                         <SlideWrap>
                             <AnimatePresence custom={back}>
-                                    {Object.entries(ledgerList).map(([date, ledgerData], index) => (
-                                        visible === index && (
-                                    <Box
-                                        layout
-                                        custom={back}
-                                        variants={boxVariants}
-                                        initial={"entry"}
-                                        animate={"center"}
-                                        exit={"exit"}
-                                        key={index}
-                                    >
-                                                <motion.div layout className={"card2 shadow-lg"}>
-                                                    <Ledger
-                                                        date={date}
-                                                        isOpen={isOpen}
-                                                        ledgerData={ledgerData}
-                                                        ledgerDetail={ledgerDetail}
-                                                        selectButton={selectButtonValue}
-                                                        nextPlease={nextPlease}
-                                                        prevPlease={prevPlease}
-                                                    /> 
-                                                </motion.div>
-                                    </Box> )
-                                    ))}
+                                {Object.entries(ledgerList).map(([date, ledgerData], index) => (
+                                    visible === index && (
+                                        <Box
+                                            layout
+                                            custom={back}
+                                            variants={boxVariants}
+                                            initial={"entry"}
+                                            animate={"center"}
+                                            exit={"exit"}
+                                            key={index}
+                                        >
+                                            <motion.div layout className={"card2 shadow-lg"}>
+                                                <Ledger
+                                                    date={date}
+                                                    isOpen={isOpen}
+                                                    ledgerData={ledgerData}
+                                                    ledgerDetail={ledgerDetail}
+                                                    selectButton={selectButtonValue}
+                                                    nextPlease={nextPlease}
+                                                    prevPlease={prevPlease}
+                                                />
+                                            </motion.div>
+                                        </Box> )
+                                ))}
 
                             </AnimatePresence>
                         </SlideWrap>
@@ -201,11 +195,11 @@ export default function LedgerMain({categoryList , event} : any){
 
                 {selectButtonValue === 1 &&
                     <>
-                       {/* <input type="button" value="next" onClick={() => nextView()}/> */}
+                        {/* <input type="button" value="next" onClick={() => nextView()}/> */}
                         <div className={"nextView"} ref={ref}>-</div>
                     </>
                 }
-             </div>
+            </div>
         </div>
     )
 }

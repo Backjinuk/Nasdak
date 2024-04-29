@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import { ChangeMaxPage } from '../app/slices/ledgerSilce';
 import StatsViewBar from './StatsViewBar';
 import { AnimatePresence, motion } from 'framer-motion';
-import StatesViewPie from "./StatesViewPie";
+import StatsViewPie from "./StatsViewPie";
 
 interface LedgerProps {
   ledgerData: LedgerType[];
@@ -104,7 +104,6 @@ export default function Ledger({
 
 
   const changeStateView = (value : string) => {
-    alert(value)
     setStatsView(value);
   }
 
@@ -155,7 +154,7 @@ export default function Ledger({
                 >
                   <motion.div layout>
                     {statsView === 'Bar' && <StatsViewBar ledgerAllList={ledgerAllList} date={date} setStatsView={setStatsView} />}
-                    {statsView === 'Pie' && <StatesViewPie ledgerAllList={ledgerAllList} date={date} setStatsView ={setStatsView }/>}
+                    {statsView === 'Pie' && <StatsViewPie ledgerAllList={ledgerAllList} date={date} setStatsView ={setStatsView }/>}
                   </motion.div>
                 </motion.div>
               )}

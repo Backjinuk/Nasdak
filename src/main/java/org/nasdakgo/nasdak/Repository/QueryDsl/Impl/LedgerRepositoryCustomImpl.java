@@ -1,15 +1,22 @@
 package org.nasdakgo.nasdak.Repository.QueryDsl.Impl;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.nasdakgo.nasdak.Dto.LedgerDto;
+import org.nasdakgo.nasdak.Entity.Category;
 import org.nasdakgo.nasdak.Entity.Ledger;
+import org.nasdakgo.nasdak.Entity.LedgerType;
 import org.nasdakgo.nasdak.Entity.QLedger;
 import org.nasdakgo.nasdak.Repository.QueryDsl.LedgerRepositoryCustom;
 
+import javax.xml.catalog.Catalog;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -25,6 +32,7 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
     private final QLedger qLedger = QLedger.ledger;
+    private final ModelMapper modelMapper;
 
 
     @Override
@@ -126,9 +134,46 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
         return ledgers;
     }
 
+    /**
+     * @param startDate
+     * @param endDate
+     * @param userNo
+     * @return
+     */
+    @Override
+    public List<Ledger> getLedgerPieList(LocalDate startDate, LocalDate endDate, long userNo) {
+        Map<String, Object> map = transDate(startDate, endDate);
+        DateTemplate<String> formattedDate = createFormattedDate();
 
+        List<Ledger> ledgerList = jpaQueryFactory
+                .select(qLedger.category.categoryNo, qLedger.ledgerType, qLedger.price.sum().as("price"))
+                .from(qLedger)
+                .where(
+                        qLedger.user.userNo.eq(userNo)
+                                .and(
+                                        formattedDate.between(
+                                                String.valueOf(map.get("start")),
+                                                String.valueOf(map.get("end"))
+                                        )
+                                )
+                )
+                .groupBy(qLedger.category.categoryNo, qLedger.ledgerType)
+                .fetch()
+                .stream()
+                .map(item -> {
+                    Ledger ledger = new Ledger();
 
+                    ledger.setCategory(new Category(item.get(0, Long.class)));
+                    ledger.setLedgerType(item.get(1, LedgerType.class));
+                    ledger.setPrice(item.get(2, Long.class));
 
+                    return ledger;
+                })
+                .toList();
+        System.out.println("ledgerList = " + ledgerList);
+
+        return ledgerList;
+    }
 
 
     public Map<String,Object> transDate(LocalDate startDate, LocalDate endDate) {

@@ -21,5 +21,5 @@ public interface LedgerRepositoryCustom {
     List<Ledger> getLedgerDayList(List<String> regDates, long userNo);
 
 
-
+    List<Ledger> getLedgerPieList(LocalDate startDate, LocalDate endDate, long userNo);
 }

@@ -70,4 +70,9 @@ public class LedgerService {
     public LocalDateTime getLedgerSearchDate(LocalDate startDate, long userNo) {
         return ledgerRepository.getLedgerSearchDate(startDate, userNo);
     }
+
+
+    public List<Ledger> getLedgerPieList(LocalDate startDate, LocalDate endDate, long userNo) {
+        return ledgerRepository.getLedgerPieList(startDate, endDate, userNo);
+    }
 }

@@ -12,10 +12,7 @@ import org.nasdakgo.nasdak.Service.LedgerService;
 import org.nasdakgo.nasdak.Service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.DayOfWeek;
@@ -59,10 +56,6 @@ public class LedgerController {
         ledger.setUser(new User(requestData.get("LedgerDto").getUserDto().getUserNo()));
         ledger.setCategory(new Category(requestData.get("LedgerDto").getCategoryDto().getCategoryNo()));
 
-        // 기존의 User와 Category를 참조하여 설정
-        //ledger.setUser(userService.findById(requestData.get("LedgerDto").getUserDto().getUserNo()));
-        //ledger.setCategory(categoryService.findById(requestData.get("LedgerDto").getCategoryDto().getCategoryNo()));
-
         ledgerService.save(ledger);
 
         return modelMapper.map(ledger, LedgerDto.class);
@@ -72,7 +65,6 @@ public class LedgerController {
     /**
      * Show page of the user page.
      *
-     * @param usersDto
      * @return List<?>
      * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
      */
@@ -163,6 +155,19 @@ public class LedgerController {
         }
 
         return stringListMap;
+    }
+
+    @RequestMapping("ledgerStatesPieList")
+    public List<LedgerDto> ledgerStatesPieList(@RequestBody Map<String, Object> map, Authentication authentication){
+
+        String[] date = String.valueOf(map.get("date")).trim().split("~");
+
+        LocalDate startDate = LocalDate.parse(date[0].trim());
+        LocalDate endDate = LocalDate.parse(date[1].trim());
+
+
+        return ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication).getUserNo()).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
+
     }
 
 

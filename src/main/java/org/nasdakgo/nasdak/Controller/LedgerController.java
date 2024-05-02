@@ -1,6 +1,7 @@
 package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -166,8 +167,17 @@ public class LedgerController {
         LocalDate endDate = LocalDate.parse(date[1].trim());
 
 
-        return ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication).getUserNo()).stream().map(ledger -> modelMapper.map(ledger, LedgerDto.class)).toList();
+        return ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication)
+                                                        .getUserNo())
+                                                        .stream()
+                                                        .map(ledger -> {
 
+                                                            LedgerDto ledgerDto =  modelMapper.map(ledger, LedgerDto.class);
+                                                            ledgerDto.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
+
+                                                           return ledgerDto;
+                                                        })
+                                                        .toList();
     }
 
 

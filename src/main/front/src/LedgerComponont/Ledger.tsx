@@ -154,7 +154,7 @@ export default function Ledger({
                 >
                   <motion.div layout>
                     {statsView === 'Bar' && <StatsViewBar ledgerAllList={ledgerAllList} date={date} setStatsView={setStatsView} />}
-                    {statsView === 'Pie' && <StatsViewPie ledgerAllList={ledgerAllList} date={date} setStatsView ={setStatsView }/>}
+                    {statsView === 'Pie' && <StatsViewPie  date={date} setStatsView ={setStatsView }/>}
                   </motion.div>
                 </motion.div>
               )}

@@ -61,7 +61,13 @@ export default function LedgerMain({categoryList , event} : any){
         }
     }
 
+    function nextView(){
+        $(".nextView").css("display", "none");
 
+        setTimeout(() => {
+            $(".nextView").css("display", "block");
+        },1000);
+    }
 
     function ledgerDetail(key  : number){
         isOpen(true);

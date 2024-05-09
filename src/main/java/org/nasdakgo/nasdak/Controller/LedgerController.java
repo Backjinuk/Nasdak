@@ -158,26 +158,48 @@ public class LedgerController {
         return stringListMap;
     }
 
-    @RequestMapping("ledgerStatesPieList")
-    public List<LedgerDto> ledgerStatesPieList(@RequestBody Map<String, Object> map, Authentication authentication){
+    @RequestMapping("getLedgerPieList")
+    public  Map<String,List<LedgerDto>> getLedgerPieList(@RequestBody Map<String, Object> map, Authentication authentication){
 
         String[] date = String.valueOf(map.get("date")).trim().split("~");
 
         LocalDate startDate = LocalDate.parse(date[0].trim());
         LocalDate endDate = LocalDate.parse(date[1].trim());
 
+        List<LedgerDto> ledgerPieList = ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication)
+                        .getUserNo())
+                .stream()
+                .map(ledger -> {
 
-        return ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication)
-                                                        .getUserNo())
-                                                        .stream()
-                                                        .map(ledger -> {
+                    LedgerDto ledgerDto = modelMapper.map(ledger, LedgerDto.class);
+                    ledgerDto.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
 
-                                                            LedgerDto ledgerDto =  modelMapper.map(ledger, LedgerDto.class);
-                                                            ledgerDto.setCategoryDto(modelMapper.map(ledger.getCategory(), CategoryDto.class));
+                    return ledgerDto;
+                })
+                .toList();
 
-                                                           return ledgerDto;
-                                                        })
-                                                        .toList();
+        List<LedgerDto> ledgerSeqList = ledgerService.getLedgerSeqList(startDate, endDate, toUser(authentication).getUserNo());
+
+        Map<String,List<LedgerDto>> MapList = new HashMap<>();
+
+        MapList.put("ledgerPieList", ledgerPieList);
+        MapList.put("ledgerSeqList", ledgerSeqList);
+
+        return MapList;
+    }
+
+    @RequestMapping("getPieLedgerTypeList")
+    public List<LedgerDto> getPieLedgerTypeList(@RequestBody Map<String, Object> map , Authentication authentication){
+        String[] date = String.valueOf(map.get("date")).trim().split("~");
+
+        LocalDate startDate = LocalDate.parse(date[0].trim());
+        LocalDate endDate = LocalDate.parse(date[1].trim());
+
+        String categoryName = (String) map.get("category");
+        String ledgerType = (String) map.get("ledgerType");
+
+
+        return ledgerService.getPieLedgerTypeList(startDate, endDate, categoryName, ledgerType, toUser(authentication));
     }
 
 

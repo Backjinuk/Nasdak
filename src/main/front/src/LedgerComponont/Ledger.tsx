@@ -11,6 +11,7 @@ import { ChangeMaxPage } from '../app/slices/ledgerSilce';
 import StatsViewBar from './StatsViewBar';
 import { AnimatePresence, motion } from 'framer-motion';
 import StatsViewPie from "./StatsViewPie";
+import {useLocation, useNavigate} from "react-router-dom";
 
 interface LedgerProps {
   ledgerData: LedgerType[];
@@ -40,6 +41,9 @@ export default function Ledger({
   const maxPage = useAppSelector((state: RootState) => state.ledger.maxPage);
   const [stateOpen, setStateOpen] = useState(false);
   const [statsView, setStatsView] = useState("Bar");
+  const navigate = useNavigate();
+  const ledgerSeqNumbers = useAppSelector(state => state.ledger.ledgerSeqNumbers);
+  const state = useLocation();
 
 
   function isOpen2(value: boolean) {
@@ -135,13 +139,22 @@ export default function Ledger({
             <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
               <Button
                 variant={'contained'}
-                onClick={() => {
+                onClick={  () => {
                   setStateOpen(!stateOpen);
                 }}
                 sx={{ height: '32px', position: 'absolute', top: '5px' }}
               >
                 통계보기
               </Button>
+
+              <Button
+                  variant={'contained'}
+                  onClick={  () => navigate('/MapLocation', {state :  ledgerSeqNumbers}) }
+                  sx={{ height: '32px', position: 'absolute', top: '5px', right: '105px' }}
+              >
+                지도보기
+              </Button>
+              
             </div>
             <AnimatePresence>
               {stateOpen && (
@@ -154,7 +167,7 @@ export default function Ledger({
                 >
                   <motion.div layout>
                     {statsView === 'Bar' && <StatsViewBar ledgerAllList={ledgerAllList} date={date} setStatsView={setStatsView} />}
-                    {statsView === 'Pie' && <StatsViewPie  date={date} setStatsView ={setStatsView }/>}
+                    {statsView === 'Pie' && <StatsViewPie  date={date} setStatsView ={ setStatsView } ledgerDetail={ledgerDetail}/>}
                   </motion.div>
                 </motion.div>
               )}

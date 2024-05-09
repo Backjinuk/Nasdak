@@ -11,10 +11,9 @@ import {getJsonHeader} from "../headers";
 import {getCookie} from "../Cookies";
 
 
-export default function MapLocation({ event }: any) {
+export default function MapLocation({ event, locationList }: {event : any, locationList : number[] }) {
   const dispatch = useAppDispatch();
   const ledger = useAppSelector((state: RootState) => state.ledger.ledger);
-  const [locationList, setLocationList] = useState<LedgerType[]>();
   const [categoryList, setCategoryList] = useState<CategoryType[]>([]);
   const [changeEvent, setChangeEvent] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
@@ -26,14 +25,21 @@ export default function MapLocation({ event }: any) {
   useEffect(() => {
     var markers: any[] = [];
 
-    axios.get('/api/ledger/locationList',  {
-              headers : {
-                Authorization: `Bearer ${getCookie('accessToken')}`,
-                'Content-Type': 'application/json',
-              }}).then((res) => {
-      setLocationList(res.data);
-      displayPlaces(res.data);
-    });
+    if(locationList.length == 0  ){
+      axios.get('/api/ledger/locationList',  {
+        headers : {
+          Authorization: `Bearer ${getCookie('accessToken')}`,
+          'Content-Type': 'application/json',
+        }}
+      ).then((res) => {
+        displayPlaces(res.data);
+      });
+    }else{
+      console.log(locationList);
+
+      //displayPlaces(locationList);
+    }
+
 
     var mapContainer = document.getElementById('MapLocation'), // 지도를 표시할 div
       mapOption = {

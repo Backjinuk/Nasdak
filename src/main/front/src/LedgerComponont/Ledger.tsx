@@ -3,7 +3,7 @@ import { ReactNode, useState } from 'react';
 import LedgerDetailModal from './LedgerDetailModal';
 import axios from '../customFunction/customAxios';
 import Button from '@mui/material/Button';
-import { axiosGetLedgerAllDay } from '../app/slices/ledgerSilce';
+import {axiosGetLedgerAllDay, ChangeLedgerSeqList} from '../app/slices/ledgerSilce';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { RootState } from '../app/store';
 import Swal from 'sweetalert2';
@@ -106,9 +106,14 @@ export default function Ledger({
     }
   };
 
+  const moveMapLocation = () => {
+    axios.post("api/ledger/getLedgerSeqList", JSON.stringify({date})
+    ).then(res => {
+      dispatch(ChangeLedgerSeqList(res.data))
+      navigate('/StateMapLocation')
+    })
 
-  const changeStateView = (value : string) => {
-    setStatsView(value);
+
   }
 
   return (
@@ -149,10 +154,11 @@ export default function Ledger({
 
               <Button
                   variant={'contained'}
-                  onClick={  () => navigate('/MapLocation', {state :  ledgerSeqNumbers}) }
+                  onClick={() => moveMapLocation() }
                   sx={{ height: '32px', position: 'absolute', top: '5px', right: '105px' }}
               >
                 지도보기
+
               </Button>
               
             </div>

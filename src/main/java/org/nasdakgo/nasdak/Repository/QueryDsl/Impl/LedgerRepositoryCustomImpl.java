@@ -210,8 +210,8 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
         Map<String, Object> map = transDate(startDate, endDate);
         DateTemplate<String> formattedDate = createFormattedDate();
 
-        return jpaQueryFactory
-                .select(qLedger.fileOwnerNo)
+        return jpaQueryFactory 
+                .select(qLedger)
                 .from(qLedger)
                 .where(
                         qLedger.user.userNo.eq(userNo)

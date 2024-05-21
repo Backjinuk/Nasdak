@@ -14,7 +14,7 @@ const initialState: {
   ledgerList: LedgerData;
   ledger: LedgerType;
   ledgerItem: LedgerType[];
-  ledgerSeqNumbers : number[];
+  ledgerSeqNumbers : LedgerType[];
   selectButton: number;
   status: string;
   error: string;
@@ -55,7 +55,7 @@ const ledgerSlice = createSlice({
     ChangeMaxPage: (state, action) => {
       state.maxPage = action.payload;
     },
-    ChangeledgerSeqNumbers : (state, action) => {
+    ChangeLedgerSeqList : (state, action) => {
       state.ledgerSeqNumbers = action.payload;
     }
   },
@@ -170,5 +170,5 @@ export const axiosDeleteFileItem = createAsyncThunk('ledger/deleteFileItem', asy
   return res.data;
 });
 
-export const { changeEvent, ChangeSelectButton, ChangePage, ChangeMaxPage, ChangeledgerSeqNumbers } = ledgerSlice.actions;
+export const { changeEvent, ChangeSelectButton, ChangePage, ChangeMaxPage, ChangeLedgerSeqList } = ledgerSlice.actions;
 export default ledgerSlice.reducer;

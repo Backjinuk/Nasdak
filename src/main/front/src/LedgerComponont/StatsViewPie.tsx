@@ -8,7 +8,6 @@ import {selectAllCategories} from "../app/slices/categoriesSlice";
 import {Simulate} from "react-dom/test-utils";
 import reset = Simulate.reset;
 import LedgerDetailModal from "./LedgerDetailModal";
-import {axiosGetLedgerDetail, ChangeledgerSeqNumbers} from "../app/slices/ledgerSilce";
 
 export default function StatsViewPie({  setStatsView , date, ledgerDetail}: { setStatsView: (pie: string) => void, date : any ,ledgerDetail : () => void }) {
 
@@ -46,16 +45,12 @@ export default function StatsViewPie({  setStatsView , date, ledgerDetail}: { se
                 newLabels.push(ledger.ledgerType);
                 newPriceData.push(ledger.price);
                 newCategory.push(matchingCategory?.content + ledgerTypeValue);
-                newSeq.push(ledger.fileOwnerNo);
             });
 
             // categoryList를 기반으로 각 상태를 설정함
             setLabels(newLabels);
             setPriceData(newPriceData);
             setCategory(newCategory);
-            //setColor(newColor);
-
-            dispatch(ChangeledgerSeqNumbers(newSeq));
 
         }).catch(error => {
             console.error('Error fetching data:', error);

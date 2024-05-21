@@ -159,14 +159,15 @@ public class LedgerController {
     }
 
     @RequestMapping("getLedgerPieList")
-    public  Map<String,List<LedgerDto>> getLedgerPieList(@RequestBody Map<String, Object> map, Authentication authentication){
+    public  List<LedgerDto> getLedgerPieList(@RequestBody Map<String, Object> map, Authentication authentication){
 
         String[] date = String.valueOf(map.get("date")).trim().split("~");
 
         LocalDate startDate = LocalDate.parse(date[0].trim());
         LocalDate endDate = LocalDate.parse(date[1].trim());
 
-        List<LedgerDto> ledgerPieList = ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication)
+
+        return ledgerService.getLedgerPieList(startDate, endDate, toUser(authentication)
                         .getUserNo())
                 .stream()
                 .map(ledger -> {
@@ -177,16 +178,18 @@ public class LedgerController {
                     return ledgerDto;
                 })
                 .toList();
-
-        List<LedgerDto> ledgerSeqList = ledgerService.getLedgerSeqList(startDate, endDate, toUser(authentication).getUserNo());
-
-        Map<String,List<LedgerDto>> MapList = new HashMap<>();
-
-        MapList.put("ledgerPieList", ledgerPieList);
-        MapList.put("ledgerSeqList", ledgerSeqList);
-
-        return MapList;
     }
+
+    @RequestMapping("getLedgerSeqList")
+    public List<LedgerDto> getLedgerSeqList(@RequestBody Map<String, Object> map, Authentication authentication){
+        String[] date = String.valueOf(map.get("date")).trim().split("~");
+
+        LocalDate startDate = LocalDate.parse(date[0].trim());
+        LocalDate endDate = LocalDate.parse(date[1].trim());
+
+        return ledgerService.getLedgerSeqList(startDate, endDate, toUser(authentication).getUserNo());
+    }
+
 
     @RequestMapping("getPieLedgerTypeList")
     public List<LedgerDto> getPieLedgerTypeList(@RequestBody Map<String, Object> map , Authentication authentication){

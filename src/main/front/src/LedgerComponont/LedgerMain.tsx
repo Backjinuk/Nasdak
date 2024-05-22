@@ -22,6 +22,7 @@ export default function LedgerMain({categoryList , event} : any){
     const [visible, setVisible] = useState<number>(0);
     const [back, setBack] = useState(false);
 
+
     const [ref, inView] = useInView({
         triggerOnce :false,
         threshold: 0.1,

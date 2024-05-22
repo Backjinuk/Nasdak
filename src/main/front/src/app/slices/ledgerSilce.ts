@@ -14,6 +14,7 @@ const initialState: {
   ledgerList: LedgerData;
   ledger: LedgerType;
   ledgerItem: LedgerType[];
+  ledgerSeqNumbers : LedgerType[];
   selectButton: number;
   status: string;
   error: string;
@@ -25,6 +26,7 @@ const initialState: {
   ledgerList: {}, // 빈 객체로 초기화
   ledger: { ...new Ledger() },
   ledgerItem: [],
+  ledgerSeqNumbers : [],
   selectButton: 1,
   status: 'idle',
   error: '',
@@ -53,6 +55,9 @@ const ledgerSlice = createSlice({
     ChangeMaxPage: (state, action) => {
       state.maxPage = action.payload;
     },
+    ChangeLedgerSeqList : (state, action) => {
+      state.ledgerSeqNumbers = action.payload;
+    }
   },
   extraReducers(builder) {
     builder
@@ -165,5 +170,5 @@ export const axiosDeleteFileItem = createAsyncThunk('ledger/deleteFileItem', asy
   return res.data;
 });
 
-export const { changeEvent, ChangeSelectButton, ChangePage, ChangeMaxPage } = ledgerSlice.actions;
+export const { changeEvent, ChangeSelectButton, ChangePage, ChangeMaxPage, ChangeLedgerSeqList } = ledgerSlice.actions;
 export default ledgerSlice.reducer;

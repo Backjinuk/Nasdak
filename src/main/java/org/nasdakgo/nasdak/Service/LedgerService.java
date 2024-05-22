@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Service;
 
+import org.nasdakgo.nasdak.Dto.LedgerDto;
 import org.nasdakgo.nasdak.Entity.FileOwner;
 import org.nasdakgo.nasdak.Entity.Ledger;
 import org.nasdakgo.nasdak.Entity.User;
@@ -74,5 +75,13 @@ public class LedgerService {
 
     public List<Ledger> getLedgerPieList(LocalDate startDate, LocalDate endDate, long userNo) {
         return ledgerRepository.getLedgerPieList(startDate, endDate, userNo);
+    }
+
+    public List<LedgerDto> getPieLedgerTypeList(LocalDate startDate, LocalDate endDate, String categoryName, String ledgerType, User user) {
+        return ledgerRepository.getPieLedgerTypeList(startDate, endDate, categoryName, ledgerType, user.getUserNo());
+    }
+
+    public List<LedgerDto> getLedgerSeqList(LocalDate startDate, LocalDate endDate, long userNo) {
+        return ledgerRepository.getLedgerSeqList(startDate, endDate, userNo);
     }
 }

@@ -1,5 +1,6 @@
 package org.nasdakgo.nasdak.Repository.QueryDsl;
 
+import org.nasdakgo.nasdak.Dto.LedgerDto;
 import org.nasdakgo.nasdak.Entity.Ledger;
 
 import java.time.LocalDate;
@@ -20,6 +21,9 @@ public interface LedgerRepositoryCustom {
 
     List<Ledger> getLedgerDayList(List<String> regDates, long userNo);
 
-
     List<Ledger> getLedgerPieList(LocalDate startDate, LocalDate endDate, long userNo);
+
+    List<LedgerDto> getPieLedgerTypeList(LocalDate startDate, LocalDate endDate, String categoryName, String ledgerType, long userNo);
+
+    List<LedgerDto> getLedgerSeqList(LocalDate startDate, LocalDate endDate, long userNo);
 }

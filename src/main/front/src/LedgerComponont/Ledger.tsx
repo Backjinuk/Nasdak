@@ -3,7 +3,7 @@ import { ReactNode, useState } from 'react';
 import LedgerDetailModal from './LedgerDetailModal';
 import axios from '../customFunction/customAxios';
 import Button from '@mui/material/Button';
-import { axiosGetLedgerAllDay } from '../app/slices/ledgerSilce';
+import {axiosGetLedgerAllDay, ChangeLedgerSeqList} from '../app/slices/ledgerSilce';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { RootState } from '../app/store';
 import Swal from 'sweetalert2';
@@ -11,6 +11,7 @@ import { ChangeMaxPage } from '../app/slices/ledgerSilce';
 import StatsViewBar from './StatsViewBar';
 import { AnimatePresence, motion } from 'framer-motion';
 import StatsViewPie from "./StatsViewPie";
+import {useLocation, useNavigate} from "react-router-dom";
 
 interface LedgerProps {
   ledgerData: LedgerType[];
@@ -40,6 +41,9 @@ export default function Ledger({
   const maxPage = useAppSelector((state: RootState) => state.ledger.maxPage);
   const [stateOpen, setStateOpen] = useState(false);
   const [statsView, setStatsView] = useState("Bar");
+  const navigate = useNavigate();
+  const ledgerSeqNumbers = useAppSelector(state => state.ledger.ledgerSeqNumbers);
+  const state = useLocation();
 
 
   function isOpen2(value: boolean) {
@@ -102,9 +106,14 @@ export default function Ledger({
     }
   };
 
+  const moveMapLocation = () => {
+    axios.post("api/ledger/getLedgerSeqList", JSON.stringify({date})
+    ).then(res => {
+      dispatch(ChangeLedgerSeqList(res.data))
+      navigate('/StateMapLocation')
+    })
 
-  const changeStateView = (value : string) => {
-    setStatsView(value);
+
   }
 
   return (
@@ -135,13 +144,23 @@ export default function Ledger({
             <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
               <Button
                 variant={'contained'}
-                onClick={() => {
+                onClick={  () => {
                   setStateOpen(!stateOpen);
                 }}
                 sx={{ height: '32px', position: 'absolute', top: '5px' }}
               >
                 통계보기
               </Button>
+
+              <Button
+                  variant={'contained'}
+                  onClick={() => moveMapLocation() }
+                  sx={{ height: '32px', position: 'absolute', top: '5px', right: '105px' }}
+              >
+                지도보기
+
+              </Button>
+              
             </div>
             <AnimatePresence>
               {stateOpen && (
@@ -154,7 +173,7 @@ export default function Ledger({
                 >
                   <motion.div layout>
                     {statsView === 'Bar' && <StatsViewBar ledgerAllList={ledgerAllList} date={date} setStatsView={setStatsView} />}
-                    {statsView === 'Pie' && <StatsViewPie  date={date} setStatsView ={setStatsView }/>}
+                    {statsView === 'Pie' && <StatsViewPie  date={date} setStatsView ={ setStatsView } ledgerDetail={ledgerDetail}/>}
                   </motion.div>
                 </motion.div>
               )}

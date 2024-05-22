@@ -16,6 +16,9 @@ import { RootState } from './app/store';
 import { getCookie, setCookie } from 'Cookies';
 import axios from 'customFunction/customAxios';
 import { login, selectIsLogin } from 'app/slices/userSlice';
+import {useState} from "react";
+import {LedgerType} from "./TypeList";
+import StateMapLocation from "./MapComponont/StateMapLocation";
 
 declare global {
   interface Window {
@@ -29,6 +32,9 @@ function App() {
   const categoryList = useAppSelector(selectAllCategories);
   const event = useSelector((state: RootState) => state.ledger.event);
   const isLogin = useAppSelector(selectIsLogin);
+  const [locationList, setLocationList] = useState<number[]>([]);
+
+
 
   if (!isLogin && getCookie('refreshToken')) {
     try {
@@ -55,11 +61,14 @@ function App() {
     </>
   );
 
+
   const privateRoutes = (
     <>
       <Route path={'/userInfo'} element={<UserInfo />} />
       <Route path='/Ledger' element={<LedgerMain event={event} categoryList={categoryList} />} />
-      <Route path={'/MapLocation'} element={<MapLocation event={event} />} />
+      // @ts-ignore
+      <Route path={'/MapLocation'} element={<MapLocation event={event} locationList={locationList} />}/>
+      <Route path={'/StateMapLocation'} element={<StateMapLocation/> }/>
       <Route path={'/calender'} element={<CalenderMain categoryList={categoryList} event={event} />} />
     </>
   );

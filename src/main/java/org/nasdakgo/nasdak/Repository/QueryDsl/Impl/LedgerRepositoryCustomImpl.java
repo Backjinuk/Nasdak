@@ -145,7 +145,7 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
         Map<String, Object> map = transDate(startDate, endDate);
         DateTemplate<String> formattedDate = createFormattedDate();
 
-        List<Ledger> ledgerList = jpaQueryFactory
+        return jpaQueryFactory
                 .select(qLedger.category.categoryNo, qLedger.ledgerType, qLedger.price.sum().as("price"))
                 .from(qLedger)
                 .where(
@@ -170,9 +170,62 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
                     return ledger;
                 })
                 .toList();
-        System.out.println("ledgerList = " + ledgerList);
+    }
 
-        return ledgerList;
+    /**
+     * @param startDate
+     * @param endDate
+     * @param categoryName
+     * @param ledgerType
+     * @param userNo
+     * @return
+     */
+    @Override
+    public List<LedgerDto> getPieLedgerTypeList(LocalDate startDate, LocalDate endDate, String categoryName, String ledgerType, long userNo) {
+
+        Map<String, Object> map = transDate(startDate, endDate);
+        DateTemplate<String> formattedDate = createFormattedDate();
+
+        return jpaQueryFactory
+                .select(qLedger)
+                .from(qLedger)
+                .where(qLedger.user.userNo.eq(userNo)
+                        .and(formattedDate.between(String.valueOf(map.get("start")), String.valueOf(map.get("end"))))
+                        .and(qLedger.ledgerType.eq(LedgerType.valueOf(ledgerType)))
+                        .and(qLedger.category.content.eq(categoryName))
+                )
+                .fetch()
+                .stream()
+                .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                .toList();
+    }
+
+    /**
+     * @param startDate
+     * @param endDate
+     * @param userNo
+     */
+    @Override
+    public List<LedgerDto> getLedgerSeqList(LocalDate startDate, LocalDate endDate, long userNo) {
+        Map<String, Object> map = transDate(startDate, endDate);
+        DateTemplate<String> formattedDate = createFormattedDate();
+
+        return jpaQueryFactory 
+                .select(qLedger)
+                .from(qLedger)
+                .where(
+                        qLedger.user.userNo.eq(userNo)
+                                .and(
+                                        formattedDate.between(
+                                                String.valueOf(map.get("start")),
+                                                String.valueOf(map.get("end"))
+                                        )
+                                )
+                )
+                .fetch()
+                .stream()
+                .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
+                .toList();
     }
 
 
@@ -192,12 +245,6 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
 
     private DateTemplate<String> createFormattedDate() {
 
-//        return DateTemplate<String> formattedDate = Expressions.dateTemplate(
-//                String.class,
-//                "TO_CHAR({0}, 'yyyy-MM-dd HH:mm:ss')",
-//                qLedger.useDate);
-//
-
         return Expressions.dateTemplate(
                 String.class
                 , "DATE_FORMAT({0}, {1})"
@@ -206,15 +253,6 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
     }
 
     private DateTemplate<String> createFormattedDate2() {
-
-//        DateTemplate<String> formattedDate = Expressions.dateTemplate(
-//                String.class,
-//                "TO_CHAR({0}, 'yyyy-MM-dd')",
-//                qLedger.useDate
-//        ); // useDate 스트링으로 변환
-
-
-
         return Expressions.dateTemplate(
                 String.class
                 , "DATE_FORMAT({0}, {1})"

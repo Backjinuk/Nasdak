@@ -46,7 +46,7 @@ export default function MapLocation({ event, locationList }: {event : any, locat
       };
 
     // 지도를 생성합니다
-    var map = new kakao.maps.Map(mapContainer, mapOption);
+    var map = new kakao.maps.Map(mapContainer as HTMLElement, mapOption);
 
     // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우를 생성합니다
     var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
@@ -59,7 +59,6 @@ export default function MapLocation({ event, locationList }: {event : any, locat
         bounds = new kakao.maps.LatLngBounds(),
         listStr = '';
 
-      console.log(bounds.ha);
 
       // 검색 결과 목록에 추가된 항목들을 제거합니다
       removeAllChildNods(listEl);
@@ -207,6 +206,8 @@ export default function MapLocation({ event, locationList }: {event : any, locat
     }
 
     function displayInfowindowMoveLocation(marker: any, title: string) {
+    console.log(marker)
+      alert(title)
       var content = '<div style="padding:5px;z-index:1;">' + title + '</div>';
 
       infowindow.setContent(content);

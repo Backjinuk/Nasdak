@@ -73,8 +73,10 @@ export default function KakaoMap({location, LocationAppend} : {LocationAppend : 
                 }, 100)
 
 
+                // @ts-ignore
                 var marker = new kakao.maps.Marker();
 
+                // @ts-ignore
                 var infowindow = new kakao.maps.InfoWindow();
 
                 // 주소-좌표 변환 객체를 생성합니다

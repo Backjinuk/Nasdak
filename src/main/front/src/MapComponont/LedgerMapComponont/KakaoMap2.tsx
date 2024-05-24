@@ -31,7 +31,7 @@ export default function KakaoMap({LocationAppend , location , lodinMap} :{ Locat
             keyboardShortcuts : true
         };
 
-        const map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+        const map = new kakao.maps.Map(container as HTMLElement, options); //지도 생성 및 객체 리턴
 
         // @ts-ignore
         container.style.width = '450px';
@@ -49,8 +49,10 @@ export default function KakaoMap({LocationAppend , location , lodinMap} :{ Locat
 
         }, 1000)
 
+        // @ts-ignore
         var marker = new kakao.maps.Marker();
 
+        // @ts-ignore
         var infowindow = new kakao.maps.InfoWindow();
 
         // 주소-좌표 변환 객체를 생성합니다

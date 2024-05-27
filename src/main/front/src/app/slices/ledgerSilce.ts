@@ -131,6 +131,7 @@ export const axiosGetLedgerAllDay = createAsyncThunk(
     startDate: string;
     type: string;
   }) => {
+    console.log(startDate)
     const res = await axios.post(
       '/api/ledger/LedgerAllDayList',
       JSON.stringify({

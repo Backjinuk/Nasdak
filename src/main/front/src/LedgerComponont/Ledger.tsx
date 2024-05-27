@@ -73,6 +73,7 @@ export default function Ledger({
         const startDate = Object.keys(ledgerAllList)[index].split('~')[0].trim();
 
         if (keys.length <= index + 2) {
+          console.log(startDate);
           dispatch(
             axiosGetLedgerAllDay({
               userNo: parseInt(sessionStorage.getItem('userNo') as string) as number,
@@ -110,7 +111,11 @@ export default function Ledger({
     axios.post("api/ledger/getLedgerSeqList", JSON.stringify({date})
     ).then(res => {
       dispatch(ChangeLedgerSeqList(res.data))
-      navigate('/StateMapLocation')
+      navigate('/MapLocation', {
+        state : {
+          type : "stateMap"
+        }
+      })
     })
 
 

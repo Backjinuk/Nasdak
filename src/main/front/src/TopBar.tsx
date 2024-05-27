@@ -127,7 +127,11 @@ export default function TopBar() {
           </IconButton>
           <CreateLeger ChangeEvent={ChangeEvent} categoryList={categoryList} />
           {/*<ConnectCreateLedger/>*/}
-          <Button sx={{ color: '#fff' }} variant='outlined' onClick={() => navigate('/MapLocation')}>
+          <Button sx={{ color: '#fff' }} variant='outlined' onClick={() => navigate('/MapLocation', {
+            state: {
+              type: 'topBar'
+            }}
+          )}>
             지도 모아보기
           </Button>
           <Button sx={{ color: '#fff' }} variant='outlined' onClick={() => navigate('/Ledger')}>

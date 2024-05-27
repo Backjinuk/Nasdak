@@ -103,8 +103,11 @@ public class LedgerController {
             LocalDate startDate = (Objects.equals(String.valueOf(map.get("startDate")), "")) ? LocalDate.now() : LocalDate.parse(String.valueOf(map.get("startDate")), formatter).atStartOfDay().toLocalDate();
             LocalDate endDate = null;
 
+            System.out.println("startDate1 = " + startDate);
+
             Map<String, Object> dateMap = searchDate(prevNext, searchKey, startDate, endDate);
 
+            System.out.println("startDate2 = " + LocalDate.parse((String) dateMap.get("startDate")));
             allByUsers2 = ledgerService.getLedgerList(LocalDate.parse((String) dateMap.get("startDate")), LocalDate.parse((String) dateMap.get("endDate")), userNo)
                                         .stream()
                                         .map(ledger -> modelMapper.map(ledger, LedgerDto.class))  // Ledger를 LedgerDto로 변환
@@ -552,7 +555,7 @@ public class LedgerController {
             switch (searchKey) {
                 case "Week":
                     startDate =  startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(7);
-                    endDate   =  startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(13);
+                    endDate   =  startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(7);
                     break;
                 case "Month":
                     startDate = startDate.with(TemporalAdjusters.firstDayOfMonth());
@@ -589,7 +592,7 @@ public class LedgerController {
         if(prevNext.equals("PREV")){ // 페이징 조회
             endDate = switch (searchKey) { // 날짜 재구성
                 case "Week" -> {
-                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusDays(14);
+                    startDate = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
                     yield startDate.plusDays(7);
                 }
                 case "Month" -> {

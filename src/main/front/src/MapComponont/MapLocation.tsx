@@ -8,6 +8,7 @@ import {RootState} from '../app/store';
 import {axiosGetLedgerDetail} from '../app/slices/ledgerSilce';
 import axios from "axios";
 import {getCookie} from "../Cookies";
+import {useLocation} from "react-router-dom";
 
 // @ts-ignore
 const {kakao} = window;
@@ -22,10 +23,12 @@ export default function MapLocation({event, locationList}: { event: any, locatio
     const selectButton = useAppSelector((state: RootState) => state.ledger.selectButton);
     const [infowindow, setInfowindow] = useState<kakao.maps.InfoWindow | null>(null);
     const [map, setMap] = useState<kakao.maps.Map | undefined>();
+
+    const {type} = useLocation().state || {};
     let markers: kakao.maps.Marker[] = [];
 
     useEffect(() => {
-        const mapContainer = document.getElementById('MapLocation2'); // 지도를 표시할 div
+        const mapContainer = document.getElementById('MapLocation'); // 지도를 표시할 div
         const mapOption = {
             center: new kakao.maps.LatLng(37.5665, 126.9780), // 지도의 중심 좌표 (서울)
             level: 1, // 지도의 확대 레벨
@@ -41,10 +44,9 @@ export default function MapLocation({event, locationList}: { event: any, locatio
     }, [])
 
     useEffect(() => {
-    console.log(map)
         const triggerClick = async () => {
             if (map && infowindow) {
-                if (ledgerSeqNumbers === null) {
+                if (type != "stateMap" ) {
                     try {
                         const res = await axios.get('/api/ledger/locationList', {
                             headers: {
@@ -53,14 +55,17 @@ export default function MapLocation({event, locationList}: { event: any, locatio
                             }
                         });
                         await displayPlaces(res.data);
+                        $(".markerbg.marker_1").click();
                     } catch (error) {
                         console.error('Error fetching location list:', error);
                     }
                 } else {
+
                     setTimeout(async () => {
                         await displayPlaces(ledgerSeqNumbers);
-                        $('.markerbg.marker_1').click();
+                        $(".markerbg.marker_1").click();
                     }, 500);
+
                 }
             }
         };
@@ -71,7 +76,6 @@ export default function MapLocation({event, locationList}: { event: any, locatio
 
     function displayPlaces(places: LedgerType[]): Promise<void> {
         return new Promise((resolve) => {
-
             const listEl = document.getElementById('placesList');
             const menuEl = document.getElementById('menu_wrap');
             const fragment = document.createDocumentFragment();
@@ -110,8 +114,9 @@ export default function MapLocation({event, locationList}: { event: any, locatio
                         infowindow.close();
                     }
                 };
-
-                fragment.appendChild(itemEl);
+                if(place.location.y != 0 , place.location.x != 0){
+                    fragment.appendChild(itemEl);
+                }
             });
 
             if (listEl && menuEl) {
@@ -127,25 +132,41 @@ export default function MapLocation({event, locationList}: { event: any, locatio
         })
     }
 
-    // 검색결과 항목을 Element로 반환하는 함수입니다
+// 검색결과 항목을 Element로 반환하는 함수
     function getListItem(index: number, place: LedgerType) {
         const el = document.createElement('li');
         const itemStr = `
-    <span class="markerbg marker_${index + 1}"></span>
-    <div style="display: flex;">
-    <div class="info">
-        <h5>${place.comment}</h5>
-        <span>${place.location.address}</span>
-        <span class="tel">${place.price}</span>
-    </div>
-    <div>
-        <button class="MapLedgerUpdate" value="${place.fileOwnerNo}">수정</button>
-        <button class="MapLedgerDelete" value="${place.fileOwnerNo}">삭제</button>
-    </div>
-    </div>
+        <span class="markerbg marker_${index + 1}"></span>
+        <div style="display: flex;">
+            <div class="info">
+                <h5>${place.comment}</h5>
+                <span>${place.location.address}</span>
+                <span class="tel">${place.price}</span>
+            </div>
+            <div>
+                <button class="MapLedgerUpdate" value="${place.fileOwnerNo}">수정</button>
+                <button class="MapLedgerDelete" value="${place.fileOwnerNo}">삭제</button>
+            </div>
+        </div>
     `;
         el.innerHTML = itemStr;
         el.className = 'item';
+
+        const updateButton = el.querySelector(".MapLedgerUpdate");
+        const deleteButton = el.querySelector(".MapLedgerDelete");
+
+        if(updateButton){
+            updateButton.addEventListener('click', ()=>{
+                MapLedgerUpdate(place.fileOwnerNo);
+            })
+        }
+
+        if(deleteButton){
+            deleteButton.addEventListener("click", ()=>{
+                MapLedgerDelete(place.fileOwnerNo);
+            })
+        }
+
         return el;
     }
 
@@ -232,6 +253,16 @@ export default function MapLocation({event, locationList}: { event: any, locatio
         setOpen(value);
     };
 
+    function MapLedgerUpdate(fileOwnerNo: number) {
+        isOpen(true);
+        dispatch(axiosGetLedgerDetail(fileOwnerNo));
+    }
+
+    function MapLedgerDelete(fileOwnerNo : number) {
+        alert(fileOwnerNo);
+    }
+
+
     return (
         <>
             <div className='map_wrap'>
@@ -247,7 +278,7 @@ export default function MapLocation({event, locationList}: { event: any, locatio
                 </div>
             </div>
 
-            {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} isOpen={isOpen} open={open}/>}
+            {ledger && <LedgerDetail  ledger={ledger} isOpen={isOpen} open={open}/>}
         </>
     );
 }

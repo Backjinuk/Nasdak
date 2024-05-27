@@ -21,21 +21,21 @@ import {
   axiosFileUpload,
   changeEvent,
 } from '../app/slices/ledgerSilce';
-import { useAppDispatch } from '../app/hooks';
+import {useAppDispatch, useAppSelector} from '../app/hooks';
 import axios from 'customFunction/customAxios';
+import {selectAllCategories} from "../app/slices/categoriesSlice";
 
 export default function LedgerDetail({
-  categoryList,
   ledger,
   isOpen,
   open,
 }: {
-  categoryList: CategoryType[];
   ledger: LedgerType;
   isOpen: (value: boolean) => void;
   open: boolean;
 }) {
   const dispatch = useAppDispatch();
+  const categoryList = useAppSelector(selectAllCategories);
   const [price, setPrice] = useState(() => ledger.price);
   const [location, setLocation] = useState(() => ledger.location);
   const [comment, setComment] = useState(() => ledger.comment);

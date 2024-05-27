@@ -17,8 +17,6 @@ import { getCookie, setCookie } from 'Cookies';
 import axios from 'customFunction/customAxios';
 import { login, selectIsLogin } from 'app/slices/userSlice';
 import {useState} from "react";
-import {LedgerType} from "./TypeList";
-import StateMapLocation from "./MapComponont/StateMapLocation";
 
 declare global {
   interface Window {
@@ -66,9 +64,7 @@ function App() {
     <>
       <Route path={'/userInfo'} element={<UserInfo />} />
       <Route path='/Ledger' element={<LedgerMain event={event} categoryList={categoryList} />} />
-      // @ts-ignore
       <Route path={'/MapLocation'} element={<MapLocation event={event} locationList={locationList} />}/>
-      <Route path={'/StateMapLocation'} element={<StateMapLocation/> }/>
       <Route path={'/calender'} element={<CalenderMain categoryList={categoryList} event={event} />} />
     </>
   );

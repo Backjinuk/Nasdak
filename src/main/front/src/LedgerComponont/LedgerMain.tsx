@@ -198,7 +198,7 @@ export default function LedgerMain({categoryList , event} : any){
                         </SlideWrap>
                     </Wrapper>
                 }
-                {ledger && <LedgerDetail categoryList={categoryList} ledger={ledger} isOpen={isOpen} open={open}/>}
+                {ledger && <LedgerDetail  ledger={ledger} isOpen={isOpen} open={open}/>}
 
                 {selectButtonValue === 1 &&
                     <>

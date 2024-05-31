@@ -17,13 +17,11 @@ spring:
       fail-on-empty-beans: false
 
   datasource:
-#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-#    url: jdbc:p6spy:h2:tcp://localhost/~/nasdak;NON_KEYWORDS=USER
-#    username: nasdak
-#    password: nasdak12@
-    url: jdbc:mysql://localhost:3306/nasdak
-    username: Nasdak
-    password: Nasdak12@
+    url: ${AWS_RDS_URL}/nasdak_schema
+    username: ${AWS_RDS_USER}
+    password: ${AWS_RDS_PW}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update

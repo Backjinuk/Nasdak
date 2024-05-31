@@ -1,7 +1,6 @@
 package org.nasdakgo.nasdak.Controller;
 
 import Utils.FileUtil;
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -70,7 +69,7 @@ public class LedgerController {
      * @apiNote UserId를 기반으로 ledger의 날짜를 가지고 오는 기능
      */
     @RequestMapping("LedgerAllDayList")
-    public Map<String, List<?>> LedgerList(Authentication authentication, @RequestBody Map<String, Object> map) {
+    public Map<String, List<?>> LedgerAllDayList(Authentication authentication, @RequestBody Map<String, Object> map) {
 
         List<LedgerDto> allByUsers2;
         String searchKey = (Objects.equals(String.valueOf(map.get("searchKey")), "")) ? "Day" : String.valueOf(map.get("searchKey"));
@@ -83,13 +82,13 @@ public class LedgerController {
             int startPage = (Integer.parseInt(String.valueOf(map.get("startPage"))) == 0) ? 0 : Integer.parseInt(String.valueOf(map.get("startPage")));
             int endPage   = (Integer.parseInt(String.valueOf(map.get("endPage")))   == 0) ? 5 : Integer.parseInt(String.valueOf(map.get("endPage")));
 
-            List<String> allByUsers = ledgerService.getLedgerList(userNo, startPage, endPage);
+            List<String> AllDayDate = ledgerService.getLedgerAllDayDate(userNo, startPage, endPage);
 
-            if (allByUsers.isEmpty()) {
+            if (AllDayDate.isEmpty()) {
                 return new HashMap<>();
             }
 
-            allByUsers2 = ledgerService.getLedgerDayList(allByUsers, userNo)
+            allByUsers2 = ledgerService.getLedgerDayList(AllDayDate, userNo)
                                         .stream()
                                         .map(ledger -> modelMapper.map(ledger, LedgerDto.class))
                                         .collect(Collectors.toList());
@@ -206,6 +205,21 @@ public class LedgerController {
 
 
         return ledgerService.getPieLedgerTypeList(startDate, endDate, categoryName, ledgerType, toUser(authentication));
+    }
+
+
+    @RequestMapping("LedgerStatesViewPie")
+    public List<LedgerDto> LedgerStatesViewPie(@RequestBody Map<String, Object> map, Authentication  authentication) {
+        List<LedgerDto> list = new ArrayList<>();
+
+        LocalDate startDate = (LocalDate) map.get("startDate");
+        LocalDate endDate = (LocalDate) map.get("endDate");
+
+        UserDto userDto = modelMapper.map(toUser(authentication), UserDto.class);
+
+        ledgerService.getLedgerList(startDate, endDate, userDto.getUserNo());
+
+        return list;
     }
 
 

@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.nasdakgo.nasdak.Dto.LedgerDto;
 import org.nasdakgo.nasdak.Entity.Category;
@@ -25,7 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Log4j2
 @RequiredArgsConstructor
 public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
 
@@ -34,10 +37,9 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
     private final QLedger qLedger = QLedger.ledger;
     private final ModelMapper modelMapper;
 
-
     @Override
     @Transactional
-    public List<String> getLedgerDateList(long userNo, int startPaging, int endPaging) {
+    public List<String> getLeddgerAllDayDate(long userNo, int startPaging, int endPaging) {
 
         DateTemplate<String> formattedDate2 = createFormattedDate2();
 
@@ -117,7 +119,12 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
                     , ConstantImpl.create("%Y-%m-%d %H:%i:%s")); // useDate 스트링으로 변환
 
             List<Ledger> ledgerList = jpaQueryFactory
-                    .select(qLedger)
+                    .select(qLedger.fileOwnerNo,
+                            qLedger.ledgerType,
+                            qLedger.comment,
+                            qLedger.price,
+                            qLedger.useDate
+                    )
                     .from(qLedger)
                     .where(qLedger.user.userNo.eq(userNo)
                             .and(formattedDate.between(
@@ -126,10 +133,24 @@ public class LedgerRepositoryCustomImpl implements LedgerRepositoryCustom {
                             )
                     )
                     .orderBy(qLedger.useDate.desc())
-                    .fetch();
+                    .fetch()
+                    .stream()
+                    .map(tuple -> {
+                        Ledger ledger = new Ledger();
+                        ledger.setFileOwnerNo(tuple.get(0, Long.class));
+                        ledger.setLedgerType(tuple.get(1, LedgerType.class));
+                        ledger.setComment(tuple.get(2, String.class));
+                        ledger.setPrice(tuple.get(3, Long.class));
+                        ledger.setUseDate(tuple.get(4,  LocalDateTime.class));
+
+                        return ledger;
+                    })
+                    .toList();
 
             ledgers.addAll(ledgerList);
         }
+
+
 
         return ledgers;
     }

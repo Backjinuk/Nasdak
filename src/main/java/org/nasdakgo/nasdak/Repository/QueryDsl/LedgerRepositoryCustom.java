@@ -10,7 +10,7 @@ import java.util.List;
 public interface LedgerRepositoryCustom {
 
 
-    List<String> getLedgerDateList(long userNo, int startPaging, int endPaging);
+    List<String> getLeddgerAllDayDate(long userNo, int startPaging, int endPaging);
 
     List<Ledger> getLedgerList(LocalDate startDate, LocalDate endDate, long userNo);
 

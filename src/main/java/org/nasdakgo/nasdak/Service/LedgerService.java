@@ -32,8 +32,8 @@ public class LedgerService {
     public void ledgerDelete(Ledger ledger) { ledgerRepository.deleteById(ledger.getFileOwnerNo());
     }
 
-    public List<String> getLedgerList(long userNo , int startPaging, int endPaging) {
-        return ledgerRepository.getLedgerDateList(userNo, startPaging, endPaging);
+    public List<String> getLedgerAllDayDate(long userNo , int startPaging, int endPaging) {
+        return ledgerRepository.getLeddgerAllDayDate(userNo, startPaging, endPaging);
     }
 
     public List<Ledger> getLedgerItem(String regDate, String regDate2, long userNo) {

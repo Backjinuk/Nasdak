@@ -43,14 +43,17 @@ export default function LedgerMain({categoryList , event} : any){
 
     function nextPage() {
         let value = selectButtonValue === 1 ?  "Day" : selectButtonValue === 2 ?  "Week" : selectButtonValue === 3 ?  "Month" : "Month3";
-        dispatch(axiosGetLedgerAllDay({
-            userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
-            searchKey: value,
-            startPage: startPage,
-            endPage: endPage,
-            startDate : "",
-            type : ""
-        }));
+            dispatch(axiosGetLedgerAllDay({
+                userNo: parseInt(sessionStorage.getItem("userNo") as string) as number,
+                searchKey: value,
+                startPage: startPage,
+                endPage: endPage,
+                startDate : "",
+                type : ""
+            }));
+
+            console.log(Object.entries(ledgerList))
+
     }
 
     function ChangePageType(){

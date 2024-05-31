@@ -2,7 +2,6 @@ package org.nasdakgo.nasdak.Controller;
 
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
-import org.nasdakgo.nasdak.Dto.FilesDto;
 import org.nasdakgo.nasdak.Dto.LedgerDto;
 import org.nasdakgo.nasdak.Dto.UserDto;
 import org.nasdakgo.nasdak.Entity.Ledger;
@@ -196,7 +195,7 @@ class LedgerControllerTest {
 
         List<String>  allByUsers = new ArrayList<>();
 
-        allByUsers = ledgerService.getLedgerList(usersDto.getUserNo(), startPage, endPage);
+        allByUsers = ledgerService.getLedgerAllDayDate(usersDto.getUserNo(), startPage, endPage);
 
         for (String allByUser : allByUsers) {
             System.out.println("allByUser = " + allByUser);

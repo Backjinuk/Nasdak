@@ -42,7 +42,7 @@ public class CategoryController {
     }
 
     @RequestMapping("getCategoryList")
-    public List<CategoryDto> getCategoryList(Authentication authentication){
+    public List<CategoryDto> CategoryList(Authentication authentication){
         List<Category> categoryList = categoryService.getCategoryList(toUser(authentication));
         return toCategoryDtoList(categoryList);
     }

@@ -39,4 +39,9 @@ public class TokenController {
         map.put("name", authentication.getName());
         return ResponseEntity.ok(map);
     }
+
+    @RequestMapping("get")
+    public ResponseEntity<?> get(){
+        return ResponseEntity.ok("ok");
+    }
 }

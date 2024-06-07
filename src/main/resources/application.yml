@@ -21,9 +21,10 @@ spring:
 #    url: jdbc:p6spy:h2:tcp://localhost/~/nasdak;NON_KEYWORDS=USER
 #    username: nasdak
 #    password: nasdak12@
-    url: jdbc:mysql://localhost:3306/nasdak
-    username: Nasdak
-    password: Nasdak12@
+    url: jdbc:mysql://backjin.iptime.org:3306/Nasdak
+    username: nasdak
+    password: wlsdnr@2823
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update

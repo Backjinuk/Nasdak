@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/public/**").permitAll()
                         .requestMatchers("/api/sns/public/**").permitAll()
                         .requestMatchers("/api/token/refreshToken").permitAll()
+                        .requestMatchers("/api/token/get").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(handler -> handler

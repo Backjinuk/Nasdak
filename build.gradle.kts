@@ -1,6 +1,5 @@
 plugins {
     java
-    war
     id("org.springframework.boot") version "3.2.0"
     id("io.spring.dependency-management") version "1.1.4"
     id("org.asciidoctor.jvm.convert") version "3.3.2"
@@ -8,7 +7,7 @@ plugins {
 }
 
 group = "org.nasdakgo"
-version = "0.0.1-SNAPSHOT "
+version = "0.0.1-SNAPSHOT"
 
 val queryDslVersion = "5.0.0" // QueryDSL Version Setting
 
@@ -55,6 +54,8 @@ dependencies {
     // https://mvnrepository.com/artifact/com.github.gavlyukovskiy/p6spy-spring-boot-starter
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0")
 
+    //jar파일 생성
+    implementation("com.google.guava:guava:31.0.1-jre")
 
     //implementation("org.springframework.session:spring-session-jdbc")
 
@@ -72,7 +73,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok") // lombok
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+//    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3")
 }
@@ -100,5 +101,12 @@ tasks.named("clean") {// clean 시 QueryDSL(QClass) 코드를 삭제하도록 �
     }
 }
 
+tasks.named<Jar>("jar") {
+    archiveFileName.set("Nasdak.jar")
+    destinationDirectory.set(file("${rootDir}/build/libs"))
+    manifest {
+        attributes["Main-Class"] = "org.nasdakgo.nasdak.NasdakApplication" // 여기에 본인의 메인 클래스 패키지 경로를 넣어야 합니다.
+    }
+}
 
 

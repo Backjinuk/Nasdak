@@ -1,0 +1,7 @@
+# .dockerignore 파일 내용 예시/
+.idea/
+*.log
+*.tmp
+src/main/front/.vscode/
+src/main/front/node_modules/
+

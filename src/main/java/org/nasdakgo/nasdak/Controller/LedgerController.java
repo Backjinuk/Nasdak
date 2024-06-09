@@ -114,8 +114,11 @@ public class LedgerController {
 
             stringListMap = TranformMap(allByUsers2, searchKey); // 3개의 날짜 그룹 생성
 
+            System.out.println("stringListMap = " + stringListMap);
+
+            
             if(stringListMap.keySet().size() <= 3){ // 3개의 날짜 그룹이 안되면 추가 조회
-                while (stringListMap.keySet().size() < 3) { // 그룹이 3개가 될때까지 조회
+                while (stringListMap.keySet().size() < 3) { // 그룹이 3개가 될때까지 조회 
 
                     List<String> keys = new ArrayList<>(); // 키값을 담을 리스트
                     String lastKey = ""; // 마지막 키값
